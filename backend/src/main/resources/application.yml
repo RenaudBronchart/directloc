@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/directloc
+    username: admin
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8080
+
+jwt:
+  secret: 2f83492ab55e4f6f83b6e2c1a79fb9dbd217c4f91a6e4a7f17ce3c95c0f7a2df
+  expiration: 86400000  # (24h)
+
+logging:
+  level:
+    org.springframework.jdbc.datasource: DEBUG
