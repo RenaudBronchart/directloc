@@ -12,6 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -26,7 +28,6 @@ public class AuthController {
     public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest request) {
         User user = User.builder()
                 .email(request.getEmail())
-                .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
                 .build();

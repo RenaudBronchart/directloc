@@ -1,0 +1,22 @@
+<main class="main">
+  <ng-container *ngIf="showLanding(); else routedContent">
+    <div class="content">
+      <div class="left-side">
+        <h1>{{ title() }}</h1>
+        <p>Start managing your rentals efficiently and securely.</p>
+      </div>
+      <div class="divider"></div>
+      <div class="right-side">
+        <div class="pill-group">
+          <a class="pill" href="https://angular.dev" target="_blank">Docs</a>
+          <a class="pill" href="https://angular.dev/tutorials" target="_blank">Tutorials</a>
+          <a class="pill" href="https://angular.dev/tools/cli" target="_blank">CLI Tools</a>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #routedContent>
+    <router-outlet></router-outlet>
+  </ng-template>
+</main>

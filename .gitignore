@@ -1,0 +1,35 @@
+# Maven
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+
+# Runtime
+*.class
+*.jar
+*.war
+*.ear
+
+# Node (if you add frontend later)
+node_modules/
+dist/
+
+# Docker
+**/pgdata/
