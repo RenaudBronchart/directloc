@@ -57,3 +57,18 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Authentication
+
+- You can register or login from the UI using the form at `/register` and `/login`.
+- The token will be stored in localStorage.
+- Once logged in, you'll be redirected to `/home`.
+
+## Protected Routes
+
+- `/home` is protected by an AuthGuard.
+- If you try to access it without being logged in, you'll be redirected to `/login`.
+
+## Interceptor
+
+- All HTTP requests automatically attach the token using an Angular HTTP Interceptor.
