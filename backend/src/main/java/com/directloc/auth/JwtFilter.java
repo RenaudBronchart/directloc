@@ -53,11 +53,9 @@ public class JwtFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // ✅ Ignore le filtre pour /auth/**
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        System.out.println(">> Skip filter for: " + path);
-        return path.startsWith("/auth/");
+        return path.startsWith("/auth/"); // ✅ Ne skippe que /auth
     }
 }
