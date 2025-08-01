@@ -1,0 +1,15 @@
+<mat-card *ngIf="property">
+  <mat-card-title>{{ property.title }}</mat-card-title>
+  <mat-card-subtitle>{{ property.location }}</mat-card-subtitle>
+
+  <mat-card-content>
+    <p><strong>Description:</strong> {{ property.description }}</p>
+    <p><strong>Price:</strong> €{{ property.pricePerNight }} / night</p>
+    <p><strong>Created:</strong> {{ property.createdAt | date }}</p>
+    <p><strong>Owner:</strong> {{ property.owner.email }}</p>
+  </mat-card-content>
+
+  <mat-card-actions>
+    <button mat-button routerLink="/properties">⬅ Back to listings</button>
+  </mat-card-actions>
+</mat-card>

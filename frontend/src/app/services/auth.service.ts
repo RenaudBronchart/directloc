@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 interface RegisterRequest {
   email: string;
@@ -28,8 +29,13 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.API_URL}/register`, data);
   }
 
+
   login(data: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/login`, data);
+    return this.http.post<AuthResponse>(`${this.API_URL}/login`, data).pipe(
+      tap(response => {
+        this.saveToken(response.token); // ✅ Enregistre le token !
+      })
+    );
   }
 
   logout() {

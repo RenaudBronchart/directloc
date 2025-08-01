@@ -1,13 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-
-//  IMPORTER Angular Material
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+
 
 @Component({
   selector: 'app-login',
@@ -27,7 +26,10 @@ export class LoginComponent {
   email = '';
   password = '';
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router // ✅ Inject router
+  ) {}
 
   onSubmit(): void {
     const loginData = {
@@ -36,7 +38,10 @@ export class LoginComponent {
     };
 
     this.authService.login(loginData).subscribe({
-      next: () => console.log('Login successful'),
+      next: () => {
+        console.log('Login successful');
+        this.router.navigate(['/my-properties']); //
+      },
       error: err => console.error('Login error:', err)
     });
   }
