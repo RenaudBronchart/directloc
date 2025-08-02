@@ -1,0 +1,10 @@
+<h2>Edit Property</h2>
+
+<mat-card *ngIf="property">
+  <app-property-form
+    [initialData]="property"
+    (submit)="onSubmit($event)"
+  ></app-property-form>
+</mat-card>
+
+<div *ngIf="!property">Loading...</div>
