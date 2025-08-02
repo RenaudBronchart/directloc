@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PropertyService } from '../../services/property.service';
-import { Property } from '../../models/property.model';
+import { PropertyService } from '../../../services/property.service';
+import { Property } from '../../../models/property.model';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PropertyListComponent } from './property-list.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { PropertyService } from '../../services/property.service';
+import { PropertyService } from '../../../services/property.service';
 
 describe('PropertyListComponent', () => {
   let component: PropertyListComponent;
