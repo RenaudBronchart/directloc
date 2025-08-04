@@ -37,6 +37,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/properties/my").authenticated()
                         .requestMatchers(HttpMethod.GET, "/properties/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/properties").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/properties/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/properties/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

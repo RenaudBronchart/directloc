@@ -1,0 +1,60 @@
+// ✅ SPACING UTILITIES
+.mt-sm { margin-top: 0.5rem; }
+.mt-md { margin-top: 1rem; }
+.mt-lg { margin-top: 2rem; }
+
+.mb-sm { margin-bottom: 0.5rem; }
+.mb-md { margin-bottom: 1rem; }
+.mb-lg { margin-bottom: 2rem; }
+
+.pt-sm { padding-top: 0.5rem; }
+.pt-md { padding-top: 1rem; }
+.pt-lg { padding-top: 2rem; }
+
+.pb-sm { padding-bottom: 0.5rem; }
+.pb-md { padding-bottom: 1rem; }
+.pb-lg { padding-bottom: 2rem; }
+
+// ✅ FLEX UTILITIES
+.d-flex {
+  display: flex !important;
+}
+.flex-column {
+  flex-direction: column !important;
+}
+.flex-row {
+  flex-direction: row !important;
+}
+.justify-center {
+  justify-content: center !important;
+}
+.justify-between {
+  justify-content: space-between !important;
+}
+.align-center {
+  align-items: center !important;
+}
+
+// ✅ TEXT UTILITIES
+.text-center {
+  text-align: center !important;
+}
+.text-right {
+  text-align: right !important;
+}
+.text-bold {
+  font-weight: bold !important;
+}
+
+// ✅ DISPLAY UTILITIES
+.d-none {
+  display: none !important;
+}
+.d-block {
+  display: block !important;
+}
+
+// ✅ WIDTH
+.w-100 {
+  width: 100% !important;
+}
