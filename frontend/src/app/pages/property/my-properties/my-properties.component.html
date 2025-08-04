@@ -1,4 +1,9 @@
+<!-- my-properties.component.html -->
 <h2>My Properties</h2>
+
+<button mat-raised-button color="primary" routerLink="/properties/create">
+  ➕ Create Property
+</button>
 
 <div *ngIf="properties.length === 0">No properties yet.</div>
 
@@ -10,8 +15,22 @@
       <p>💶 Price: €{{ property.pricePerNight }} / night</p>
       <p>📅 Created: {{ property.createdAt | date }}</p>
     </mat-card-content>
+
     <mat-card-actions>
-      <button mat-button [routerLink]="['/properties', property.id]">View Details</button>
+      <!-- View Details -->
+      <button mat-button [routerLink]="['/properties', property.id]">
+        🔍 View
+      </button>
+
+      <!-- Edit -->
+      <button mat-button color="accent" [routerLink]="['/properties/edit', property.id]">
+        ✏️ Edit
+      </button>
+
+      <!-- Delete -->
+      <button mat-button color="warn" (click)="confirmDelete(property.id)">
+        🗑️ Delete
+      </button>
     </mat-card-actions>
   </mat-card>
 </div>
