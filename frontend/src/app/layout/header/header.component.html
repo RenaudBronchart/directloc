@@ -1,0 +1,20 @@
+<mat-toolbar color="primary" class="topbar">
+  <span class="logo">
+    🏠 <strong>DirectLoc</strong>
+  </span>
+
+  <span class="spacer"></span>
+
+  <div class="nav-links" *ngIf="auth.isAuthenticated(); else guestLinks">
+    <a mat-button routerLink="/home">Dashboard</a>
+    <a mat-button routerLink="/my-properties">My Properties</a>
+    <a mat-button (click)="logout()">Logout</a>
+  </div>
+
+  <ng-template #guestLinks>
+    <div class="nav-links">
+      <a mat-button routerLink="/login">Login</a>
+      <a mat-button routerLink="/register">Sign up</a>
+    </div>
+  </ng-template>
+</mat-toolbar>

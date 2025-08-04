@@ -1,4 +1,74 @@
-.home-container {
-  text-align: center;
-  margin-top: 3rem;
+.hero {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem 1rem;
+  background: linear-gradient(to right, #2196f3, #21cbf3);
+  border-radius: 8px;
+  margin: 2rem;
+
+  .hero-content {
+    text-align: center;
+    color: white;
+    max-width: 700px;
+  }
+
+  .hero-title {
+    font-size: 2.2rem;
+    margin-bottom: 0.2rem;
+    font-weight: 500;
+  }
+
+  .hero-brand {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+
+    .emoji {
+      font-size: 2.5rem;
+      vertical-align: middle;
+      margin-left: 0.3rem;
+    }
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+    color: #e0f7fa;
+    margin-bottom: 2rem;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+}
+
+// ✅ Media query bien placée *en dehors* de la classe .hero
+@media (max-width: 768px) {
+  .hero {
+    padding: 2rem 1rem;
+
+    .hero-title {
+      font-size: 1.6rem;
+    }
+
+    .hero-brand {
+      font-size: 2.2rem;
+
+      .emoji {
+        font-size: 1.8rem;
+      }
+    }
+
+    .hero-subtitle {
+      font-size: 1rem;
+    }
+
+    .actions {
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+  }
 }
