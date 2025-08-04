@@ -19,9 +19,23 @@ export class MyPropertiesComponent implements OnInit {
   constructor(private propertyService: PropertyService) {}
 
   ngOnInit(): void {
+    this.loadProperties();
+  }
+
+  loadProperties(): void {
     this.propertyService.getMyProperties().subscribe({
       next: (res) => this.properties = res,
       error: (err) => console.error('Error loading user properties', err)
     });
+  }
+
+  confirmDelete(id: string): void {
+    const confirmed = confirm('Are you sure you want to delete this property?');
+    if (confirmed) {
+      this.propertyService.deleteProperty(id).subscribe({
+        next: () => this.properties = this.properties.filter(p => p.id !== id),
+        error: err => console.error('Delete failed:', err)
+      });
+    }
   }
 }
