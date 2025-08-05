@@ -1,36 +1,23 @@
-// 1️⃣ Importe Angular Material et ses outils de theming
 @use '@angular/material' as mat;
-@use '@angular/material/theming' as mat3; // ✅ pour les fonctions comme define-palette
+@use './mixins';
+@use './variables';
+@use './utilities';
+@use './responsive';
 
-// 2️⃣ Tes SCSS persos
-@use './variables' as *;
-@use './mixins' as *;
-@use './utilities' as *;
-@use './responsive' as *;
+// 2️⃣ Ensuite, le reste
+$primary: mat.define-palette(mat.$indigo-palette);
+$accent: mat.define-palette(mat.$pink-palette);
 
-// 3️⃣ Définir la palette de couleurs
-$my-primary: mat3.define-palette(mat3.$indigo-palette);
-$my-accent: mat3.define-palette(mat3.$pink-palette);
-
-// 4️⃣ Créer le thème Angular Material
-$my-theme: mat3.define-light-theme((
+$theme: mat.define-light-theme((
   color: (
-    primary: $my-primary,
-    accent: $my-accent,
+    primary: $primary,
+    accent: $accent
   ),
-  typography: mat3.define-typography-config(),
-  density: 0
+  typography: mat.define-typography-config(),
+  density: 0,
 ));
 
-// 5️⃣ Appliquer le thème
 @include mat.core();
-@include mat.all-component-themes($my-theme);
+@include mat.all-component-themes($theme);
 
-// 6️⃣ Styles globaux
-html, body {
-  margin: 0;
-  height: 100%;
-  font-family: $font-family-base;
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-}
+
