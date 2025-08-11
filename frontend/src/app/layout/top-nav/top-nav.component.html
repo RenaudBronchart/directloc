@@ -1,0 +1,25 @@
+<mat-toolbar class="topbar">
+    <span class="logo" routerLink="/">🏠 <strong>DirectLoc</strong></span>
+
+    <div class="nav-right">
+        <!-- Non connecté -->
+        <ng-container *ngIf="!isLoggedIn; else loggedInBlock">
+            <a mat-raised-button color="primary" routerLink="/login" class="btn-solid">Login</a>
+            <a mat-raised-button color="primary" routerLink="/register" class="btn-solid">Register</a>
+        </ng-container>
+
+        <!-- Connecté -->
+        <ng-template #loggedInBlock>
+            <a mat-raised-button color="accent" routerLink="/properties/create" class="btn-solid">
+                List your property
+            </a>
+
+            <button mat-button [matMenuTriggerFor]="userMenu">{{ username }}</button>
+            <mat-menu #userMenu="matMenu">
+                <button mat-menu-item routerLink="/my-properties">My Properties</button>
+                <button mat-menu-item routerLink="/properties/create">Create Property</button>
+                <button mat-menu-item (click)="logout()">Logout</button>
+            </mat-menu>
+        </ng-template>
+    </div>
+</mat-toolbar>

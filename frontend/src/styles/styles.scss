@@ -1,23 +1,55 @@
 @use '@angular/material' as mat;
+@use './variables' as *;   // <- ton fichier avec $light-theme
 @use './mixins';
-@use './variables';
 @use './utilities';
 @use './responsive';
 
-// 2️⃣ Ensuite, le reste
-$primary: mat.define-palette(mat.$indigo-palette);
-$accent: mat.define-palette(mat.$pink-palette);
-
-$theme: mat.define-light-theme((
-  color: (
-    primary: $primary,
-    accent: $accent
-  ),
-  typography: mat.define-typography-config(),
-  density: 0,
-));
-
+/* Material core + thème (UNE SEULE FOIS) */
 @include mat.core();
-@include mat.all-component-themes($theme);
+@include mat.all-component-themes($light-theme);
 
+/* Base */
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: $font-family-base;
+}
 
+/* Helpers */
+.container { width: 100%; max-width: 1140px; margin: 0 auto; padding: 0 1rem; }
+.card { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
+
+/* Topbar */
+.mat-toolbar.topbar {
+  background: #fff; /* mets var(--primary) pour une topbar bleue */
+  color: var(--text);
+  border-bottom: 1px solid #e5e7eb;
+  .logo { cursor: pointer; font-weight: 700; }
+  a[mat-button], button[mat-button] { color: inherit; }
+}
+
+/* Footer */
+.app-footer {
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  color: #6b7280;
+}
+
+/* Boutons */
+.mat-button-base, .mat-mdc-button-base { border-radius: var(--radius-md) !important; }
+.mat-mdc-raised-button, .mat-mdc-unelevated-button { box-shadow: var(--shadow-sm); }
+
+/* Variante forcée pour <a mat-button> plats */
+.btn-primary { background: var(--primary) !important; color: #fff !important; }
+.btn-primary:hover { filter: brightness(0.95); }
+
+/* Hero (exemple) */
+.hero {
+  border-radius: var(--radius-lg);
+  background: linear-gradient(90deg, #1e3a8a, #22c1ee);
+  color: #fff;
+  padding: 3rem 2rem;
+  box-shadow: var(--shadow-lg);
+}

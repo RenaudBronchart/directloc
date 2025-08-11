@@ -1,0 +1,9 @@
+@use '../../../styles/variables' as *;
+
+
+.main-content {
+  min-height: calc(100vh - 120px); // header + footer estimated height
+  padding-top: $spacing-md;
+  padding-bottom: $spacing-md;
+  background-color: $background-color;
+}
