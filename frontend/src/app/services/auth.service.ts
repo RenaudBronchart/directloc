@@ -32,9 +32,13 @@ export class AuthService {
     this.restoreFromStorage();
   }
 
-  // === Auth API ===
-  register(data: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API}/auth/register`, data);
+// === Auth API ===
+  register(data: RegisterRequest): Observable<User> {
+    return this.http.post<AuthResponse>(`${this.API}/auth/register`, data).pipe(
+        tap(res => this.saveToken(res.token)),                  // 1) stocke le JWT
+        switchMap(() => this.http.get<User>(`${this.API}/users/me`)), // 2) récupère le profil
+        tap(user => this.user$.next(user))                      // 3) hydrate l'état courant
+    );
   }
 
   login(data: LoginRequest): Observable<User> {

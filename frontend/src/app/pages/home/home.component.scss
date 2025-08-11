@@ -1,31 +1,36 @@
-.hero {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 4rem 1rem;
-  background: linear-gradient(to right, #2196f3, #21cbf3);
-  border-radius: 8px;
-  margin: 2rem;
+@use '../../../styles/variables' as *;
+
+.home-hero {
+  padding: 4rem 1rem 2rem;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  border-radius: var(--radius-lg);
+  margin: 2rem 0;
+  box-shadow: var(--shadow-lg);
+
+  /* 👇 s'aligne avec ta grille globale */
+  .container {
+    max-width: 1120px;  /* même valeur que la barre */
+    margin: 0 auto;
+  }
 
   .hero-content {
     text-align: center;
-    color: white;
-    max-width: 700px;
+    color: #fff;
   }
 
   .hero-title {
-    font-size: 2.2rem;
-    margin-bottom: 0.2rem;
-    font-weight: 500;
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    margin-bottom: 0.25rem;
+    font-weight: 600;
   }
 
   .hero-brand {
-    font-size: 3rem;
-    font-weight: 700;
+    font-size: clamp(2.2rem, 4vw, 3rem);
+    font-weight: 800;
     margin-bottom: 1rem;
 
     .emoji {
-      font-size: 2.5rem;
+      font-size: 0.9em;
       vertical-align: middle;
       margin-left: 0.3rem;
     }
@@ -33,42 +38,15 @@
 
   .hero-subtitle {
     font-size: 1.1rem;
-    color: #e0f7fa;
-    margin-bottom: 2rem;
+    color: rgba(255,255,255,.9);
+    margin-bottom: 1.25rem;
   }
 
-  .actions {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    flex-wrap: wrap;
+  .hero-search {
+    margin-top: 0.75rem;
   }
 }
 
-// ✅ Media query bien placée *en dehors* de la classe .hero
 @media (max-width: 768px) {
-  .hero {
-    padding: 2rem 1rem;
-
-    .hero-title {
-      font-size: 1.6rem;
-    }
-
-    .hero-brand {
-      font-size: 2.2rem;
-
-      .emoji {
-        font-size: 1.8rem;
-      }
-    }
-
-    .hero-subtitle {
-      font-size: 1rem;
-    }
-
-    .actions {
-      flex-direction: column;
-      gap: 0.8rem;
-    }
-  }
+  .home-hero { padding: 2.5rem 1rem; }
 }

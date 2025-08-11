@@ -1,0 +1,72 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="search-bar">
+  <!-- Destination -->
+  <mat-form-field appearance="outline" class="field location">
+    <mat-label>Destination</mat-label>
+    <input
+      matInput
+      type="text"
+      formControlName="q"
+      [matAutocomplete]="auto"
+      placeholder="Where are you going?"
+      [required]="true"
+    />
+    <mat-autocomplete #auto="matAutocomplete">
+      <mat-option *ngFor="let c of cities | slice:0:8" [value]="c">{{ c }}</mat-option>
+    </mat-autocomplete>
+    <mat-icon matSuffix>travel_explore</mat-icon>
+  </mat-form-field>
+
+  <!-- Dates -->
+  <mat-form-field appearance="outline" class="field date">
+    <mat-label>Check-in</mat-label>
+    <input
+      matInput
+      [matDatepicker]="pickerIn"
+      formControlName="checkIn"
+      [min]="minCheckIn"
+      [required]="true"
+    />
+    <mat-datepicker-toggle matSuffix [for]="pickerIn"></mat-datepicker-toggle>
+    <mat-datepicker #pickerIn></mat-datepicker>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="field date">
+    <mat-label>Check-out</mat-label>
+    <input
+      matInput
+      [matDatepicker]="pickerOut"
+      formControlName="checkOut"
+      [min]="minCheckOut"
+      [required]="true"
+    />
+    <mat-datepicker-toggle matSuffix [for]="pickerOut"></mat-datepicker-toggle>
+    <mat-datepicker #pickerOut></mat-datepicker>
+  </mat-form-field>
+
+  <!-- Occupants -->
+  <mat-form-field appearance="outline" class="field sel">
+    <mat-label>Adults</mat-label>
+    <mat-select formControlName="adults" [required]="true">
+      <mat-option *ngFor="let a of adultsOptions" [value]="a">{{ a }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="field sel">
+    <mat-label>Children</mat-label>
+    <mat-select formControlName="children" [required]="true">
+      <mat-option *ngFor="let c of childrenOptions" [value]="c">{{ c }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="field sel">
+    <mat-label>Rooms</mat-label>
+    <mat-select formControlName="rooms" [required]="true">
+      <mat-option *ngFor="let r of roomsOptions" [value]="r">{{ r }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" class="search-btn" type="submit" aria-label="Search">
+    <mat-icon>search</mat-icon>
+    Search
+  </button>
+</form>
