@@ -24,7 +24,7 @@ interface RegisterRequest {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API = 'http://localhost:8080';
+  private readonly API = 'http://localhost:8080/api';
   private user$ = new BehaviorSubject<User | null>(null);
   private loadingUser = false; // évite les doublons d’appel /users/me
 

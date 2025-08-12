@@ -1,0 +1,44 @@
+<mat-card class="prop-card" *ngIf="!loading; else skeleton" (click)="openCard()">
+  <div class="image-wrap">
+    <img
+      [src]="data.coverUrl || 'assets/placeholder.webp'"
+      [alt]="data.title"
+      loading="lazy"
+    />
+    <div class="badge" *ngIf="data.maxGuests">Up to {{ data.maxGuests }} guests</div>
+  </div>
+
+  <mat-card-content>
+    <div class="title" matTooltip="{{data.title}}">{{ data.title }}</div>
+    <div class="sub">{{ data.location }}</div>
+    <div class="meta">
+      <span *ngIf="data.bedrooms">{{ data.bedrooms }} bd</span>
+      <span *ngIf="data.bathrooms">• {{ data.bathrooms }} ba</span>
+    </div>
+  </mat-card-content>
+
+  <mat-card-actions class="actions" (click)="$event.stopPropagation()">
+    <div class="price">
+      <span class="amount">{{ data.pricePerNight | currency:'EUR':'symbol':'1.0-0' }}</span>
+      <span class="per">/ night</span>
+    </div>
+    <button
+      mat-stroked-button
+      color="primary"
+      (click)="open.emit(data.id); $event.stopPropagation()"
+    >
+      View
+    </button>
+  </mat-card-actions>
+</mat-card>
+
+<ng-template #skeleton>
+  <div class="prop-card skeleton">
+    <div class="image-wrap shimmer"></div>
+    <div class="lines">
+      <div class="line shimmer"></div>
+      <div class="line short shimmer"></div>
+      <div class="line tiny shimmer"></div>
+    </div>
+  </div>
+</ng-template>

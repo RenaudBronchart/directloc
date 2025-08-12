@@ -1,19 +1,41 @@
-<h2>Available Properties</h2>
+<section class="container prop-list">
+  <h2 class="heading">Explore stays</h2>
 
-<div *ngIf="properties.length === 0">No properties found.</div>
+  <!-- Grid -->
+  <ng-container *ngIf="!loading; else skeletons">
+    <ng-container *ngIf="items?.length; else empty">
+      <div class="grid">
+        <app-property-card
+          *ngFor="let p of items; trackBy: trackById"
+          [data]="p"
+          (open)="openDetail($event)">
+        </app-property-card>
+      </div>
+    </ng-container>
+  </ng-container>
 
-<div class="property-grid">
-  <mat-card *ngFor="let property of properties" class="property-card">
-    <mat-card-title>🏠 {{ property.title }}</mat-card-title>
-    <mat-card-subtitle>📍 {{ property.location }}</mat-card-subtitle>
-    <mat-card-content>
-      <p>💶 Price: €{{ property.pricePerNight }} / night</p>
-      <p>📅 Created: {{ property.createdAt | date: 'longDate' }}</p>
-    </mat-card-content>
-    <mat-card-actions>
-      <button mat-button color="primary" [routerLink]="['/properties', property.id]">
-        View Details
-      </button>
-    </mat-card-actions>
-  </mat-card>
-</div>
+  <!-- Skeletons -->
+  <ng-template #skeletons>
+    <div class="grid">
+      <app-property-card *ngFor="let s of [1,2,3,4,5,6,7,8,9,10,11,12]" [loading]="true"></app-property-card>
+    </div>
+  </ng-template>
+
+  <!-- Empty state -->
+  <ng-template #empty>
+    <div class="empty">
+      <mat-icon>search_off</mat-icon>
+      <p>No properties match your filters (yet).</p>
+    </div>
+  </ng-template>
+
+  <!-- Paginator -->
+  <mat-paginator
+    [length]="total"
+    [pageIndex]="pageIndex"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[12,24,48]"
+    aria-label="Select page"
+    (page)="onPage($event)">
+  </mat-paginator>
+</section>

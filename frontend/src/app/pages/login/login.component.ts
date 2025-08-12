@@ -1,6 +1,7 @@
+// src/app/pages/login/login.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -13,14 +14,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
   selector: 'app-login',
   standalone: true,
   imports: [
-    CommonModule,
-    RouterModule,
-    FormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSnackBarModule
+    CommonModule, RouterModule, FormsModule,
+    MatFormFieldModule, MatInputModule, MatButtonModule,
+    MatIconModule, MatSnackBarModule
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
@@ -32,9 +28,10 @@ export class LoginComponent {
   loading = false;
 
   constructor(
-      private authService: AuthService,
-      private router: Router,
-      private snack: MatSnackBar
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private snack: MatSnackBar
   ) {}
 
   onSubmit(form: NgForm): void {
@@ -47,14 +44,12 @@ export class LoginComponent {
     this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/my-properties']);
+        const redirect = this.route.snapshot.queryParamMap.get('redirect');
+        this.router.navigate([redirect || '/my-properties']);
       },
       error: err => {
         this.loading = false;
-        const msg =
-            err?.status === 401
-                ? 'Invalid email or password'
-                : 'Login failed. Please try again.';
+        const msg = err?.status === 401 ? 'Invalid email or password' : 'Login failed. Please try again.';
         this.snack.open(msg, 'Close', { duration: 3000 });
       }
     });

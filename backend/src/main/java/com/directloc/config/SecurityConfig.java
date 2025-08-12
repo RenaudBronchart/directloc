@@ -31,16 +31,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .cors(Customizer.withDefaults()) // ✅ active la config CORS ci-dessous
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/users/**").authenticated() //
-                        .requestMatchers(HttpMethod.GET, "/properties/my").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/properties/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/properties").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/properties/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/properties/**").authenticated()
+                        // Auth (public)
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // Users (protégé)
+                        .requestMatchers("/api/users/**").authenticated()
+
+                        // Properties
+                        .requestMatchers(HttpMethod.GET, "/api/properties/my").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/properties/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/properties").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/properties/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/properties/**").authenticated()
+
+                        // Tout le reste
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -52,12 +59,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
-                "http://localhost:4200", // ✅ Angular local
-                "https://ton-frontend.com" // ✅ en prod, à modifier
+                "http://localhost:4200",
+                "https://ton-frontend.com"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true); // Pour envoyer Authorization header
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -65,9 +72,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

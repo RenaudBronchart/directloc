@@ -1,6 +1,6 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
-const PUBLIC_ROUTES = ['/auth/login', '/auth/register'];
+const PUBLIC_ROUTES = ['/api/auth/login', '/api/auth/register'];
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = localStorage.getItem('token');

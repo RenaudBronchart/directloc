@@ -1,10 +1,34 @@
-.property-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
+@use '../../../../styles/variables' as *;
 
-.property-card {
-  padding: 0.5rem;
+.prop-list {
+  padding: 1rem 0 2rem;
+
+  .heading {
+    margin: .25rem 0 1rem;
+    font-weight: 800;
+    font-size: 1.4rem;
+  }
+
+  .grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    @media (max-width: 1200px) { grid-template-columns: repeat(3, 1fr); }
+    @media (max-width: 900px)  { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 600px)  { grid-template-columns: 1fr; }
+  }
+
+  .empty {
+    text-align: center; color: #6b7280;
+    padding: 3rem 0;
+    mat-icon { font-size: 48px; height: 48px; width: 48px; margin-bottom: .5rem; }
+  }
+
+  mat-paginator {
+    margin-top: 1rem;
+    border-radius: $radius-md;
+    background: #fff;
+    box-shadow: $shadow-sm;
+  }
 }

@@ -1,10 +1,17 @@
-h2 {
-  margin-bottom: 1rem;
+@use '../../../../styles/variables' as *;
+
+.create-wrap {
+  max-width: 840px;
+  margin: 1rem auto 2rem;
+  padding: 0 1rem;
 }
 
-mat-card {
-  padding: 1.5rem;
-  max-width: 600px;
-  margin: auto;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+h2 { margin: 0 0 1rem; font-weight: 800; font-size: 1.4rem; }
+
+.form-card {
+  background: #fff;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  padding: 1rem;
+  margin-top: 1rem;
 }

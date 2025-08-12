@@ -1,4 +1,24 @@
-mat-card {
-  padding: 1rem;
-  margin-top: 1rem;
+@use '../../../../styles/variables' as *;
+
+.edit-wrap {
+  max-width: 840px;
+  margin: 1rem auto 2rem;
+  padding: 0 1rem;
 }
+
+h2 {
+  margin: 0 0 1rem;
+  font-weight: 800;
+  font-size: 1.4rem;
+}
+
+.form-card {
+  background: #fff;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  padding: 1rem;         /* = ton ancien padding */
+  margin-top: 1rem;      /* = ton ancien margin */
+}
+
+/* au cas où le form n’a pas ses styles */
+.form-card mat-form-field { width: 100%; }

@@ -10,9 +10,9 @@
 
         <!-- Connecté -->
         <ng-template #loggedInBlock>
-            <a mat-raised-button color="accent" routerLink="/properties/create" class="btn-solid">
-                List your property
-            </a>
+          <button mat-raised-button color="accent" class="btn-solid" (click)="goCreate()">
+            List your property
+          </button>
 
             <button mat-button [matMenuTriggerFor]="userMenu">{{ username }}</button>
             <mat-menu #userMenu="matMenu">

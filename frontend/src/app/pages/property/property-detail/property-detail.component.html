@@ -1,15 +1,108 @@
-<mat-card *ngIf="property">
-  <mat-card-title>{{ property.title }}</mat-card-title>
-  <mat-card-subtitle>{{ property.location }}</mat-card-subtitle>
+<ng-container *ngIf="!loading && property as p; else skeletonTpl">
+  <!-- HERO -->
+  <section
+    class="detail-hero"
+    [style.background-image]="'url(' + (p.coverUrl || placeholder) + ')'"
+    role="img"
+    [attr.aria-label]="p.title"
+  >
+    <div class="overlay"></div>
 
-  <mat-card-content>
-    <p><strong>Description:</strong> {{ property.description }}</p>
-    <p><strong>Price:</strong> €{{ property.pricePerNight }} / night</p>
-    <p><strong>Created:</strong> {{ property.createdAt | date }}</p>
-    <p><strong>Owner:</strong> {{ property.owner.email }}</p>
-  </mat-card-content>
+    <div class="container hero-content">
+      <a class="back" routerLink="/properties">
+        <mat-icon>arrow_back</mat-icon>
+        Back to results
+      </a>
 
-  <mat-card-actions>
-    <button mat-button routerLink="/properties">⬅ Back to listings</button>
-  </mat-card-actions>
-</mat-card>
+      <h1 class="title">{{ p.title }}</h1>
+
+      <div class="sub">
+        <mat-icon>place</mat-icon>
+        <span>{{ p.location }}</span>
+      </div>
+
+      <div class="badges">
+        <span *ngIf="p.bedrooms"><mat-icon>bed</mat-icon> {{ p.bedrooms }} bd</span>
+        <span *ngIf="p.bathrooms"><mat-icon>bathtub</mat-icon> {{ p.bathrooms }} ba</span>
+        <span *ngIf="p.maxGuests"><mat-icon>group</mat-icon> Up to {{ p.maxGuests }}</span>
+      </div>
+
+      <div class="hero-actions">
+        <button mat-stroked-button>
+          <mat-icon>ios_share</mat-icon>
+          Share
+        </button>
+        <button mat-stroked-button>
+          <mat-icon>favorite_border</mat-icon>
+          Save
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- BODY -->
+  <section class="container detail-body">
+    <div class="grid">
+      <!-- Main content -->
+      <div class="col main">
+        <mat-card class="panel">
+          <mat-card-content>
+            <h2>About this place</h2>
+            <p class="desc">
+              {{ p.description || 'No description provided.' }}
+            </p>
+
+            <mat-divider></mat-divider>
+
+            <div class="info-rows">
+              <div class="row" *ngIf="p.ownerEmail">
+                <mat-icon>person</mat-icon>
+                <span>Hosted by {{ p.ownerEmail }}</span>
+              </div>
+              <div class="row">
+                <mat-icon>schedule</mat-icon>
+                <span>Added on {{ p.createdAt | date }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="panel">
+          <mat-card-content>
+            <h3>Amenities (soon)</h3>
+            <p>Coming soon: full list of amenities and house rules.</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col side">
+        <mat-card class="booking-card">
+          <mat-card-content>
+            <div class="price">
+              <span class="amount">{{ p.pricePerNight | currency:'EUR':'symbol':'1.0-0' }}</span>
+              <span class="per">/ night</span>
+            </div>
+
+            <button mat-raised-button color="primary" class="wide">
+              Request to book
+            </button>
+
+            <div class="fineprint">
+              Booking flow coming soon.
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+</ng-container>
+
+<!-- Skeleton -->
+<ng-template #skeletonTpl>
+  <div class="hero-skeleton shimmer"></div>
+  <div class="container body-skeleton">
+    <div class="card-skel shimmer"></div>
+    <div class="card-skel shimmer"></div>
+  </div>
+</ng-template>

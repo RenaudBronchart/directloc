@@ -10,7 +10,7 @@ import java.util.List;
 import static com.directloc.user.UserMapper.toDto;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 

@@ -48,6 +48,13 @@ export class TopNavComponent {
     this.auth.logout();
     this.router.navigate(['/login']);
   }
+  goCreate() {
+    if (this.auth.isAuthenticated()) {
+      this.router.navigate(['/properties/create']);
+    } else {
+      this.router.navigate(['/login'], { queryParams: { redirect: '/properties/create' } });
+    }
+  }
 
   search() {
     if (this.searchTerm.trim()) {
