@@ -1,0 +1,24 @@
+<section class="featured">
+  <div class="header container">
+    <h3>{{ title }}</h3>
+    <a class="link" routerLink="/properties">View all</a>
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    <mat-spinner diameter="36"></mat-spinner>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <div class="grid" *ngIf="items.length; else empty">
+      <app-property-card
+        *ngFor="let p of items; trackBy: trackById"
+        [data]="p"
+        [dense]="true">
+      </app-property-card>
+    </div>
+
+    <ng-template #empty>
+      <div class="empty">No listings yet.</div>
+    </ng-template>
+  </ng-container>
+</section>

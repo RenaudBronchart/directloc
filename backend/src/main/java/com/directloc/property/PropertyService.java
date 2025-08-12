@@ -17,17 +17,25 @@ public class PropertyService {
     private final PropertyRepository repo;
     private final UserService userService;
 
+    // -- helpers
+    private String trimOrNull(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
+    }
+
     public PropertyResponse create(PropertyRequest req) {
         User owner = userService.getCurrentUser();
         Property p = Property.builder()
-                .title(req.getTitle())
-                .description(req.getDescription())
-                .location(req.getLocation())
+                .title(req.getTitle().trim())
+                .description(req.getDescription().trim())
+                .location(req.getLocation().trim())
                 .pricePerNight(req.getPricePerNight())
                 .bedrooms(req.getBedrooms())
                 .bathrooms(req.getBathrooms())
                 .maxGuests(req.getMaxGuests())
-                .coverUrl(req.getCoverUrl())
+                // 👇 convertit "" en null pour déclencher @PrePersist
+                .coverUrl(trimOrNull(req.getCoverUrl()))
                 .owner(owner)
                 .build();
         return PropertyMapper.toDto(repo.save(p));
@@ -64,18 +72,18 @@ public class PropertyService {
         User me = userService.getCurrentUser();
         if (!p.getOwner().getId().equals(me.getId())) throw new SecurityException("Forbidden");
 
-        p.setTitle(req.getTitle());
-        p.setDescription(req.getDescription());
-        p.setLocation(req.getLocation());
+        p.setTitle(req.getTitle().trim());
+        p.setDescription(req.getDescription().trim());
+        p.setLocation(req.getLocation().trim());
         p.setPricePerNight(req.getPricePerNight());
         p.setBedrooms(req.getBedrooms());
         p.setBathrooms(req.getBathrooms());
         p.setMaxGuests(req.getMaxGuests());
-        p.setCoverUrl(req.getCoverUrl());
+        // 👇 idem en update pour déclencher @PreUpdate si vide
+        p.setCoverUrl(trimOrNull(req.getCoverUrl()));
 
         return PropertyMapper.toDto(repo.save(p));
     }
-
     public void delete(UUID id) {
         Property p = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("Property not found"));
         User me = userService.getCurrentUser();

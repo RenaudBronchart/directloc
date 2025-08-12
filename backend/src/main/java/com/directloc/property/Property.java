@@ -8,6 +8,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -55,4 +57,14 @@ public class Property {
     @LastModifiedDate
     @Column(name = "updated_at")
     private Instant updatedAt;
+
+    @PrePersist
+    @PreUpdate
+    public void ensureCoverUrl() {
+        if (this.coverUrl == null || this.coverUrl.isBlank()) {
+            String seed = (this.title != null && !this.title.isBlank()) ? this.title : "directloc";
+            String encoded = URLEncoder.encode(seed, StandardCharsets.UTF_8);
+            this.coverUrl = "https://picsum.photos/seed/" + encoded + "/1200/800";
+        }
+    }
 }

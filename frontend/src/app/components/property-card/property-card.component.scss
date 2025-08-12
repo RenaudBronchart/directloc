@@ -67,5 +67,18 @@
     background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
     animation: shimmer 1.25s infinite;
   }
+  :host { display: block; }
+
+  /* taille image par défaut */
+  .prop-card { --img-h: 220px; }
+  .image-wrap { height: var(--img-h); }
+
+  /* compact */
+  :host(.dense) .prop-card { --img-h: 180px; }
+  :host(.dense) .prop-card mat-card-content { padding: 10px 12px; }
+  :host(.dense) .title { font-size: .95rem; }
+  :host(.dense) .sub   { font-size: .9rem;  opacity: .9; }
+  :host(.dense) .meta  { font-size: .85rem; opacity: .85; }
+  :host(.dense) .actions { padding: 8px 12px; }
 }
 @keyframes shimmer { 100% { transform: translateX(100%); } }
