@@ -1,0 +1,38 @@
+<div class="row-card" (click)="go()" *ngIf="!loading; else skeleton">
+  <div class="media">
+    <img [src]="data.coverUrl || placeholder" [alt]="data.title" loading="lazy" />
+    <div class="badge" *ngIf="data.maxGuests">Up to {{data.maxGuests}} guests</div>
+  </div>
+
+  <div class="info">
+    <div class="title">{{ data.title }}</div>
+    <div class="sub">
+      <mat-icon>location_on</mat-icon>{{ data.location }}
+    </div>
+    <div class="meta">
+      <span *ngIf="data.bedrooms">{{ data.bedrooms }} bd</span>
+      <span *ngIf="data.bathrooms">• {{ data.bathrooms }} ba</span>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="price">
+      <span class="amount">{{ data.pricePerNight | currency:'EUR':'symbol':'1.0-0' }}</span>
+      <span class="per">/ night</span>
+    </div>
+    <button mat-stroked-button color="primary" (click)="$event.stopPropagation(); go()">
+      More details
+    </button>
+  </div>
+</div>
+
+<ng-template #skeleton>
+  <div class="row-card skeleton">
+    <div class="media"></div>
+    <div class="info">
+      <div class="line"></div>
+      <div class="line short"></div>
+    </div>
+    <div class="side"><div class="line tiny"></div></div>
+  </div>
+</ng-template>

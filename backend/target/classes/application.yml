@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/directloc
+    url: jdbc:postgresql://localhost:5433/directloc
     username: admin
     password: admin
   jpa:
@@ -10,7 +10,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-
 server:
   port: 8080
 
@@ -21,3 +20,5 @@ jwt:
 logging:
   level:
     org.springframework.jdbc.datasource: DEBUG
+
+

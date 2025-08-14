@@ -1,41 +1,134 @@
-<section class="container prop-list">
-  <h2 class="heading">Explore stays</h2>
+<section class="list-layout">
 
-  <!-- Grid -->
-  <ng-container *ngIf="!loading; else skeletons">
-    <ng-container *ngIf="items?.length; else empty">
-      <div class="grid">
-        <app-property-card
-          *ngFor="let p of items; trackBy: trackById"
-          [data]="p"
-          (open)="openDetail($event)">
-        </app-property-card>
+  <!-- Barre de recherche (même composant que Home) -->
+  <section class="search-row">
+    <div class="search-shell">
+      <app-search-bar (search)="onTopSearch($event)"></app-search-bar>
+    </div>
+  </section>
+
+  <!-- ===== Sidebar (desktop) / Sheet (mobile) ===== -->
+  <!-- Backdrop mobile -->
+  <div class="sidebar-backdrop" *ngIf="sidebarOpen" (click)="toggleFilters()"></div>
+
+  <aside class="sidebar" [class.open]="sidebarOpen">
+    <div class="side-card">
+      <div class="side-header" hideOnDesktop>
+        <div class="title">Filters</div>
+        <button mat-icon-button (click)="toggleFilters()" aria-label="Close filters">
+          <mat-icon>close</mat-icon>
+        </button>
       </div>
-    </ng-container>
-  </ng-container>
 
-  <!-- Skeletons -->
-  <ng-template #skeletons>
-    <div class="grid">
-      <app-property-card *ngFor="let s of [1,2,3,4,5,6,7,8,9,10,11,12]" [loading]="true"></app-property-card>
+      <div class="map-mini">
+        <div class="thumb"></div>
+        <button mat-stroked-button color="primary">
+          <mat-icon>map</mat-icon>
+          View map
+        </button>
+      </div>
+
+      <form [formGroup]="form" class="filters">
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Destination</mat-label>
+          <input matInput placeholder="City, region…" formControlName="q" />
+        </mat-form-field>
+
+        <div class="row-3">
+          <mat-form-field appearance="outline">
+            <mat-label>Adults</mat-label>
+            <input matInput type="number" min="1" formControlName="adults" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Children</mat-label>
+            <input matInput type="number" min="0" formControlName="children" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Rooms</mat-label>
+            <input matInput type="number" min="1" formControlName="rooms" />
+          </mat-form-field>
+        </div>
+
+        <div class="row-2">
+          <mat-form-field appearance="outline">
+            <mat-label>Min price (€)</mat-label>
+            <input matInput type="number" formControlName="minPrice" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Max price (€)</mat-label>
+            <input matInput type="number" formControlName="maxPrice" />
+          </mat-form-field>
+        </div>
+
+        <mat-checkbox formControlName="pool">Pool</mat-checkbox>
+        <mat-checkbox formControlName="wifi">Wi-Fi</mat-checkbox>
+
+        <div class="sheet-actions" hideOnDesktop>
+          <button mat-stroked-button color="primary" class="apply" (click)="toggleFilters()" type="button">
+            Apply
+          </button>
+          <button mat-button class="clear" type="button" (click)="clearAll()">Clear all</button>
+        </div>
+      </form>
     </div>
-  </ng-template>
+  </aside>
 
-  <!-- Empty state -->
-  <ng-template #empty>
-    <div class="empty">
-      <mat-icon>search_off</mat-icon>
-      <p>No properties match your filters (yet).</p>
+  <!-- ===== Results ===== -->
+  <main class="results">
+    <!-- En-tête des résultats -->
+    <div class="results-header card">
+      <div class="summary">{{ summaryText }}</div>
+
+      <div class="actions">
+        <button class="filters-btn" mat-stroked-button (click)="toggleFilters()" hideOnDesktop>
+          <mat-icon>tune</mat-icon>
+          Filters
+        </button>
+
+        <mat-form-field appearance="outline" class="sort">
+          <mat-label>Sort by</mat-label>
+          <mat-select [value]="sort" (selectionChange)="changeSort($event.value)">
+            <mat-option value="newest">Recommended</mat-option>
+            <mat-option value="price_asc">Price (low → high)</mat-option>
+            <mat-option value="price_desc">Price (high → low)</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
     </div>
-  </ng-template>
 
-  <!-- Paginator -->
-  <mat-paginator
-    [length]="total"
-    [pageIndex]="pageIndex"
-    [pageSize]="pageSize"
-    [pageSizeOptions]="[12,24,48]"
-    aria-label="Select page"
-    (page)="onPage($event)">
-  </mat-paginator>
+    <!-- Chips de filtres actifs -->
+    <div class="active-filters" *ngIf="chips.length">
+      <mat-chip-listbox aria-label="Active filters">
+        <mat-chip *ngFor="let c of chips" selectable="false" removable (removed)="removeChip(c)">
+          {{ c.label }}
+          <button matChipRemove aria-label="Remove"><mat-icon>close</mat-icon></button>
+        </mat-chip>
+        <button mat-button class="clear-all" type="button" (click)="clearAll()">Clear all</button>
+      </mat-chip-listbox>
+    </div>
+
+    <!-- Liste -->
+    <div class="cards">
+      <app-property-row-card
+        *ngFor="let p of items; trackBy: trackById"
+        [data]="p">
+      </app-property-row-card>
+
+      <div class="empty" *ngIf="!loading && !items.length">
+        <mat-icon>search_off</mat-icon>
+        <p>No results.</p>
+        <button mat-stroked-button type="button" (click)="clearAll()">Clear all filters</button>
+      </div>
+    </div>
+
+    <!-- Paginación conditionnelle -->
+    <mat-paginator
+      *ngIf="total > pageSize"
+      [length]="total"
+      [pageIndex]="pageIndex"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[6,12,24,48]"
+      (page)="pageChange($event)">
+    </mat-paginator>
+  </main>
 </section>

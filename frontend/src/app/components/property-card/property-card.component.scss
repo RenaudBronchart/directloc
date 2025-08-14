@@ -1,5 +1,11 @@
 @use '../../../styles/variables' as *;
 
+/* Encapsulation */
+:host { display: block; }
+
+/* ============================= */
+/* Variante GRILLE : .prop-card  */
+/* ============================= */
 .prop-card {
   border-radius: $radius-lg;
   overflow: hidden;
@@ -10,11 +16,14 @@
   flex-direction: column;
   background: #fff;
 
+  /* hauteur image par défaut (modifiable depuis la page via --img-h) */
+  --img-h: 220px;
+
   &:hover { transform: translateY(-2px); box-shadow: $shadow-md; }
 
   .image-wrap {
     position: relative;
-    padding-top: 66.66%; /* 3:2 */
+    height: var(--img-h);         /* contrôle par variable */
     overflow: hidden;
     background: #f3f4f6;
 
@@ -50,15 +59,18 @@
   }
 }
 
-/* Skeleton */
-.skeleton {
+/* Skeleton pour prop-card (même hauteur que la carte) */
+.prop-card.skeleton {
   border-radius: $radius-lg; overflow: hidden; background: #fff; box-shadow: $shadow-sm;
-  .image-wrap { height: 0; padding-top: 66.66%; background: #f3f4f6; }
+
+  .image-wrap { height: var(--img-h); background: #f3f4f6; }
   .lines { padding: .75rem .9rem .9rem; }
   .line { height: 12px; background: #f3f4f6; border-radius: 6px; margin-bottom: .5rem; }
   .line.short { width: 70%; }
   .line.tiny { width: 40%; margin-bottom: 0; }
 }
+
+/* Effet shimmer (optionnel) */
 .shimmer {
   position: relative; overflow: hidden;
   &::after {
@@ -67,18 +79,5 @@
     background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
     animation: shimmer 1.25s infinite;
   }
-  :host { display: block; }
-
-  /* taille image par défaut */
-  .prop-card { --img-h: 220px; }
-  .image-wrap { height: var(--img-h); }
-
-  /* compact */
-  :host(.dense) .prop-card { --img-h: 180px; }
-  :host(.dense) .prop-card mat-card-content { padding: 10px 12px; }
-  :host(.dense) .title { font-size: .95rem; }
-  :host(.dense) .sub   { font-size: .9rem;  opacity: .9; }
-  :host(.dense) .meta  { font-size: .85rem; opacity: .85; }
-  :host(.dense) .actions { padding: 8px 12px; }
 }
 @keyframes shimmer { 100% { transform: translateX(100%); } }
