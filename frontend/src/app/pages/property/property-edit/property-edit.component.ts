@@ -1,54 +1,49 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { PropertyService } from '../../../services/property.service';
-import { PropertyRequest } from '../../../types/property-request.type';
-import { Property } from '../../../models/property.model';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
+import { ActivatedRoute } from '@angular/router';
+import { PropertyService } from '../../../services/property.service';
+import { PropertyDetail } from '../../../models/property.model';
+import { PropertyRequest } from '../../../types/property-request.type';
+
+// adapte le chemin si ton form est ailleurs
 import { PropertyFormComponent } from '../property-form/property-form.component';
 
 @Component({
   selector: 'app-property-edit',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatButtonModule,
-    PropertyFormComponent
-  ],
+  imports: [CommonModule, PropertyFormComponent],
   templateUrl: './property-edit.component.html',
   styleUrls: ['./property-edit.component.scss']
 })
 export class PropertyEditComponent implements OnInit {
-  property?: Property;
+  property: PropertyDetail | null = null;
+  formData: PropertyRequest | null = null;
+  loading = true;
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private propertyService: PropertyService
-  ) {}
+  constructor(private route: ActivatedRoute, private api: PropertyService) {}
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.propertyService.getPropertyById(id).subscribe({
-        next: (data) => (this.property = data),
-        error: (err) => {
-          console.error('Error fetching property', err);
-          this.router.navigate(['/my-properties']);
-        }
-      });
-    }
+    const id = this.route.snapshot.paramMap.get('id')!;
+    this.api.getPropertyById(id).subscribe({
+      next: (p) => {
+        this.property = p;
+        this.formData = this.toRequest(p);
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
+    });
   }
 
-  onSubmit(data: PropertyRequest): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.propertyService.updateProperty(id, data).subscribe({
-        next: () => this.router.navigate(['/my-properties']),
-        error: (err) => console.error('Update failed', err)
-      });
-    }
+  private toRequest(p: PropertyDetail): PropertyRequest {
+    return {
+      title: p.title,
+      description: p.description ?? '',
+      location: p.location,
+      pricePerNight: p.pricePerNight,
+      bedrooms: p.bedrooms ?? null,
+      bathrooms: p.bathrooms ?? null,
+      maxGuests: p.maxGuests ?? null,
+      coverUrl: p.coverUrl ?? null
+    };
   }
 }

@@ -2,6 +2,7 @@ package com.directloc.auth;
 
 import com.directloc.user.Role;
 import com.directloc.user.User;
+import com.directloc.user.UserDto;
 import com.directloc.user.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -47,6 +48,12 @@ public class AuthController {
     @GetMapping("/test")
     public ResponseEntity<String> test() {
         return ResponseEntity.ok("API OK");
+    }
+    @GetMapping("/me")
+    public ResponseEntity<UserDto> me(Authentication auth) {
+        String email = auth.getName(); // = subject du JWT
+        User user = userRepository.findByEmail(email).orElseThrow();
+        return ResponseEntity.ok(new UserDto(user.getId(), user.getEmail(), user.getRole()));
     }
 
 }

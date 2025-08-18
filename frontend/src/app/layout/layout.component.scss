@@ -1,7 +1,0 @@
-@use 'responsive' as *;
-
-.main-content {
-  @extend .container;
-  min-height: calc(100vh - 128px);
-  padding: 2rem 0;
-}

@@ -1,16 +1,107 @@
 <div class="register-container">
-  <h2>Register</h2>
-  <form (ngSubmit)="onSubmit()">
-    <mat-form-field appearance="fill" class="full-width">
+  <form (ngSubmit)="onSubmit(form)" #form="ngForm" class="register-form">
+    <h2>Create your account</h2>
+
+    <!-- Email -->
+    <mat-form-field appearance="outline" class="full-width">
       <mat-label>Email</mat-label>
-      <input matInput type="email" [(ngModel)]="email" name="email" required />
+      <input
+        matInput
+        type="email"
+        name="email"
+        [(ngModel)]="email"
+        #emailCtrl="ngModel"
+        [required]="true"
+        [email]="true"
+        autocomplete="email"
+      />
+      <mat-error *ngIf="emailCtrl.invalid && (emailCtrl.touched || form.submitted)">
+        <ng-container *ngIf="emailCtrl.errors?.['required']">Email is required</ng-container>
+        <ng-container *ngIf="emailCtrl.errors?.['email']">Please enter a valid email</ng-container>
+      </mat-error>
     </mat-form-field>
 
-    <mat-form-field appearance="fill" class="full-width">
+    <!-- Password -->
+    <mat-form-field appearance="outline" class="full-width">
       <mat-label>Password</mat-label>
-      <input matInput type="password" [(ngModel)]="password" name="password" required />
+      <input
+        matInput
+        [type]="hidePwd ? 'password' : 'text'"
+        name="password"
+        [(ngModel)]="password"
+        #pwdCtrl="ngModel"
+        [required]="true"
+        [minlength]="8"
+        autocomplete="new-password"
+      />
+      <button
+        mat-icon-button
+        matSuffix
+        type="button"
+        (click)="hidePwd = !hidePwd"
+        [attr.aria-label]="hidePwd ? 'Show' : 'Hide'"
+      >
+        <mat-icon>{{ hidePwd ? 'visibility' : 'visibility_off' }}</mat-icon>
+      </button>
+      <mat-hint align="start">At least 8 characters</mat-hint>
+      <mat-error *ngIf="pwdCtrl.invalid && (pwdCtrl.touched || form.submitted)">
+        <ng-container *ngIf="pwdCtrl.errors?.['required']">Password is required</ng-container>
+        <ng-container *ngIf="pwdCtrl.errors?.['minlength']">At least 8 characters</ng-container>
+      </mat-error>
     </mat-form-field>
 
-    <button mat-raised-button color="primary" type="submit">Register</button>
+    <!-- Confirm -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Confirm password</mat-label>
+      <input
+        matInput
+        [type]="hideConfirm ? 'password' : 'text'"
+        name="confirm"
+        [(ngModel)]="confirm"
+        #confirmCtrl="ngModel"
+        [required]="true"
+        autocomplete="new-password"
+      />
+      <button
+        mat-icon-button
+        matSuffix
+        type="button"
+        (click)="hideConfirm = !hideConfirm"
+        [attr.aria-label]="hideConfirm ? 'Show' : 'Hide'"
+      >
+        <mat-icon>{{ hideConfirm ? 'visibility' : 'visibility_off' }}</mat-icon>
+      </button>
+      <mat-error *ngIf="(confirmCtrl.touched || form.submitted) && passwordsMismatch">
+        Passwords do not match
+      </mat-error>
+      <mat-error *ngIf="confirmCtrl.invalid && (confirmCtrl.touched || form.submitted) && !passwordsMismatch">
+        Please confirm your password
+      </mat-error>
+    </mat-form-field>
+
+    <!-- TOS -->
+    <mat-checkbox [(ngModel)]="acceptTos" name="tos" [required]="true">
+      I accept the Terms of Service and Privacy Policy
+    </mat-checkbox>
+    <div class="tos-error" *ngIf="form.submitted && !acceptTos">
+      You must accept the terms to continue
+    </div>
+
+    <!-- Actions -->
+    <button
+      mat-raised-button
+      color="primary"
+      class="full-width cta"
+      type="submit"
+      [disabled]="form.invalid || passwordsMismatch || !acceptTos || loading"
+    >
+      <mat-icon *ngIf="!loading">person_add</mat-icon>
+      <mat-icon *ngIf="loading" class="spin">autorenew</mat-icon>
+      <span>{{ loading ? 'Creating account...' : 'Register' }}</span>
+    </button>
+
+    <div class="helper">
+      <a routerLink="/login" mat-button>Already have an account? Login</a>
+    </div>
   </form>
 </div>

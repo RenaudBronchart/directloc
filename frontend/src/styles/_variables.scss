@@ -1,4 +1,6 @@
-// 🎨 COLORS
+@use '@angular/material' as mat;
+
+/* === Tes tokens SCSS === */
 $primary-color: #1976d2;     // Primary blue
 $secondary-color: #0288d1;   // Secondary cyan
 $accent-color: #ffc107;      // Amber
@@ -7,26 +9,56 @@ $success-color: #4caf50;     // Green
 $background-color: #f5f5f5;  // Light gray background
 $text-color: #333;           // Base text color
 
-// 🧱 SPACING
 $spacing-xs: 0.25rem;
 $spacing-sm: 0.5rem;
 $spacing-md: 1rem;
 $spacing-lg: 2rem;
 $spacing-xl: 4rem;
 
-// 🔤 TYPOGRAPHY
 $font-family-base: 'Roboto', sans-serif;
 $font-size-base: 16px;
 $font-size-sm: 0.875rem;
 $font-size-lg: 1.25rem;
 $line-height-base: 1.5;
 
-// 🧲 BORDER RADIUS
 $radius-sm: 4px;
 $radius-md: 8px;
 $radius-lg: 16px;
 
-// 🕶️ ELEVATION (Shadows)
 $shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
 $shadow-md: 0 3px 6px rgba(0, 0, 0, 0.16);
 $shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.19);
+
+/* ===== Palettes Angular Material (API stable v15–v17) ===== */
+$primary-palette: mat.define-palette(mat.$blue-palette, 700, 100, 900);
+$accent-palette:  mat.define-palette(mat.$cyan-palette, 500);
+$warn-palette:    mat.define-palette(mat.$red-palette);
+
+$light-theme: mat.define-light-theme((
+        color: (
+                primary: $primary-palette,
+                accent: $accent-palette,
+                warn: $warn-palette
+        ),
+        typography: mat.define-typography-config(),
+        density: 0
+));
+
+/* ===== Variables CSS réutilisables hors Material ===== */
+:root {
+  --primary: #{$primary-color};
+  --secondary: #{$secondary-color};
+  --accent: #{$accent-color};
+  --error: #{$error-color};
+  --success: #{$success-color};
+  --bg: #{$background-color};
+  --text: #{$text-color};
+
+  --radius-sm: #{$radius-sm};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
+
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+}

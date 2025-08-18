@@ -1,36 +1,42 @@
-<!-- my-properties.component.html -->
-<h2>My Properties</h2>
+<section class="container my-props">
+    <div class="header">
+        <h2>My Properties</h2>
+        <button mat-raised-button color="primary" (click)="openCreate()">
+            <mat-icon>add</mat-icon>
+            Create Property
+        </button>
+    </div>
 
-<button mat-raised-button color="primary" routerLink="/properties/create">
-  ➕ Create Property
-</button>
+    <ng-container *ngIf="!loading; else skeletons">
+        <ng-container *ngIf="items?.length; else empty">
+            <div class="grid">
+                <div class="card-wrap" *ngFor="let p of items; trackBy: trackById">
+                    <app-property-card [data]="p" (open)="openDetail($event)"></app-property-card>
 
-<div *ngIf="properties.length === 0">No properties yet.</div>
+                    <div class="row-actions">
+                        <button mat-stroked-button color="primary" (click)="openEdit(p.id)">
+                            <mat-icon>edit</mat-icon> Edit
+                        </button>
+                        <button mat-stroked-button color="warn" (click)="delete(p.id)">
+                            <mat-icon>delete</mat-icon> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+    </ng-container>
 
-<div class="property-grid">
-  <mat-card *ngFor="let property of properties" class="property-card">
-    <mat-card-title>{{ property.title }}</mat-card-title>
-    <mat-card-subtitle>{{ property.location }}</mat-card-subtitle>
-    <mat-card-content>
-      <p>💶 Price: €{{ property.pricePerNight }} / night</p>
-      <p>📅 Created: {{ property.createdAt | date }}</p>
-    </mat-card-content>
+    <ng-template #skeletons>
+        <div class="grid">
+            <app-property-card *ngFor="let s of [1,2,3,4,5,6]" [loading]="true"></app-property-card>
+        </div>
+    </ng-template>
 
-    <mat-card-actions>
-      <!-- View Details -->
-      <button mat-button [routerLink]="['/properties', property.id]">
-        🔍 View
-      </button>
-
-      <!-- Edit -->
-      <button mat-button color="accent" [routerLink]="['/properties/edit', property.id]">
-        ✏️ Edit
-      </button>
-
-      <!-- Delete -->
-      <button mat-button color="warn" (click)="confirmDelete(property.id)">
-        🗑️ Delete
-      </button>
-    </mat-card-actions>
-  </mat-card>
-</div>
+    <ng-template #empty>
+        <div class="empty">
+            <mat-icon>home_work</mat-icon>
+            <p>You don’t have any properties yet.</p>
+            <button mat-raised-button color="primary" (click)="openCreate()">Create your first property</button>
+        </div>
+    </ng-template>
+</section>

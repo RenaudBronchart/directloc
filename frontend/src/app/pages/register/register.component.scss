@@ -1,18 +1,54 @@
+@use '../../../styles/variables' as *;
+
 .register-container {
-  max-width: 400px;
-  margin: 50px auto;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.register-form {
+  background: #fff;
   padding: 2rem;
-  border-radius: 10px;
-  background: #f9f9f9;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: $shadow-md;
+  width: 100%;
+  max-width: 420px;
 
   h2 {
     text-align: center;
-    margin-bottom: 1rem;
+    margin: 0 0 1.25rem;
+    font-weight: 800;
   }
 
   .full-width {
     width: 100%;
     margin-bottom: 1rem;
   }
+
+  .cta {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    border-radius: $radius-md;
+    padding: 0.7rem 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .helper {
+    margin-top: 0.5rem;
+    text-align: center;
+  }
+
+  .tos-error {
+    margin: 0.25rem 0 0.5rem;
+    color: $error-color;
+    font-size: 0.875rem;
+  }
+
+  .spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 }

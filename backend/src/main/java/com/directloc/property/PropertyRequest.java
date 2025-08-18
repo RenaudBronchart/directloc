@@ -1,19 +1,21 @@
 package com.directloc.property;
 
+import jakarta.validation.constraints.*;
 import lombok.*;
-
 import java.math.BigDecimal;
 
-/**
- * DTO used to create or update a property.
- * All fields are required on the client side.
- */
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
-@Builder
+@NoArgsConstructor @AllArgsConstructor @Builder
 public class PropertyRequest {
-    private String title;             // Property title
-    private String description;       // Short description of the property
-    private BigDecimal pricePerNight; // Nightly rental price
-    private String location;          // Property location (e.g. city or address)
+    @NotBlank private String title;
+    @NotBlank private String description;
+    @NotBlank private String location;
+    @NotNull @DecimalMin("0.0") private BigDecimal pricePerNight;
+
+    // optionnels
+    @Min(0) private Integer bedrooms;
+    @Min(0) private Integer bathrooms;
+    @Min(1) private Integer maxGuests;
+    private String coverUrl;
 }
+

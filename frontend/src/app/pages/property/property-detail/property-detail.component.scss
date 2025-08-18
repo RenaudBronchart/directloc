@@ -1,7 +1,156 @@
-mat-card {
-  margin: 20px;
+@use '../../../../styles/variables' as *;
+
+/* largeur plus compacte spécifique à la page détail */
+$detail-width: 960px; /* ← réduit un peu (tu peux remettre 980px si tu préfères) */
+
+/* HERO */
+.detail-hero {
+  position: relative;
+  width: 100%;
+  margin: 1rem auto 0;      /* centre le bloc */
+  max-width: $detail-width; /* limite la largeur */
+  min-height: clamp(280px, 36vw, 460px);
+  background-size: cover;
+  background-position: center;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-md;
+
+  /* fallback si pas d'image: bleu très léger, plus agréable que le gris */
+  background-color: mix($primary-color, #ffffff, 12%);
+
+  /* léger boost pour éviter un rendu terne */
+  filter: saturate(1.04) contrast(1.02);
+
+  .overlay {
+    position: absolute; inset: 0;
+    /* overlay moins gris, avec une teinte bleue subtile */
+    background:
+      linear-gradient(
+          180deg,
+          rgba(0,0,0,.16) 0%,
+          rgba(0,0,0,.12) 38%,
+          rgba(0,0,0,.28) 100%
+      ),
+      linear-gradient(
+          90deg,
+          rgba($primary-color, .14),
+          rgba($secondary-color, .14)
+      );
+  }
+
+  .hero-content {
+    position: relative;
+    color: #fff;
+    padding: 1.25rem 1rem 2.25rem;
+    max-width: $detail-width;   /* aligne le contenu au même width */
+    margin: 0 auto;
+
+    .back {
+      display: inline-flex; align-items: center; gap: .35rem;
+      color: #fff; text-decoration: none; opacity: .95; margin-bottom: .35rem;
+      background: rgba(0,0,0,.25); padding: .35rem .6rem; border-radius: 9999px;
+    }
+
+    .title {
+      margin: .25rem 0 .25rem;
+      font-weight: 800;
+      font-size: clamp(1.4rem, 2.6vw, 2rem);
+      letter-spacing: .2px;
+    }
+
+    .sub {
+      display: inline-flex; align-items: center; gap: .25rem;
+      opacity: .95;
+      mat-icon { font-size: 20px; height: 20px; width: 20px; }
+    }
+
+    .badges {
+      display: flex; flex-wrap: wrap; gap: .5rem 1rem;
+      margin-top: .5rem; opacity: .95;
+
+      span { display: inline-flex; align-items: center; gap: .35rem; }
+      mat-icon { font-size: 20px; height: 20px; width: 20px; }
+    }
+
+    .hero-actions {
+      margin-top: .75rem; display: flex; gap: .5rem;
+      button { text-transform: none; border-radius: $radius-md; }
+    }
+  }
 }
 
-mat-card-content p {
-  margin-bottom: 10px;
+/* BODY */
+.detail-body {
+  padding: 1rem 0 2rem;
+  max-width: $detail-width;  /* même largeur que le hero */
+  margin: 0 auto;
+
+  .grid {
+    display: grid; gap: 1.25rem;
+    /* colonne droite fixe, gauche flexible */
+    grid-template-columns: minmax(0, 1fr) 340px;
+
+    @media (max-width: 1024px) { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    margin-bottom: 1rem;
+
+    h2, h3 { margin: 0 0 .5rem; font-weight: 800; }
+    .desc { color: #374151; }
+  }
+
+  .info-rows {
+    margin-top: .75rem;
+    .row { display: flex; align-items: center; gap: .5rem; color: #374151; margin: .25rem 0; }
+    mat-icon { color: var(--primary); }
+  }
+
+  .side {
+    .booking-card {
+      position: sticky; top: 96px;   /* ajuste selon la hauteur de la topbar */
+      border-radius: $radius-lg;
+      box-shadow: $shadow-md;
+      border: 1px solid #e5e7eb;
+
+      .price {
+        display: flex; align-items: baseline; gap: .35rem; margin-bottom: .75rem;
+        .amount { font-weight: 800; font-size: 1.5rem; }
+        .per { color: #6b7280; }
+      }
+      .wide { width: 100%; text-transform: none; border-radius: $radius-md; }
+      .fineprint { margin-top: .5rem; font-size: .85rem; color: #6b7280; }
+    }
+  }
 }
+
+/* Skeletons alignés */
+.hero-skeleton {
+  height: 320px;
+  border-radius: $radius-lg;
+  background: mix($primary-color, #ffffff, 12%); /* même teinte douce que le hero */
+  margin: 1rem auto 0;         /* centré */
+  max-width: $detail-width;    /* même largeur */
+}
+.body-skeleton {
+  max-width: $detail-width;
+  margin: 1rem auto;
+  display: grid; gap: 1.25rem;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  @media (max-width: 1024px) { grid-template-columns: 1fr; }
+  .card-skel { height: 160px; background: #f3f4f6; border-radius: $radius-lg; }
+}
+
+/* shimmer */
+.shimmer {
+  position: relative; overflow: hidden;
+  &::after {
+    content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
+    animation: shimmer 1.25s infinite;
+  }
+}
+@keyframes shimmer { 100% { transform: translateX(100%); } }

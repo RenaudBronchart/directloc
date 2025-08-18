@@ -1,0 +1,83 @@
+@use '../../../styles/variables' as *;
+
+/* Encapsulation */
+:host { display: block; }
+
+/* ============================= */
+/* Variante GRILLE : .prop-card  */
+/* ============================= */
+.prop-card {
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-sm;
+  transition: transform .15s ease, box-shadow .15s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+
+  /* hauteur image par défaut (modifiable depuis la page via --img-h) */
+  --img-h: 220px;
+
+  &:hover { transform: translateY(-2px); box-shadow: $shadow-md; }
+
+  .image-wrap {
+    position: relative;
+    height: var(--img-h);         /* contrôle par variable */
+    overflow: hidden;
+    background: #f3f4f6;
+
+    img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+      transition: transform .35s ease;
+    }
+  }
+  &:hover .image-wrap img { transform: scale(1.04); }
+
+  .badge {
+    position: absolute; left: .5rem; top: .5rem;
+    background: rgba(25,118,210,.95);
+    color: #fff; padding: .2rem .45rem;
+    border-radius: $radius-sm; font-size: .75rem; font-weight: 600;
+  }
+
+  mat-card-content {
+    padding: .75rem .9rem .25rem;
+    .title { font-weight: 700; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sub   { color: #6b7280; font-size: .9rem; margin-top: .15rem; }
+    .meta  { margin-top: .35rem; color: #6b7280; font-size: .85rem; }
+  }
+
+  .actions {
+    padding: .5rem .9rem .9rem;
+    display: flex; align-items: center; justify-content: space-between;
+    .price .amount { font-weight: 800; }
+    .price .per { color: #6b7280; margin-left: .15rem; }
+    button { text-transform: none; border-radius: $radius-md; }
+  }
+}
+
+/* Skeleton pour prop-card (même hauteur que la carte) */
+.prop-card.skeleton {
+  border-radius: $radius-lg; overflow: hidden; background: #fff; box-shadow: $shadow-sm;
+
+  .image-wrap { height: var(--img-h); background: #f3f4f6; }
+  .lines { padding: .75rem .9rem .9rem; }
+  .line { height: 12px; background: #f3f4f6; border-radius: 6px; margin-bottom: .5rem; }
+  .line.short { width: 70%; }
+  .line.tiny { width: 40%; margin-bottom: 0; }
+}
+
+/* Effet shimmer (optionnel) */
+.shimmer {
+  position: relative; overflow: hidden;
+  &::after {
+    content: ""; position: absolute; inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
+    animation: shimmer 1.25s infinite;
+  }
+}
+@keyframes shimmer { 100% { transform: translateX(100%); } }

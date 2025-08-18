@@ -1,0 +1,159 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="pro-search">
+  <!-- Destination (custom, sin mat-form-field) -->
+  <div class="seg dest">
+    <mat-icon class="prefix">travel_explore</mat-icon>
+
+    <input
+      class="dest-input"
+      type="text"
+      placeholder="Destination"
+      formControlName="q"
+      [matAutocomplete]="auto"
+      aria-label="Destination"
+    />
+
+    <button
+      type="button"
+      mat-icon-button
+      class="suffix-btn"
+      (click)="clearDestination()"
+      aria-label="Clear or search">
+      <mat-icon>search</mat-icon>
+    </button>
+
+    <mat-autocomplete #auto="matAutocomplete">
+      <mat-option *ngFor="let c of cities | slice:0:8" [value]="c">
+        {{ c }}
+      </mat-option>
+    </mat-autocomplete>
+  </div>
+
+  <!-- Dates (custom trigger + inputs ocultos para el form) -->
+  <div class="seg">
+    <button type="button" class="ghost" (click)="openDates()" aria-label="Pick dates">
+      <mat-icon>calendar_today</mat-icon>
+      <span>{{ datesLabel }}</span>
+    </button>
+
+    <!-- Mantiene valores en el form (oculto visualmente) -->
+    <mat-form-field appearance="outline" class="sr-only">
+      <mat-date-range-input [rangePicker]="rangePicker">
+        <input matStartDate formControlName="checkIn" (dateChange)="onDateChanged()" />
+        <input matEndDate formControlName="checkOut" (dateChange)="onDateChanged()" />
+      </mat-date-range-input>
+      <mat-date-range-picker #rangePicker></mat-date-range-picker>
+    </mat-form-field>
+  </div>
+
+  <!-- Guests (popover) -->
+  <div class="seg">
+    <button
+      type="button"
+      class="ghost"
+      [matMenuTriggerFor]="guestsMenu"
+      aria-label="Guests and rooms">
+      <mat-icon>group</mat-icon>
+      <span>{{ guestsLabel }}</span>
+    </button>
+
+    <mat-menu #guestsMenu="matMenu" xPosition="after" yPosition="below" class="guests-menu">
+      <!-- Adults -->
+      <div class="gm-row">
+        <div class="gm-left">
+          <div class="gm-title">Adults</div>
+          <div class="gm-sub">Ages 13+</div>
+        </div>
+        <div class="gm-stepper">
+          <button
+            type="button"
+            mat-mini-fab
+            class="gm-btn"
+            [disabled]="a <= 1"
+            (click)="dec('adults'); $event.stopPropagation()"
+            aria-label="Decrease adults">
+            <mat-icon>remove</mat-icon>
+          </button>
+          <div class="gm-value">{{ a }}</div>
+          <button
+            type="button"
+            mat-mini-fab
+            class="gm-btn"
+            (click)="inc('adults'); $event.stopPropagation()"
+            aria-label="Increase adults">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Children -->
+      <div class="gm-row">
+        <div class="gm-left">
+          <div class="gm-title">Children</div>
+          <div class="gm-sub">Ages 2–12</div>
+        </div>
+        <div class="gm-stepper">
+          <button
+            type="button"
+            mat-mini-fab
+            class="gm-btn"
+            [disabled]="c <= 0"
+            (click)="dec('children'); $event.stopPropagation()"
+            aria-label="Decrease children">
+            <mat-icon>remove</mat-icon>
+          </button>
+          <div class="gm-value">{{ c }}</div>
+          <button
+            type="button"
+            mat-mini-fab
+            class="gm-btn"
+            (click)="inc('children'); $event.stopPropagation()"
+            aria-label="Increase children">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Rooms -->
+      <div class="gm-row">
+        <div class="gm-left">
+          <div class="gm-title">Rooms</div>
+          <div class="gm-sub">Entire rooms</div>
+        </div>
+        <div class="gm-stepper">
+          <button
+            type="button"
+            mat-mini-fab
+            class="gm-btn"
+            [disabled]="r <= 1"
+            (click)="dec('rooms'); $event.stopPropagation()"
+            aria-label="Decrease rooms">
+            <mat-icon>remove</mat-icon>
+          </button>
+          <div class="gm-value">{{ r }}</div>
+          <button
+            type="button"
+            mat-mini-fab
+            class="gm-btn"
+            (click)="inc('rooms'); $event.stopPropagation()"
+            aria-label="Increase rooms">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="gm-actions">
+        <button type="button" mat-button matMenuClose (click)="resetGuests($event)">Reset</button>
+        <span class="spacer"></span>
+        <button type="button" mat-flat-button color="primary" matMenuClose>Apply</button>
+      </div>
+    </mat-menu>
+  </div>
+
+  <!-- CTA -->
+  <div class="seg btn">
+    <button mat-raised-button color="primary" class="cta" type="submit" aria-label="Search">
+      <mat-icon>search</mat-icon>
+      Search
+    </button>
+  </div>
+</form>

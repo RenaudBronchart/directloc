@@ -1,13 +1,37 @@
-.property-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
+@use '../../../../styles/variables' as *;
 
-.property-card {
-  transition: box-shadow 0.3s ease;
-  &:hover {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+.my-props {
+  padding: 1rem 0 2rem;
+
+  .header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem;
+
+    h2 { margin: 0; font-weight: 800; font-size: 1.4rem; }
+    button { text-transform: none; border-radius: $radius-md; }
+  }
+
+  .grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    @media (max-width: 1024px) { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 640px)  { grid-template-columns: 1fr; }
+  }
+
+  .card-wrap {
+    display: flex; flex-direction: column; gap: .5rem;
+
+    .row-actions {
+      display: flex; gap: .5rem; justify-content: flex-end;
+
+      button { text-transform: none; border-radius: $radius-md; }
+    }
+  }
+
+  .empty {
+    text-align: center; color: #6b7280; padding: 3rem 0;
+    mat-icon { font-size: 48px; height: 48px; width: 48px; margin-bottom: .5rem; }
   }
 }

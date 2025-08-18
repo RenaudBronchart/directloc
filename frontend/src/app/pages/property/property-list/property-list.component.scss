@@ -1,10 +1,155 @@
-.property-grid {
+/* ===== Layout global ===== */
+.list-layout{
+  --media-h: 240px;       /* <app-property-row-card> */
+  --img-h:   260px;       /* <app-property-card>     */
+
+  --topbar-h:        72px;  /* header app desktop */
+  --topbar-h-mobile: 64px;  /* header app mobile  */
+
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  grid-template-columns: 300px 1fr;
+  gap: 18px;
+  align-items: start;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+
+  @media (max-width: 1000px){
+    grid-template-columns: 1fr;
+  }
+
+  /* ====== Search bar: NO sticky, SIN fondo ====== */
+  .search-row{
+    grid-column: 1 / -1;
+    position: static;      /* <-- no se mueve al hacer scroll */
+    top: auto;
+    z-index: auto;
+    padding: 0;            /* sin padding extra */
+    margin: 4px 0 16px;    /* un poco de aire inferior */
+    background: transparent;   /* <-- sin “fond blanc” */
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+  .search-shell{
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  /* ===== Sidebar ===== */
+  .sidebar{
+    position: sticky;
+    top: var(--topbar-h);      /* queda debajo del header, ya no depende de la search row */
+    align-self: start;
+    transition: transform .25s ease, opacity .25s ease;
+
+    .side-card{
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      padding: 12px;
+    }
+
+    .side-header{
+      display:flex; align-items:center; justify-content:space-between;
+      margin:-6px -4px 8px;
+      .title{ font-weight:800; }
+    }
+
+    .map-mini{
+      background:#fff; border-radius:12px; padding:12px;
+      box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:12px;
+
+      .thumb{
+        height:140px; border-radius:10px;
+        background:linear-gradient(135deg,#93c5fd,#dbeafe);
+        margin-bottom:10px;
+      }
+      button{ width:100%; text-transform:none; border-radius:10px; }
+    }
+
+    .filters{
+      .full{ width:100%; }
+      .row-3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+      .row-2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
+      mat-checkbox{ display:block; margin-top:4px; }
+    }
+  }
+
+  .sidebar-backdrop{ display:none; }
+
+  /* ===== Results ===== */
+  .results{
+    .results-header.card{
+      background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06);
+      padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:12px;
+      .summary{ font-weight:700; }
+      .actions{ display:flex; align-items:center; gap:10px; }
+      .sort{ width:220px; }
+      .filters-btn[hideOnDesktop]{ display:none; }
+    }
+
+    .active-filters{ margin:8px 0 4px; .clear-all{ margin-left:6px; } }
+
+    .cards{ display:grid; gap:12px; }
+
+    .empty{
+      padding:24px; text-align:center; color:#6b7280;
+      display:grid; place-items:center; gap:8px;
+    }
+
+    mat-paginator{
+      margin-top:10px; border-radius:12px; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.06);
+    }
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 900px){
+    --media-h: 200px;
+    --img-h:   200px;
+  }
+
+  /* Mobile: mantenemos el “sheet” de filtros (mejor UX) */
+  @media (max-width: 1000px){
+    .sidebar{
+      position: fixed;
+      inset: auto 0 0 0;
+      top: auto;
+      transform: translateY(110%);
+      opacity: 0;
+      z-index: 60;
+      pointer-events: none;
+
+      &.open{
+        transform: translateY(0%);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .side-card{
+        border-radius: 16px 16px 0 0;
+        padding: 14px 12px 12px;
+      }
+
+      .filters .row-3,
+      .filters .row-2{ grid-template-columns: 1fr; }
+
+      .sheet-actions{
+        display:flex; align-items:center; gap:10px; margin-top:12px;
+        .apply{ flex:1; border-radius:10px; }
+        .clear{ opacity:.85; }
+      }
+    }
+
+    .sidebar-backdrop{
+      display:block; position:fixed; inset:0; background:rgba(2,6,23,.35); z-index:59;
+    }
+
+    .results .results-header .filters-btn[hideOnDesktop]{ display:inline-flex; }
+  }
 }
 
-.property-card {
-  padding: 0.5rem;
+/* Aides attributaires */
+[hideOnDesktop]{ display:none; }
+@media (max-width:1000px){
+  [hideOnDesktop]{ display:inline-flex; }
 }

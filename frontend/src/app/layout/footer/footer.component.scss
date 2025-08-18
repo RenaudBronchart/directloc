@@ -1,10 +1,25 @@
-.footer {
-  background-color: #f1f1f1;
-  color: #444;
+@use '../../../styles/mixins' as *;
+
+footer {
+  background-color: #f9f9f9;
+  color: #555;
   text-align: center;
   padding: 1rem;
-}
+  font-size: 0.875rem;
 
-footer p {
-  margin: 0;
+  a {
+    color: inherit;
+    margin: 0 0.5rem;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  // ✅ Responsive adjustments
+  @include respond-to(sm) {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
 }

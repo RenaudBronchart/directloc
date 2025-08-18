@@ -1,10 +1,8 @@
-<h2>Edit Property</h2>
+<section class="container edit-wrap" *ngIf="formData as data; else loadingTpl">
+  <h2>Edit property</h2>
+  <div class="form-card">
+    <app-property-form [id]="property?.id" [initialData]="data"></app-property-form>
+  </div>
+</section>
 
-<mat-card *ngIf="property">
-  <app-property-form
-    [initialData]="property"
-    (submit)="onSubmit($event)"
-  ></app-property-form>
-</mat-card>
-
-<div *ngIf="!property">Loading...</div>
+<ng-template #loadingTpl>Loading…</ng-template>

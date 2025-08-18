@@ -1,6 +1,11 @@
 package com.directloc.property;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -8,50 +13,49 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/properties")
+@RequestMapping("/api/properties")
 @RequiredArgsConstructor
 public class PropertyController {
 
-    private final PropertyService propertyService;
+    private final PropertyService service;
 
-    // Creates a new property based on the request payload
     @PostMapping
-    public ResponseEntity<Property> create(@RequestBody PropertyRequest request) {
-        Property property = propertyService.create(request);
-        return ResponseEntity.status(201).body(property); // HTTP 201 Created
+    public ResponseEntity<PropertyResponse> create(@RequestBody @Valid PropertyRequest request) {
+        return ResponseEntity.status(201).body(service.create(request));
     }
 
-    // Updates an existing property by its ID
     @PutMapping("/{id}")
-    public ResponseEntity<Property> update(@PathVariable UUID id, @RequestBody PropertyRequest request) {
-        Property updated = propertyService.update(id, request);
-        return ResponseEntity.ok(updated); // HTTP 200 OK with updated property
+    public ResponseEntity<PropertyResponse> update(@PathVariable UUID id, @RequestBody @Valid PropertyRequest request) {
+        return ResponseEntity.ok(service.update(id, request));
     }
 
-    // Deletes a property by its ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        propertyService.delete(id);
-        return ResponseEntity.noContent().build(); // HTTP 204 No Content
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
-    // Retrieves all properties
+    // 🔎 search + pagination
     @GetMapping
-    public ResponseEntity<List<Property>> findAll() {
-        return ResponseEntity.ok(propertyService.findAll());
+    public Page<PropertyResponse> findAll(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) Integer adults,
+            @RequestParam(required = false) Integer children,
+            @RequestParam(required = false) Integer rooms,
+            @PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return service.search(q, adults, children, rooms, pageable);
     }
 
-    // Retrieves a single property by its ID
     @GetMapping("/{id}")
-    public ResponseEntity<Property> findById(@PathVariable UUID id) {
-        return propertyService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build()); // HTTP 404 if not found
+    public ResponseEntity<PropertyResponse> findById(@PathVariable UUID id) {
+        return service.findDtoById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    // Retrieves properties owned by the current authenticated user
+
+
     @GetMapping("/my")
-    public ResponseEntity<List<Property>> findMyProperties() {
-        return ResponseEntity.ok(propertyService.findMyProperties());
+    public List<PropertyResponse> my() {
+        return service.findMyProperties();
     }
 }

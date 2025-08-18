@@ -1,83 +1,88 @@
+// src/app/app.routes.ts
 import { Routes } from '@angular/router';
+import { AppShellComponent } from './layout/app-shell/app-shell.component';
 import { AuthGuard } from './guards/auth-guard';
-import { LayoutComponent } from './layout/layout.component';
+import { NoAuthGuard } from './guards/no-auth.guard';
 
 export const routes: Routes = [
-
-  // 🔓 Public route – Redirect root to login
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-
-  // 🔓 Public route – Login page (no layout)
+  // Public — Login / Register (bloqués si déjà connecté)
   {
     path: 'login',
+    canActivate: [NoAuthGuard],
     loadComponent: () =>
-      import('./pages/login/login.component').then(m => m.LoginComponent)
+        import('./pages/login/login.component').then(m => m.LoginComponent),
+    data: { title: 'Login' }
   },
-
-  // 🔓 Public route – Register page (no layout)
   {
     path: 'register',
+    canActivate: [NoAuthGuard],
     loadComponent: () =>
-      import('./pages/register/register.component').then(m => m.RegisterComponent)
+        import('./pages/register/register.component').then(m => m.RegisterComponent),
+    data: { title: 'Register' }
   },
 
-  // 🧱 Layout wrapper – contains all main pages with header/footer
+  // Shell: header + router-outlet + footer
   {
     path: '',
-    component: LayoutComponent,
+    component: AppShellComponent,
     children: [
-      // 🔐 Protected route – Home dashboard
       {
         path: 'home',
         loadComponent: () =>
-          import('./pages/home/home.component').then(m => m.HomeComponent),
-        canActivate: [AuthGuard]
+            import('./pages/home/home.component').then(m => m.HomeComponent),
+        data: { title: 'Home' }
       },
+      { path: '', pathMatch: 'full', redirectTo: 'home' },
 
-      // 🔐 Protected route – Create a new property
+      // --- PROPERTIES (ordre IMPORTANT : spécifiques avant :id) ---
       {
         path: 'properties/create',
+        canActivate: [AuthGuard],
         loadComponent: () =>
-          import('./pages/property/property-create/property-create.component').then(m => m.PropertyCreateComponent),
-        canActivate: [AuthGuard]
+            import('./pages/property/property-create/property-create.component')
+                .then(m => m.PropertyCreateComponent),
+        data: { title: 'Create property' }
       },
-
-      // 🔐 Protected route – Edit an existing property
       {
         path: 'properties/edit/:id',
+        canActivate: [AuthGuard],
         loadComponent: () =>
-          import('./pages/property/property-edit/property-edit.component').then(m => m.PropertyEditComponent),
-        canActivate: [AuthGuard]
+            import('./pages/property/property-edit/property-edit.component')
+                .then(m => m.PropertyEditComponent),
+        data: { title: 'Edit property' }
       },
-
-      // 🔓 Public route – View single property detail
       {
         path: 'properties/:id',
         loadComponent: () =>
-          import('./pages/property/property-detail/property-detail.component').then(m => m.PropertyDetailComponent)
+            import('./pages/property/property-detail/property-detail.component')
+                .then(m => m.PropertyDetailComponent),
+        data: { title: 'Property details' }
       },
-
-      // 🔓 Public route – List all available properties
       {
         path: 'properties',
         loadComponent: () =>
-          import('./pages/property/property-list/property-list.component').then(m => m.PropertyListComponent)
+            import('./pages/property/property-list/property-list.component')
+                .then(m => m.PropertyListComponent),
+        data: { title: 'Explore stays' }
       },
 
-      // 🔐 Protected route – User's own properties
+      // My Properties (protégé)
       {
         path: 'my-properties',
+        canActivate: [AuthGuard],
         loadComponent: () =>
-          import('./pages/property/my-properties/my-properties.component').then(m => m.MyPropertiesComponent),
-        canActivate: [AuthGuard]
+            import('./pages/property/my-properties/my-properties.component')
+                .then(m => m.MyPropertiesComponent),
+        data: { title: 'My properties' }
       }
     ]
   },
 
-  // 🌐 Fallback route – Not found page
+  // Not found
   {
     path: '**',
     loadComponent: () =>
-      import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent)
+        import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent),
+    data: { title: 'Not found' }
   }
 ];

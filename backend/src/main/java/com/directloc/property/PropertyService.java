@@ -3,6 +3,8 @@ package com.directloc.property;
 import com.directloc.user.User;
 import com.directloc.user.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,69 +14,80 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class PropertyService {
-
-    private final PropertyRepository propertyRepository;
+    private final PropertyRepository repo;
     private final UserService userService;
 
-    // Creates a new property and assigns it to the current user
-    public Property create(PropertyRequest request) {
-        User owner = userService.getCurrentUser();
+    // -- helpers
+    private String trimOrNull(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
+    }
 
-        Property property = Property.builder()
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .location(request.getLocation())
-                .pricePerNight(request.getPricePerNight())
+    public PropertyResponse create(PropertyRequest req) {
+        User owner = userService.getCurrentUser();
+        Property p = Property.builder()
+                .title(req.getTitle().trim())
+                .description(req.getDescription().trim())
+                .location(req.getLocation().trim())
+                .pricePerNight(req.getPricePerNight())
+                .bedrooms(req.getBedrooms())
+                .bathrooms(req.getBathrooms())
+                .maxGuests(req.getMaxGuests())
+                // 👇 convertit "" en null pour déclencher @PrePersist
+                .coverUrl(trimOrNull(req.getCoverUrl()))
                 .owner(owner)
                 .build();
-
-        return propertyRepository.save(property);
+        return PropertyMapper.toDto(repo.save(p));
     }
 
-    // Returns all properties in the system
-    public List<Property> findAll() {
-        return propertyRepository.findAll();
+    public Page<PropertyResponse> search(String q, Integer adults, Integer children, Integer rooms, Pageable pageable) {
+        int guests = (adults != null ? adults : 1) + (children != null ? children : 0);
+
+        Page<Property> page;
+        if (q != null && !q.isBlank()) {
+            if (guests > 0) {
+                page = repo.findByLocationIgnoreCaseContainingAndMaxGuestsGreaterThanEqual(q, guests, pageable);
+            } else {
+                page = repo.findByLocationIgnoreCaseContaining(q, pageable);
+            }
+        } else {
+            page = repo.findAll(pageable);
+        }
+        // TODO: si tu veux “rooms”, ajoute un where bedrooms >= rooms
+        return page.map(PropertyMapper::toDto);
     }
 
-    // Finds a property by its ID
-    public Optional<Property> findById(UUID id) {
-        return propertyRepository.findById(id);
+    public Optional<PropertyResponse> findDtoById(UUID id) {
+        return repo.findById(id).map(PropertyMapper::toDto);
     }
 
-    // Finds all properties owned by the currently authenticated user
-    public List<Property> findMyProperties() {
+    public List<PropertyResponse> findMyProperties() {
         User owner = userService.getCurrentUser();
-        return propertyRepository.findByOwner(owner);
+        return repo.findByOwner(owner).stream().map(PropertyMapper::toDto).toList();
     }
 
-    // Updates an existing property (must belong to the current user)
-    public Property update(UUID id, PropertyRequest request) {
-        Property property = propertyRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Property not found"));
+    public PropertyResponse update(UUID id, PropertyRequest req) {
+        Property p = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("Property not found"));
+        User me = userService.getCurrentUser();
+        if (!p.getOwner().getId().equals(me.getId())) throw new SecurityException("Forbidden");
 
-        User currentUser = userService.getCurrentUser();
-        if (!property.getOwner().getId().equals(currentUser.getId())) {
-            throw new SecurityException("You are not allowed to update this property");
-        }
+        p.setTitle(req.getTitle().trim());
+        p.setDescription(req.getDescription().trim());
+        p.setLocation(req.getLocation().trim());
+        p.setPricePerNight(req.getPricePerNight());
+        p.setBedrooms(req.getBedrooms());
+        p.setBathrooms(req.getBathrooms());
+        p.setMaxGuests(req.getMaxGuests());
+        // 👇 idem en update pour déclencher @PreUpdate si vide
+        p.setCoverUrl(trimOrNull(req.getCoverUrl()));
 
-        property.setTitle(request.getTitle());
-        property.setDescription(request.getDescription());
-        property.setLocation(request.getLocation());
-        property.setPricePerNight(request.getPricePerNight());
-
-        return propertyRepository.save(property);
+        return PropertyMapper.toDto(repo.save(p));
     }
-
-    // Deletes a property by ID (only if owned by current user)
     public void delete(UUID id) {
-        Property property = propertyRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Property not found"));
-
-        User currentUser = userService.getCurrentUser();
-        if (!property.getOwner().getId().equals(currentUser.getId())) {
-            throw new SecurityException("You are not allowed to delete this property");
-        }
-
-        propertyRepository.delete(property);
+        Property p = repo.findById(id).orElseThrow(() -> new IllegalArgumentException("Property not found"));
+        User me = userService.getCurrentUser();
+        if (!p.getOwner().getId().equals(me.getId())) throw new SecurityException("Forbidden");
+        repo.delete(p);
     }
 }

@@ -1,21 +1,60 @@
 <div class="login-container">
-  <form (ngSubmit)="onSubmit()" class="login-form" #form="ngForm">
-    <h2>Login</h2>
+    <form (ngSubmit)="onSubmit(form)" #form="ngForm" class="login-form">
+        <h2>Login</h2>
 
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Email</mat-label>
-      <input matInput type="email" [(ngModel)]="email" name="email" required />
-      <mat-error *ngIf="form.submitted && !email">Email is required</mat-error>
-    </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input
+                    matInput
+                    type="email"
+                    name="email"
+                    [(ngModel)]="email"
+                    #emailCtrl="ngModel"
+                    required
+                    email
+                    autocomplete="email"
+            />
+            <mat-error *ngIf="emailCtrl.invalid && (emailCtrl.touched || form.submitted)">
+                <ng-container *ngIf="emailCtrl.errors?.['required']">Email is required</ng-container>
+                <ng-container *ngIf="emailCtrl.errors?.['email']">Please enter a valid email</ng-container>
+            </mat-error>
+        </mat-form-field>
 
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Password</mat-label>
-      <input matInput type="password" [(ngModel)]="password" name="password" required />
-      <mat-error *ngIf="form.submitted && !password">Password is required</mat-error>
-    </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <input
+                    matInput
+                    [type]="hide ? 'password' : 'text'"
+                    name="password"
+                    [(ngModel)]="password"
+                    #passCtrl="ngModel"
+                    required
+                    minlength="8"
+                    autocomplete="current-password"
+            />
+            <button mat-icon-button matSuffix type="button" (click)="hide = !hide" [attr.aria-label]="hide ? 'Show' : 'Hide'">
+                <mat-icon>{{ hide ? 'visibility' : 'visibility_off' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="passCtrl.invalid && (passCtrl.touched || form.submitted)">
+                <ng-container *ngIf="passCtrl.errors?.['required']">Password is required</ng-container>
+                <ng-container *ngIf="passCtrl.errors?.['minlength']">At least 8 characters</ng-container>
+            </mat-error>
+        </mat-form-field>
 
-    <button mat-raised-button color="primary" class="full-width" type="submit">
-      Login
-    </button>
-  </form>
+        <button
+                mat-raised-button
+                color="primary"
+                class="full-width cta"
+                type="submit"
+                [disabled]="form.invalid || loading"
+        >
+            <mat-icon *ngIf="!loading">login</mat-icon>
+            <mat-icon *ngIf="loading" class="spin">autorenew</mat-icon>
+            <span>{{ loading ? 'Signing in...' : 'Login' }}</span>
+        </button>
+
+        <div class="helper">
+            <a routerLink="/register" mat-button>Don’t have an account? Create one</a>
+        </div>
+    </form>
 </div>
