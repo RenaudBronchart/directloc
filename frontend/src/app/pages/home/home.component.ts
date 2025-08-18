@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { Component } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { SearchBarComponent } from '../../components/search-bar/search-bar.component';
+import { SearchBarComponent, SearchParams } from '../../components/search-bar/search-bar.component';
 import { FeaturedPropertiesComponent } from '../../components/featured-properties/featured-properties.component';
 
 @Component({
@@ -11,29 +11,24 @@ import { FeaturedPropertiesComponent } from '../../components/featured-propertie
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit {
-  filters: any = null;
+export class HomeComponent {
+  constructor(private router: Router) {}
 
-  constructor(private route: ActivatedRoute) {}
+  onSearch(p: SearchParams) {
+    const toYMD = (d?: Date | null) => d ? new Date(d).toISOString().split('T')[0] : null;
 
-  ngOnInit(): void {
-    const qp = this.route.snapshot.queryParamMap;
-    if (qp.keys.length) {
-      this.filters = {
-        q: qp.get('q') || undefined,
-        adults: qp.get('adults') ? +qp.get('adults')! : undefined,
-        children: qp.get('children') ? +qp.get('children')! : undefined,
-        rooms: qp.get('rooms') ? +qp.get('rooms')! : undefined,
-      };
-    }
-  }
-
-  onSearch(ev: any) {
-    this.filters = {
-      q: ev.q,
-      adults: ev.adults,
-      children: ev.children,
-      rooms: ev.rooms
-    };
+    this.router.navigate(['/properties'], {
+      queryParams: {
+        q: p.q?.trim() || null,        // si vide -> “Anywhere”
+        checkIn: toYMD(p.checkIn),
+        checkOut: toYMD(p.checkOut),
+        adults: p.adults,
+        children: p.children,
+        rooms: p.rooms,
+        page: 0,
+        size: 12,
+        sort: 'newest'
+      }
+    });
   }
 }

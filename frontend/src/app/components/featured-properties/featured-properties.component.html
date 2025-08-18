@@ -13,7 +13,8 @@
       <app-property-card
         *ngFor="let p of items; trackBy: trackById"
         [data]="p"
-        [dense]="true">
+        [dense]="true"
+        (open)="go($event)">
       </app-property-card>
     </div>
 

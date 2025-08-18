@@ -284,7 +284,7 @@ export class PropertyListComponent implements OnInit, OnDestroy {
         this.items = [...page.content].sort((a,b) => {
           if (this.sort === 'price_asc')  return (a.pricePerNight ?? 0) - (b.pricePerNight ?? 0);
           if (this.sort === 'price_desc') return (b.pricePerNight ?? 0) - (a.pricePerNight ?? 0);
-          return 0; // newest vient déjà de l’API
+          return 0;
         });
         this.total = page.totalElements;
         this.buildChips();

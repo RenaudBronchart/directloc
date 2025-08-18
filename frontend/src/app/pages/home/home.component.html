@@ -11,12 +11,13 @@
     </div>
 
     <div class="hero-search">
-      <app-search-bar></app-search-bar>
+      <!-- branche l'event -->
+      <app-search-bar (search)="onSearch($event)"></app-search-bar>
     </div>
   </div>
 </section>
 
-<!-- ⭐ Featured: 10 dernières annonces -->
+<!-- ⭐ Featured: dernières annonces -->
 <app-featured-properties
   title="Newest listings"
   [params]="{ size: 8 }">

@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 import { PropertyService } from '../../services/property.service';
 import { Property } from '../../models/property.model';
@@ -12,7 +12,7 @@ type FeaturedParams = {
   adults?: number;
   children?: number;
   rooms?: number;
-  size?: number;   // par défaut 10
+  size?: number;   // default 10
 };
 
 @Component({
@@ -29,7 +29,7 @@ export class FeaturedPropertiesComponent implements OnInit {
   loading = true;
   items: Property[] = [];
 
-  constructor(private api: PropertyService) {}
+  constructor(private api: PropertyService, private router: Router) {}
 
   ngOnInit(): void {
     const size = this.params?.size ?? 10;
@@ -48,4 +48,8 @@ export class FeaturedPropertiesComponent implements OnInit {
   }
 
   trackById(_: number, p: Property) { return p.id; }
+
+  go(id: string) {
+    this.router.navigate(['/properties', id]);
+  }
 }
