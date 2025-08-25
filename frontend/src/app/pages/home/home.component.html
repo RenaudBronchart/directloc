@@ -1,24 +1,17 @@
 <section class="home-hero">
-  <div class="container">
+  <div class="dl-container">
     <div class="hero-content">
       <h1 class="hero-title">Find your perfect stay with</h1>
-      <h2 class="hero-brand">
-        DirectLoc <span class="emoji">🏠</span>
-      </h2>
-      <p class="hero-subtitle">
-        Explore trusted rental properties. Easy, safe, and fast.
-      </p>
+      <h2 class="hero-brand">DirectLoc <span class="emoji">🏠</span></h2>
+      <p class="hero-subtitle">Explore trusted rental properties. Easy, safe, and fast.</p>
     </div>
 
     <div class="hero-search">
-      <!-- branche l'event -->
-      <app-search-bar (search)="onSearch($event)"></app-search-bar>
+      <div class="search-max">
+        <app-search-bar (search)="onSearch($event)"></app-search-bar>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ⭐ Featured: dernières annonces -->
-<app-featured-properties
-  title="Newest listings"
-  [params]="{ size: 8 }">
-</app-featured-properties>
+<app-featured-properties title="Newest listings" [params]="{ size: 8 }"></app-featured-properties>

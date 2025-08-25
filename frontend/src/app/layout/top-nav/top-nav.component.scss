@@ -1,53 +1,15 @@
 @use '../../../styles/variables' as *;
-@use '../../../styles/mixins' as *;
 
-.mat-toolbar.topbar {
-  background-color: #fff;
-  color: $text-color;
-  padding: 0 2rem;
-  box-shadow: $shadow-sm;
-
-  .logo {
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 1.25rem;
-    color: $primary-color;
-    text-decoration: none;
-  }
-
-  .nav-right {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin-left: auto;
-  }
-
-  /* Boutons pleins */
-  .btn-solid {
-    border-radius: $radius-md;
-    font-weight: 600;
-    padding: 0.4rem 1.1rem;
-    text-transform: none;
-  }
-
-  /* Bouton "List your property" accent */
-  .mat-mdc-flat-button[color="accent"],
-  .mat-mdc-raised-button[color="accent"] {
-    font-weight: 500;
-    border-radius: $radius-md;
-  }
-
-  .mat-mdc-button,
-  .mat-mdc-stroked-button,
-  .mat-mdc-flat-button,
-  .mat-mdc-raised-button {
-    text-transform: none; // pas de majuscules forcées
-  }
-
-  @include respond-to(md) {
-    padding: 0 1rem;
-    .nav-right {
-      gap: 0.5rem;
-    }
-  }
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky; top: 0; z-index: 1000;
 }
+.topbar .bar { display: flex; align-items: center; gap: 12px; min-height: 64px; }
+.brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit; font-weight: 700; font-size: 1.1rem; }
+.spacer { flex: 1 1 auto; }
+
+.cta { height: 40px; line-height: 40px; padding: 0 14px; border-radius: 999px; box-shadow: none; }
+.cta mat-icon { margin-right: .35rem; }
+
+button[mat-icon-button] { width: 40px; height: 40px; }

@@ -1,10 +1,10 @@
 @use '@angular/material' as mat;
-@use './variables' as *;   // <- ton fichier avec $light-theme
+@use './variables' as *;
 @use './mixins';
 @use './utilities';
 @use './responsive';
 
-/* Material core + thème (UNE SEULE FOIS) */
+/* Material core + thème */
 @include mat.core();
 @include mat.all-component-themes($light-theme);
 
@@ -17,35 +17,21 @@ body {
   font-family: $font-family-base;
 }
 
-/* Helpers */
-.container { width: 100%; max-width: 1140px; margin: 0 auto; padding: 0 1rem; }
-.card { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
+/* === Helpers NAMESPACÉS (évite les collisions) === */
+.dl-container { width: 100%; max-width: 1140px; margin: 0 auto; padding: 0 1rem; }
+.dl-card { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
 
-/* Topbar */
-.mat-toolbar.topbar {
-  background: #fff; /* mets var(--primary) pour une topbar bleue */
-  color: var(--text);
-  border-bottom: 1px solid #e5e7eb;
-  .logo { cursor: pointer; font-weight: 700; }
-  a[mat-button], button[mat-button] { color: inherit; }
+/* === Overrides Material UNIQUEMENT dans le contenu === */
+.app-content {
+  .mat-mdc-button-base { border-radius: var(--radius-md); }
+  .mat-mdc-raised-button, .mat-mdc-unelevated-button { box-shadow: var(--shadow-sm); }
 }
 
-/* Footer */
-.app-footer {
-  background: #fff;
-  border-top: 1px solid #e5e7eb;
-  color: #6b7280;
-}
+/* Boutons perso (optionnels) */
+.dl-btn-primary { background: var(--primary) !important; color: #fff !important; }
+.dl-btn-pill { border-radius: 999px !important; }
 
-/* Boutons */
-.mat-button-base, .mat-mdc-button-base { border-radius: var(--radius-md) !important; }
-.mat-mdc-raised-button, .mat-mdc-unelevated-button { box-shadow: var(--shadow-sm); }
-
-/* Variante forcée pour <a mat-button> plats */
-.btn-primary { background: var(--primary) !important; color: #fff !important; }
-.btn-primary:hover { filter: brightness(0.95); }
-
-/* Hero (exemple) */
+/* Hero (exemple global) */
 .hero {
   border-radius: var(--radius-lg);
   background: linear-gradient(90deg, #1e3a8a, #22c1ee);
@@ -53,3 +39,6 @@ body {
   padding: 3rem 2rem;
   box-shadow: var(--shadow-lg);
 }
+
+/* Footer global OK */
+.app-footer { background: #fff; border-top: 1px solid #e5e7eb; color: #6b7280; }

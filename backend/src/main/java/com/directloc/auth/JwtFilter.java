@@ -55,11 +55,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        // Ne filtre pas les préflights
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
-        String path = request.getServletPath(); // ex: "/api/auth/register"
+        String path = request.getServletPath();
         return path.startsWith("/api/auth/");
     }
 }

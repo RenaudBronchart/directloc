@@ -1,52 +1,32 @@
 @use '../../../styles/variables' as *;
 
-.home-hero {
+.home-hero{
   padding: 4rem 1rem 2rem;
   background: linear-gradient(90deg, var(--primary), var(--secondary));
   border-radius: var(--radius-lg);
   margin: 2rem 0;
   box-shadow: var(--shadow-lg);
 
-  /* 👇 s'aligne avec ta grille globale */
-  .container {
-    max-width: 1120px;  /* même valeur que la barre */
+  .dl-container{ max-width:1120px; margin:0 auto; }
+
+  .hero-content{ text-align:center; color:#fff; }
+  .hero-title{ font-size:clamp(1.8rem,3vw,2.4rem); margin-bottom:.25rem; font-weight:600; }
+  .hero-brand{ font-size:clamp(2.2rem,4vw,3rem); font-weight:800; margin-bottom:1rem;
+    .emoji{ font-size:.9em; vertical-align:middle; margin-left:.3rem; }
+  }
+  .hero-subtitle{ font-size:1.1rem; color:rgba(255,255,255,.9); margin-bottom:1.25rem; }
+
+  .hero-search{ margin-top:.75rem; display:flex; justify-content:center; }
+
+  /* ⬇️ largeur contrôlée UNIQUEMENT sur la Home */
+  .search-max{
+    width: 100%;
+    max-width: 960px;     /* ← ajuste (par ex. 960/1000/1040) */
     margin: 0 auto;
-  }
-
-  .hero-content {
-    text-align: center;
-    color: #fff;
-  }
-
-  .hero-title {
-    font-size: clamp(1.8rem, 3vw, 2.4rem);
-    margin-bottom: 0.25rem;
-    font-weight: 600;
-  }
-
-  .hero-brand {
-    font-size: clamp(2.2rem, 4vw, 3rem);
-    font-weight: 800;
-    margin-bottom: 1rem;
-
-    .emoji {
-      font-size: 0.9em;
-      vertical-align: middle;
-      margin-left: 0.3rem;
-    }
-  }
-
-  .hero-subtitle {
-    font-size: 1.1rem;
-    color: rgba(255,255,255,.9);
-    margin-bottom: 1.25rem;
-  }
-
-  .hero-search {
-    margin-top: 0.75rem;
   }
 }
 
-@media (max-width: 768px) {
-  .home-hero { padding: 2.5rem 1rem; }
+@media (max-width:768px){
+  .home-hero{ padding:2.5rem 1rem; }
+  .home-hero .search-max{ max-width: 100%; } /* full width en mobile */
 }

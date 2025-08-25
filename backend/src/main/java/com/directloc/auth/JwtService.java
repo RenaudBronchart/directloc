@@ -24,10 +24,10 @@ public class JwtService {
 
     public String generateToken(String username) {
         return Jwts.builder()
-                .setSubject(username)                       // who's the token for?
-                .setIssuedAt(new Date(System.currentTimeMillis())) // when issued?
+                .setSubject(username)
+                .setIssuedAt(new Date(System.currentTimeMillis())) //
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration)) // when it expires
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256) // sign with HMAC
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256) // s
                 .compact();                                 // return the token string
     }
 

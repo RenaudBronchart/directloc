@@ -1,0 +1,68 @@
+<ng-container *ngIf="user$ | async as u; else loading">
+  <div class="profile-container">
+    <mat-card class="profile-card">
+      <div class="header">
+        <div class="avatar">{{ (u.email | slice:0:1) | uppercase }}</div>
+
+        <div class="title">
+          <h1>My profile</h1>
+          <div class="meta">
+            <span class="email">{{ u.email }}</span>
+            <span class="chip" [ngClass]="u.role.toLowerCase()">{{ u.role }}</span>
+          </div>
+        </div>
+
+        <span class="spacer"></span>
+
+        <button mat-stroked-button color="primary" routerLink="/my-properties">
+          <mat-icon>home_work</mat-icon>
+          <span>My properties</span>
+        </button>
+      </div>
+
+      <mat-divider class="divider"></mat-divider>
+
+      <div class="grid">
+        <section class="section">
+          <h3>Account</h3>
+
+          <div class="row">
+            <span class="label">Email</span>
+            <span class="value">{{ u.email }}</span>
+          </div>
+
+          <div class="row">
+            <span class="label">Role</span>
+            <span class="value">{{ u.role }}</span>
+          </div>
+
+          <div class="row">
+            <span class="label">User ID</span>
+            <span class="value">#{{ u.id }}</span>
+          </div>
+        </section>
+
+        <section class="section">
+          <h3>Shortcuts</h3>
+          <div class="actions">
+            <a mat-stroked-button color="primary" routerLink="/properties/create">
+              <mat-icon>add_home</mat-icon>
+              <span>List your property</span>
+            </a>
+            <a mat-stroked-button routerLink="/properties">
+              <mat-icon>search</mat-icon>
+              <span>Explore stays</span>
+            </a>
+          </div>
+          <p class="hint">More profile fields & password change arriving soon.</p>
+        </section>
+      </div>
+    </mat-card>
+  </div>
+</ng-container>
+
+<ng-template #loading>
+  <div class="loading">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  </div>
+</ng-template>

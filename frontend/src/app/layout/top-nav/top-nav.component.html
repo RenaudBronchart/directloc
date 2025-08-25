@@ -1,25 +1,36 @@
 <mat-toolbar class="topbar">
-    <span class="logo" routerLink="/">🏠 <strong>DirectLoc</strong></span>
+  <div class="dl-container bar">
+    <a class="brand" routerLink="/">
+      <span class="emoji">🏠</span><strong>DirectLoc</strong>
+    </a>
 
-    <div class="nav-right">
-        <!-- Non connecté -->
-        <ng-container *ngIf="!isLoggedIn; else loggedInBlock">
-            <a mat-raised-button color="primary" routerLink="/login" class="btn-solid">Login</a>
-            <a mat-raised-button color="primary" routerLink="/register" class="btn-solid">Register</a>
-        </ng-container>
+    <span class="spacer"></span>
 
-        <!-- Connecté -->
-        <ng-template #loggedInBlock>
-          <button mat-raised-button color="accent" class="btn-solid" (click)="goCreate()">
-            List your property
-          </button>
+    <!-- CTA visible -->
+    <button mat-raised-button color="primary" class="dl-btn-pill cta" (click)="goCreate()">
+      <mat-icon>add_home</mat-icon>
+      <span>List your property</span>
+    </button>
 
-            <button mat-button [matMenuTriggerFor]="userMenu">{{ username }}</button>
-            <mat-menu #userMenu="matMenu">
-                <button mat-menu-item routerLink="/my-properties">My Properties</button>
-                <button mat-menu-item routerLink="/properties/create">Create Property</button>
-                <button mat-menu-item (click)="logout()">Logout</button>
-            </mat-menu>
-        </ng-template>
-    </div>
+    <!-- Menu unique -->
+    <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Open menu">
+      <mat-icon>menu</mat-icon>
+    </button>
+
+    <mat-menu #menu="matMenu">
+      <ng-container *ngIf="isLoggedIn; else guest">
+        <button mat-menu-item routerLink="/my-properties"><mat-icon>home_work</mat-icon><span>My properties</span></button>
+        <button mat-menu-item routerLink="/properties"><mat-icon>search</mat-icon><span>Explore stays</span></button>
+        <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>My profile</span></button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="logout()"><mat-icon>logout</mat-icon><span>Logout</span></button>
+      </ng-container>
+      <ng-template #guest>
+        <button mat-menu-item routerLink="/login"><mat-icon>login</mat-icon><span>Login</span></button>
+        <button mat-menu-item routerLink="/register"><mat-icon>person_add</mat-icon><span>Register</span></button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="goCreate()"><mat-icon>add_home</mat-icon><span>List your property</span></button>
+      </ng-template>
+    </mat-menu>
+  </div>
 </mat-toolbar>

@@ -7,7 +7,7 @@ public final class PropertyMapper {
         return PropertyResponse.builder()
                 .id(p.getId())
                 .title(p.getTitle())
-                .description(p.getDescription())  // 👈 on mappe la description
+                .description(p.getDescription())  //
                 .location(p.getLocation())
                 .pricePerNight(p.getPricePerNight())
                 .coverUrl(p.getCoverUrl())
@@ -15,8 +15,8 @@ public final class PropertyMapper {
                 .bathrooms(p.getBathrooms())
                 .maxGuests(p.getMaxGuests())
                 .createdAt(p.getCreatedAt())
-                .updatedAt(p.getUpdatedAt())      // 👈 map
-                .ownerEmail(p.getOwner() != null ? p.getOwner().getEmail() : null) // 👈 map
+                .updatedAt(p.getUpdatedAt())
+                .ownerEmail(p.getOwner() != null ? p.getOwner().getEmail() : null)
                 .build();
     }
 }

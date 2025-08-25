@@ -1,29 +1,30 @@
-:host { display:block; }
+:host { display: block; width: 100%; }
 
-/* ===== Barra pill pro ===== */
-.pro-search {
-  --h: 56px;
-  --radius: 9999px;
-  --bg: #ffffff;
-  --divider: #e6eaf1;
-  --muted: #6b7280;
+/* ===== Search bar (pill) ===== */
+.pro-search{
+  --h:56px; --radius:9999px; --bg:#fff; --divider:#e6eaf1; --muted:#6b7280;
 
-  display: grid;
-  grid-template-columns: 2.2fr 1.6fr 1.8fr auto; /* destino | fechas | guests | CTA */
-  gap: 10px;
-  align-items: center;
-  width: 100%;
-  background: var(--bg);
-  border-radius: var(--radius);
-  padding: 10px 16px 10px 12px;
-  box-shadow: 0 10px 28px rgba(2,6,23,.06);
+  width:100%;
+
+  display:grid;
+  grid-template-columns:
+    minmax(220px, 2fr)      /* destination */
+    minmax(200px, 1.3fr)    /* dates */
+    minmax(220px, 1.5fr)    /* guests */
+    auto;                   /* CTA */
+  gap:10px; align-items:center;
+
+  background:var(--bg);
+  border-radius:var(--radius);
+  padding:10px 16px 10px 12px;
+  box-shadow:0 10px 28px rgba(2,6,23,.06);
 
   .seg { position: relative; display:flex; align-items:center; min-width:0; }
   .seg + .seg::before{
     content:""; position:absolute; left:-5px; top:10px; bottom:10px; width:1px; background:var(--divider);
   }
 
-  /* === Destino custom (sin mat-form-field) === */
+  /* === Destination (sans mat-form-field) === */
   .dest{
     display:flex; align-items:center; gap:10px;
     height: var(--h);
@@ -37,39 +38,29 @@
     flex:1 1 auto;
     height: var(--h);
     line-height: var(--h);
-    border: 0;
-    outline: 0;
-    background: transparent;
-    font: inherit;
-    color: inherit;
-    position: relative; top: .5px; /* si ves 1px, ajusta: 0 o -.5 */
+    border: 0; outline: 0; background: transparent; font: inherit; color: inherit;
+    position: relative; top: .5px;
   }
   .dest-input::placeholder{ color: #9aa3af; }
   .suffix-btn.mat-mdc-icon-button{
-    width: 36px;
-    height: var(--h);
-    line-height: var(--h);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    color: var(--muted);
+    width: 36px; height: var(--h); line-height: var(--h);
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0; color: var(--muted);
   }
 
-  /* botones fantasma (fechas/guests) */
+  /* === Boutons “fantôme” (dates/guests) === */
   .ghost{
     display:flex; align-items:center; gap:10px;
     height:var(--h); padding:0 14px;
     border-radius:14px; border:1px solid transparent; background:transparent; color:inherit;
-    cursor:pointer; min-width:0;
-    transition: background .15s ease;
+    cursor:pointer; min-width:0; transition: background .15s ease;
   }
   .ghost span{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ghost:hover{ background:#f8fafc; }
   .ghost:active{ transform: translateY(0.5px); }
   .ghost:focus-visible{ outline:3px solid rgba(59,130,246,.25); }
 
-  /* iconos */
+  /* icônes */
   .mat-mdc-form-field mat-icon,
   .ghost mat-icon{ font-size:20px; width:20px; height:20px; line-height:20px; }
 
@@ -86,18 +77,18 @@
   }
 }
 
-/* estados */
+/* états */
 .pro-search:hover{ box-shadow:0 12px 32px rgba(2,6,23,.08); }
 .pro-search:focus-within{ box-shadow:0 0 0 3px rgba(37,99,235,.12), 0 16px 36px rgba(2,6,23,.06); }
 
-/* inputs ocultos del date-range (para mantener el form) */
+/* inputs date range invisibles mais fonctionnels */
 .sr-only{
   position:absolute !important; width:0 !important; height:0 !important;
   overflow:hidden !important; opacity:0 !important; pointer-events:none !important;
   padding:0 !important; margin:0 !important; border:0 !important;
 }
 
-/* ===== Guests menu (card estilizada) ===== */
+/* ===== Guests menu (card) ===== */
 ::ng-deep .guests-menu .mat-mdc-menu-panel {
   padding: 10px 12px;
   border-radius: 14px;
@@ -108,12 +99,8 @@
 ::ng-deep .guests-menu .mat-mdc-menu-content { padding: 0; }
 
 ::ng-deep .guests-menu .gm-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 6px;
-  border-bottom: 1px solid #eef2f7;
+  display: grid; grid-template-columns: 1fr auto; align-items: center;
+  gap: 14px; padding: 10px 6px; border-bottom: 1px solid #eef2f7;
 }
 ::ng-deep .guests-menu .gm-row:last-of-type { border-bottom: 0; }
 
@@ -121,43 +108,50 @@
 ::ng-deep .guests-menu .gm-title { font-weight: 700; }
 ::ng-deep .guests-menu .gm-sub { font-size: .82rem; color: #6b7280; }
 
-::ng-deep .guests-menu .gm-stepper {
-  display: inline-flex; align-items: center; gap: 8px;
-}
+::ng-deep .guests-menu .gm-stepper { display: inline-flex; align-items: center; gap: 8px; }
 ::ng-deep .guests-menu .gm-btn.mat-mdc-mini-fab {
-  width: 32px; height: 32px;
-  box-shadow: none;
-  background: #f3f4f6;
-  color: #111827;
+  width: 32px; height: 32px; box-shadow: none; background: #f3f4f6; color: #111827;
 }
 ::ng-deep .guests-menu .gm-btn.mat-mdc-mini-fab:hover { background:#e5e7eb; }
-::ng-deep .guests-menu .gm-btn.mat-mdc-mini-fab[disabled] {
-  background: #f5f6f8; color: #b5bcc7;
-}
+::ng-deep .guests-menu .gm-btn.mat-mdc-mini-fab[disabled] { background:#f5f6f8; color:#b5bcc7; }
+::ng-deep .guests-menu .gm-value { width: 28px; text-align: center; font-weight: 800; }
+::ng-deep .guests-menu .gm-actions { display:flex; align-items:center; gap:8px; padding:10px 6px 4px; }
+::ng-deep .guests-menu .gm-actions .spacer { flex:1; }
 
-::ng-deep .guests-menu .gm-value {
-  width: 28px; text-align: center; font-weight: 800;
-}
-
-::ng-deep .guests-menu .gm-actions {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 6px 4px;
-}
-::ng-deep .guests-menu .gm-actions .spacer { flex: 1; }
-
-/* iOS/Safari: asegura inputs sin rarezas de altura */
+/* iOS/Safari */
 .dest-input { -webkit-appearance: none; appearance: none; }
 
-/* responsive */
-@media (max-width: 980px){
-  .pro-search{ grid-template-columns: 1.4fr 1.2fr 1.2fr auto; }
+/* ===== Responsive ===== */
+
+/* Laptop large ~1280 */
+@media (max-width:1280px){
+  .pro-search{
+    grid-template-columns:
+      minmax(200px, 1.8fr)
+      minmax(180px, 1.2fr)
+      minmax(200px, 1.3fr)
+      auto;
+  }
 }
-@media (max-width: 820px){
+
+/* Laptop / ~1100 */
+@media (max-width:1100px){
+  .pro-search{
+    --h:52px;
+    grid-template-columns:
+      minmax(180px, 1.5fr)
+      minmax(170px, 1.1fr)
+      minmax(180px, 1.2fr)
+      auto;
+  }
+}
+
+/* Mobile ≤820 : pile, CTA pleine largeur */
+@media (max-width:820px){
   .pro-search{
     border-radius:18px;
     grid-template-columns:1fr;
-    gap:8px;
-    padding:8px 10px 10px;
+    gap:8px; padding:8px 10px 10px;
   }
   .pro-search .seg + .seg::before{ display:none; }
   .pro-search .cta{ width:100%; height:52px; }
