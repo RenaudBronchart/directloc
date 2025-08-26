@@ -34,7 +34,6 @@ public class PropertyService {
                 .bedrooms(req.getBedrooms())
                 .bathrooms(req.getBathrooms())
                 .maxGuests(req.getMaxGuests())
-                // 👇 convertit "" en null pour déclencher @PrePersist
                 .coverUrl(trimOrNull(req.getCoverUrl()))
                 .owner(owner)
                 .build();
@@ -54,7 +53,6 @@ public class PropertyService {
         } else {
             page = repo.findAll(pageable);
         }
-        // TODO: si tu veux “rooms”, ajoute un where bedrooms >= rooms
         return page.map(PropertyMapper::toDto);
     }
 
@@ -79,7 +77,6 @@ public class PropertyService {
         p.setBedrooms(req.getBedrooms());
         p.setBathrooms(req.getBathrooms());
         p.setMaxGuests(req.getMaxGuests());
-        // 👇 idem en update pour déclencher @PreUpdate si vide
         p.setCoverUrl(trimOrNull(req.getCoverUrl()));
 
         return PropertyMapper.toDto(repo.save(p));

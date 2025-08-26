@@ -5,7 +5,7 @@ import { AuthGuard } from './guards/auth-guard';
 import { NoAuthGuard } from './guards/no-auth.guard';
 
 export const routes: Routes = [
-  // Public — Login / Register (bloqués si déjà connecté)
+  // Public — Login /
   {
     path: 'login',
     canActivate: [NoAuthGuard],
@@ -34,7 +34,7 @@ export const routes: Routes = [
       },
       { path: '', pathMatch: 'full', redirectTo: 'home' },
 
-      // --- PROPERTIES (ordre IMPORTANT : spécifiques avant :id) ---
+      // --- PROPERTIES
       {
         path: 'properties/create',
         canActivate: [AuthGuard],
@@ -74,9 +74,18 @@ export const routes: Routes = [
             import('./pages/property/my-properties/my-properties.component')
                 .then(m => m.MyPropertiesComponent),
         data: { title: 'My properties' }
+      },
+      {
+        path: 'profile',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./pages/profile/profile.component').then(m => m.ProfileComponent),
+        data: { title: 'My profile' }              //
       }
     ]
   },
+
+
 
   // Not found
   {
@@ -85,4 +94,5 @@ export const routes: Routes = [
         import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent),
     data: { title: 'Not found' }
   }
+
 ];

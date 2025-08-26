@@ -1,14 +1,15 @@
+/* src/app/pages/property/property-detail/property-detail.component.scss */
 @use '../../../../styles/variables' as *;
 
-/* largeur plus compacte spécifique à la page détail */
-$detail-width: 960px; /* ← réduit un peu (tu peux remettre 980px si tu préfères) */
+/* largeur un peu plus compacte pour la page détail */
+$detail-width: 960px;
 
-/* HERO */
+/* ===================== HERO ===================== */
 .detail-hero {
   position: relative;
   width: 100%;
-  margin: 1rem auto 0;      /* centre le bloc */
-  max-width: $detail-width; /* limite la largeur */
+  margin: 1rem auto 0;
+  max-width: $detail-width;
   min-height: clamp(280px, 36vw, 460px);
   background-size: cover;
   background-position: center;
@@ -16,34 +17,23 @@ $detail-width: 960px; /* ← réduit un peu (tu peux remettre 980px si tu préf�
   overflow: hidden;
   box-shadow: $shadow-md;
 
-  /* fallback si pas d'image: bleu très léger, plus agréable que le gris */
+  /* fallback agréable si pas d'image */
   background-color: mix($primary-color, #ffffff, 12%);
-
-  /* léger boost pour éviter un rendu terne */
   filter: saturate(1.04) contrast(1.02);
 
   .overlay {
-    position: absolute; inset: 0;
-    /* overlay moins gris, avec une teinte bleue subtile */
+    position: absolute;
+    inset: 0;
     background:
-      linear-gradient(
-          180deg,
-          rgba(0,0,0,.16) 0%,
-          rgba(0,0,0,.12) 38%,
-          rgba(0,0,0,.28) 100%
-      ),
-      linear-gradient(
-          90deg,
-          rgba($primary-color, .14),
-          rgba($secondary-color, .14)
-      );
+      linear-gradient(180deg, rgba(0,0,0,.16) 0%, rgba(0,0,0,.12) 38%, rgba(0,0,0,.28) 100%),
+      linear-gradient(90deg, rgba($primary-color, .14), rgba($secondary-color, .14));
   }
 
   .hero-content {
     position: relative;
     color: #fff;
     padding: 1.25rem 1rem 2.25rem;
-    max-width: $detail-width;   /* aligne le contenu au même width */
+    max-width: $detail-width;
     margin: 0 auto;
 
     .back {
@@ -68,29 +58,21 @@ $detail-width: 960px; /* ← réduit un peu (tu peux remettre 980px si tu préf�
     .badges {
       display: flex; flex-wrap: wrap; gap: .5rem 1rem;
       margin-top: .5rem; opacity: .95;
-
       span { display: inline-flex; align-items: center; gap: .35rem; }
       mat-icon { font-size: 20px; height: 20px; width: 20px; }
-    }
-
-    .hero-actions {
-      margin-top: .75rem; display: flex; gap: .5rem;
-      button { text-transform: none; border-radius: $radius-md; }
     }
   }
 }
 
-/* BODY */
+/* ===================== BODY ===================== */
 .detail-body {
   padding: 1rem 0 2rem;
-  max-width: $detail-width;  /* même largeur que le hero */
+  max-width: $detail-width;
   margin: 0 auto;
 
   .grid {
     display: grid; gap: 1.25rem;
-    /* colonne droite fixe, gauche flexible */
     grid-template-columns: minmax(0, 1fr) 340px;
-
     @media (max-width: 1024px) { grid-template-columns: 1fr; }
   }
 
@@ -109,9 +91,10 @@ $detail-width: 960px; /* ← réduit un peu (tu peux remettre 980px si tu préf�
     mat-icon { color: var(--primary); }
   }
 
+  /* ======== SIDEBAR / BOOKING CARD ======== */
   .side {
     .booking-card {
-      position: sticky; top: 96px;   /* ajuste selon la hauteur de la topbar */
+      position: sticky; top: 96px;
       border-radius: $radius-lg;
       box-shadow: $shadow-md;
       border: 1px solid #e5e7eb;
@@ -121,19 +104,92 @@ $detail-width: 960px; /* ← réduit un peu (tu peux remettre 980px si tu préf�
         .amount { font-weight: 800; font-size: 1.5rem; }
         .per { color: #6b7280; }
       }
+
+      form { display: grid; gap: 12px; }
+
+      /* Bouton "Pick dates" (le datepicker est caché) */
+      .date-ghost {
+        display: inline-flex; align-items: center; gap: 10px;
+        height: 44px; padding: 0 12px;
+        border-radius: 12px; text-transform: none;
+        border-color: #e5e7eb;
+        background: #fff;
+      }
+
+      /* ===== Stepper compacto y alineado ===== */
+      .counters { display: grid; gap: 12px; margin: 6px 0 10px; }
+
+      .qty-row {
+        display: grid;
+        grid-template-columns: 1fr auto;  /* etiqueta a la izq, pill a la dcha */
+        align-items: center;
+        gap: 12px;
+
+        .lbl { font-weight: 700; color: #111827; }
+      }
+
+      /* pill de ancho fijo con 3 columnas simétricas */
+      .qty {
+        --h: 44px;
+        --icon: 40px;
+        --pill-w: 168px;
+
+        width: var(--pill-w);
+        height: var(--h);
+        display: grid;
+        grid-template-columns: var(--icon) 1fr var(--icon);
+        align-items: center;
+        border: 1px solid #e5e7eb;
+        border-radius: 9999px;
+        background: #fff;
+        box-shadow: inset 0 1px 0 rgba(0,0,0,.02);
+      }
+
+      /* botones: tamaño exacto y centrados */
+      .qty .icon.mat-mdc-icon-button {
+        width: var(--icon);
+        height: var(--icon);
+        display: grid;
+        place-items: center;
+        border-radius: 9999px;
+        background: #f8fafc;
+        color: #111827;
+        transition: background .15s ease, transform .05s ease;
+      }
+      .qty .icon.mat-mdc-icon-button:hover { background:#eef2f7; }
+      .qty .icon.mat-mdc-icon-button:active { transform: translateY(1px); }
+      .qty .icon.mat-mdc-icon-button[disabled] { background:#f2f4f8; color:#a3aab5; }
+
+      /* icono: centrado fino */
+      .qty .icon mat-icon { font-size: 20px; line-height: 1; }
+
+      /* valor monoespaciado y centrado */
+      .qty .value {
+        display: grid; place-items: center;
+        min-width: 2.4ch;
+        font-weight: 800;
+        font-feature-settings: "tnum" 1; /* cifras tabulares */
+      }
+
+      /* compactar un pelín en móviles angostos */
+      @media (max-width: 420px) {
+        .qty { --h: 40px; --icon: 36px; --pill-w: 152px; }
+      }
+      .form-error { margin-top: 6px; color: #d32f2f; font-size: .85rem; }
+      .form-hint  { margin-top: 6px; color: #6b7280; font-size: .85rem; }
       .wide { width: 100%; text-transform: none; border-radius: $radius-md; }
       .fineprint { margin-top: .5rem; font-size: .85rem; color: #6b7280; }
     }
   }
 }
 
-/* Skeletons alignés */
+/* ===================== SKELETONS ===================== */
 .hero-skeleton {
   height: 320px;
   border-radius: $radius-lg;
-  background: mix($primary-color, #ffffff, 12%); /* même teinte douce que le hero */
-  margin: 1rem auto 0;         /* centré */
-  max-width: $detail-width;    /* même largeur */
+  background: mix($primary-color, #ffffff, 12%);
+  margin: 1rem auto 0;
+  max-width: $detail-width;
 }
 .body-skeleton {
   max-width: $detail-width;

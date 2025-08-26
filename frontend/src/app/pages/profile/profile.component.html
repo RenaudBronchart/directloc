@@ -1,0 +1,100 @@
+<ng-container *ngIf="user$ | async as u; else loading">
+  <div class="profile-container">
+    <mat-card class="profile-card">
+      <div class="header">
+        <div class="avatar">{{ (u.email | slice:0:1) | uppercase }}</div>
+
+        <div class="title">
+          <h1>My profile</h1>
+          <div class="meta">
+            <span class="email">{{ u.email }}</span>
+            <span class="chip" [ngClass]="u.role.toLowerCase()">{{ u.role }}</span>
+          </div>
+        </div>
+
+        <span class="spacer"></span>
+
+        <button mat-stroked-button color="primary" routerLink="/my-properties">
+          <mat-icon>home_work</mat-icon>
+          <span>My properties</span>
+        </button>
+      </div>
+
+      <mat-divider class="divider"></mat-divider>
+
+      <div class="grid">
+        <section class="section">
+          <h3>Account</h3>
+
+          <div class="row">
+            <span class="label">Email</span>
+            <span class="value">{{ u.email }}</span>
+          </div>
+
+          <div class="row">
+            <span class="label">Role</span>
+            <span class="value">{{ u.role }}</span>
+          </div>
+
+          <div class="row">
+            <span class="label">User ID</span>
+            <span class="value">#{{ u.id }}</span>
+          </div>
+        </section>
+
+        <section class="section">
+          <h3>Shortcuts</h3>
+          <div class="actions">
+            <a mat-stroked-button color="primary" routerLink="/properties/create">
+              <mat-icon>add_home</mat-icon>
+              <span>List your property</span>
+            </a>
+            <a mat-stroked-button routerLink="/properties">
+              <mat-icon>search</mat-icon>
+              <span>Explore stays</span>
+            </a>
+          </div>
+          <p class="hint">More profile fields & password change arriving soon.</p>
+        </section>
+      </div>
+
+      <!-- ===== My bookings ===== -->
+      <mat-divider class="divider"></mat-divider>
+      <section class="section">
+        <h3>My bookings</h3>
+
+        <ng-container *ngIf="bookings$ | async as bookings; else bookingsLoading">
+          <div *ngIf="bookings.length; else noBookings" class="bookings">
+            <a class="booking" *ngFor="let b of bookings" [routerLink]="['/properties', b.propertyId]">
+              <img [src]="b.propertyCoverUrl || 'assets/placeholder.webp'" alt="" />
+              <div class="info">
+                <div class="title">{{ b.propertyTitle }}</div>
+                <div class="meta">
+                  <span>{{ b.propertyLocation }}</span> •
+                  <span>{{ toDateLabel(b.checkIn) }} → {{ toDateLabel(b.checkOut) }}</span>
+                </div>
+                <span class="status" [class.confirmed]="b.status === 'CONFIRMED'">{{ b.status }}</span>
+              </div>
+              <div class="price">{{ b.totalPrice | currency:'EUR':'symbol':'1.0-0' }}</div>
+            </a>
+          </div>
+        </ng-container>
+
+        <ng-template #noBookings>
+          <p class="hint">No bookings yet. Start by <a routerLink="/properties">exploring stays</a>!</p>
+        </ng-template>
+
+        <ng-template #bookingsLoading>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </ng-template>
+      </section>
+      <!-- /My bookings -->
+    </mat-card>
+  </div>
+</ng-container>
+
+<ng-template #loading>
+  <div class="loading">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  </div>
+</ng-template>
