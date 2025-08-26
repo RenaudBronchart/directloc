@@ -57,6 +57,38 @@
           <p class="hint">More profile fields & password change arriving soon.</p>
         </section>
       </div>
+
+      <!-- ===== My bookings ===== -->
+      <mat-divider class="divider"></mat-divider>
+      <section class="section">
+        <h3>My bookings</h3>
+
+        <ng-container *ngIf="bookings$ | async as bookings; else bookingsLoading">
+          <div *ngIf="bookings.length; else noBookings" class="bookings">
+            <a class="booking" *ngFor="let b of bookings" [routerLink]="['/properties', b.propertyId]">
+              <img [src]="b.propertyCoverUrl || 'assets/placeholder.webp'" alt="" />
+              <div class="info">
+                <div class="title">{{ b.propertyTitle }}</div>
+                <div class="meta">
+                  <span>{{ b.propertyLocation }}</span> •
+                  <span>{{ toDateLabel(b.checkIn) }} → {{ toDateLabel(b.checkOut) }}</span>
+                </div>
+                <span class="status" [class.confirmed]="b.status === 'CONFIRMED'">{{ b.status }}</span>
+              </div>
+              <div class="price">{{ b.totalPrice | currency:'EUR':'symbol':'1.0-0' }}</div>
+            </a>
+          </div>
+        </ng-container>
+
+        <ng-template #noBookings>
+          <p class="hint">No bookings yet. Start by <a routerLink="/properties">exploring stays</a>!</p>
+        </ng-template>
+
+        <ng-template #bookingsLoading>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </ng-template>
+      </section>
+      <!-- /My bookings -->
     </mat-card>
   </div>
 </ng-container>

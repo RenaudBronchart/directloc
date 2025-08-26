@@ -84,12 +84,78 @@
               <span class="per">/ night</span>
             </div>
 
-            <button mat-raised-button color="primary" class="wide">
-              Request to book
-            </button>
+            <!-- ===== Booking form ===== -->
+            <form [formGroup]="form" (ngSubmit)="requestToBook()">
+              <!-- Dates -->
+              <div class="row dates">
+                <mat-date-range-input [rangePicker]="rangePicker">
+                  <input matStartDate placeholder="Check-in" formControlName="checkIn" />
+                  <input matEndDate placeholder="Check-out" formControlName="checkOut" />
+                </mat-date-range-input>
+                <mat-date-range-picker #rangePicker></mat-date-range-picker>
+                <button type="button" mat-stroked-button (click)="openDates()">
+                  <mat-icon>calendar_today</mat-icon>&nbsp; Pick dates
+                </button>
+              </div>
+
+              <!-- Guests -->
+              <div class="row counters">
+                <div class="counter">
+                  <span class="label">Adults</span>
+                  <div class="stepper">
+                    <button type="button" mat-mini-fab
+                            (click)="form.controls.adults.setValue(Math.max(1,(form.value.adults||1)-1))">
+                      <mat-icon>remove</mat-icon>
+                    </button>
+                    <div class="val">{{ form.value.adults || 1 }}</div>
+                    <button type="button" mat-mini-fab
+                            (click)="form.controls.adults.setValue((form.value.adults||1)+1)">
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="counter">
+                  <span class="label">Children</span>
+                  <div class="stepper">
+                    <button type="button" mat-mini-fab
+                            (click)="form.controls.children.setValue(Math.max(0,(form.value.children||0)-1))">
+                      <mat-icon>remove</mat-icon>
+                    </button>
+                    <div class="val">{{ form.value.children || 0 }}</div>
+                    <button type="button" mat-mini-fab
+                            (click)="form.controls.children.setValue((form.value.children||0)+1)">
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="counter">
+                  <span class="label">Rooms</span>
+                  <div class="stepper">
+                    <button type="button" mat-mini-fab
+                            (click)="form.controls.rooms.setValue(Math.max(1,(form.value.rooms||1)-1))">
+                      <mat-icon>remove</mat-icon>
+                    </button>
+                    <div class="val">{{ form.value.rooms || 1 }}</div>
+                    <button type="button" mat-mini-fab
+                            (click)="form.controls.rooms.setValue((form.value.rooms||1)+1)">
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CTA -->
+              <button mat-raised-button color="primary" class="wide"
+                      type="submit" [disabled]="form.invalid">
+                <mat-icon>send</mat-icon>
+                Request to book
+              </button>
+            </form>
 
             <div class="fineprint">
-              Booking flow coming soon.
+              Free cancellation within 24 hours • You won’t be charged yet
             </div>
           </mat-card-content>
         </mat-card>
