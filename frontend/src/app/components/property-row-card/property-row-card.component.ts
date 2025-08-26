@@ -24,7 +24,9 @@ export class PropertyRowCardComponent {
   go() {
     if (!this.loading) {
       this.open.emit(this.data.id);
-      this.router.navigate(['/properties', this.data.id]);
+      this.router.navigate(['/properties', this.data.id], {
+        queryParamsHandling: 'preserve'   // keep checkIn, checkOut, adults, etc.
+      });
     }
   }
 }

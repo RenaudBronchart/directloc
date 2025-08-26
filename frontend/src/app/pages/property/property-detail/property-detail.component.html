@@ -1,11 +1,12 @@
+<!-- src/app/pages/property/property-detail/property-detail.component.html -->
 <ng-container *ngIf="!loading && property as p; else skeletonTpl">
+
   <!-- HERO -->
   <section
     class="detail-hero"
     [style.background-image]="'url(' + (p.coverUrl || placeholder) + ')'"
     role="img"
-    [attr.aria-label]="p.title"
-  >
+    [attr.aria-label]="p.title">
     <div class="overlay"></div>
 
     <div class="container hero-content">
@@ -28,14 +29,8 @@
       </div>
 
       <div class="hero-actions">
-        <button mat-stroked-button>
-          <mat-icon>ios_share</mat-icon>
-          Share
-        </button>
-        <button mat-stroked-button>
-          <mat-icon>favorite_border</mat-icon>
-          Save
-        </button>
+        <button mat-stroked-button><mat-icon>ios_share</mat-icon> Share</button>
+        <button mat-stroked-button><mat-icon>favorite_border</mat-icon> Save</button>
       </div>
     </div>
   </section>
@@ -43,17 +38,13 @@
   <!-- BODY -->
   <section class="container detail-body">
     <div class="grid">
-      <!-- Main content -->
+      <!-- Left -->
       <div class="col main">
         <mat-card class="panel">
           <mat-card-content>
             <h2>About this place</h2>
-            <p class="desc">
-              {{ p.description || 'No description provided.' }}
-            </p>
-
+            <p class="desc">{{ p.description || 'No description provided.' }}</p>
             <mat-divider></mat-divider>
-
             <div class="info-rows">
               <div class="row" *ngIf="p.ownerEmail">
                 <mat-icon>person</mat-icon>
@@ -75,88 +66,101 @@
         </mat-card>
       </div>
 
-      <!-- Sidebar -->
+      <!-- Right / booking -->
       <div class="col side">
         <mat-card class="booking-card">
           <mat-card-content>
+
             <div class="price">
               <span class="amount">{{ p.pricePerNight | currency:'EUR':'symbol':'1.0-0' }}</span>
               <span class="per">/ night</span>
             </div>
 
-            <!-- ===== Booking form ===== -->
+            <div class="muted" *ngIf="nights >= 1">
+              {{ nights }} night{{ nights > 1 ? 's' : '' }}
+              • Est. total: {{ estTotal | currency:'EUR':'symbol':'1.0-0' }}
+              <div class="subdued">
+                {{ form.value.checkIn | date:'M/d/yyyy' }} – {{ form.value.checkOut | date:'M/d/yyyy' }}
+              </div>
+            </div>
+
             <form [formGroup]="form" (ngSubmit)="requestToBook()">
-              <!-- Dates -->
-              <div class="row dates">
-                <mat-date-range-input [rangePicker]="rangePicker">
-                  <input matStartDate placeholder="Check-in" formControlName="checkIn" />
-                  <input matEndDate placeholder="Check-out" formControlName="checkOut" />
-                </mat-date-range-input>
-                <mat-date-range-picker #rangePicker></mat-date-range-picker>
-                <button type="button" mat-stroked-button (click)="openDates()">
-                  <mat-icon>calendar_today</mat-icon>&nbsp; Pick dates
-                </button>
-              </div>
 
-              <!-- Guests -->
-              <div class="row counters">
-                <div class="counter">
-                  <span class="label">Adults</span>
-                  <div class="stepper">
-                    <button type="button" mat-mini-fab
-                            (click)="form.controls.adults.setValue(Math.max(1,(form.value.adults||1)-1))">
-                      <mat-icon>remove</mat-icon>
-                    </button>
-                    <div class="val">{{ form.value.adults || 1 }}</div>
-                    <button type="button" mat-mini-fab
-                            (click)="form.controls.adults.setValue((form.value.adults||1)+1)">
-                      <mat-icon>add</mat-icon>
-                    </button>
-                  </div>
-                </div>
+              <!-- Real inputs for the range (hidden but functional) -->
+              <mat-date-range-input [rangePicker]="rangePicker" class="sr-only">
+                <input matStartDate formControlName="checkIn"  (dateChange)="onDateChanged()" />
+                <input matEndDate   formControlName="checkOut" (dateChange)="onDateChanged()" />
+              </mat-date-range-input>
+              <mat-date-range-picker #rangePicker></mat-date-range-picker>
 
-                <div class="counter">
-                  <span class="label">Children</span>
-                  <div class="stepper">
-                    <button type="button" mat-mini-fab
-                            (click)="form.controls.children.setValue(Math.max(0,(form.value.children||0)-1))">
-                      <mat-icon>remove</mat-icon>
-                    </button>
-                    <div class="val">{{ form.value.children || 0 }}</div>
-                    <button type="button" mat-mini-fab
-                            (click)="form.controls.children.setValue((form.value.children||0)+1)">
-                      <mat-icon>add</mat-icon>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="counter">
-                  <span class="label">Rooms</span>
-                  <div class="stepper">
-                    <button type="button" mat-mini-fab
-                            (click)="form.controls.rooms.setValue(Math.max(1,(form.value.rooms||1)-1))">
-                      <mat-icon>remove</mat-icon>
-                    </button>
-                    <div class="val">{{ form.value.rooms || 1 }}</div>
-                    <button type="button" mat-mini-fab
-                            (click)="form.controls.rooms.setValue((form.value.rooms||1)+1)">
-                      <mat-icon>add</mat-icon>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- CTA -->
-              <button mat-raised-button color="primary" class="wide"
-                      type="submit" [disabled]="form.invalid">
-                <mat-icon>send</mat-icon>
-                Request to book
+              <!-- Button that opens the picker -->
+              <button type="button" mat-stroked-button class="date-ghost" (click)="openDates()" aria-label="Pick dates">
+                <mat-icon>calendar_today</mat-icon>
+                <span>{{ datesLabel }}</span>
               </button>
+
+              <!-- Counters -->
+              <div class="counters">
+
+                <div class="qty-row">
+                  <div class="lbl">Adults</div>
+                  <div class="qty">
+                    <button type="button" class="icon" mat-icon-button (click)="dec('adults')" [disabled]="a<=1">
+                      <mat-icon>remove</mat-icon>
+                    </button>
+                    <div class="value">{{ a }}</div>
+                    <button type="button" class="icon" mat-icon-button (click)="inc('adults')">
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="qty-row">
+                  <div class="lbl">Children</div>
+                  <div class="qty">
+                    <button type="button" class="icon" mat-icon-button (click)="dec('children')" [disabled]="c<=0">
+                      <mat-icon>remove</mat-icon>
+                    </button>
+                    <div class="value">{{ c }}</div>
+                    <button type="button" class="icon" mat-icon-button (click)="inc('children')">
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="qty-row">
+                  <div class="lbl">Rooms</div>
+                  <div class="qty">
+                    <button type="button" class="icon" mat-icon-button (click)="dec('rooms')" [disabled]="r<=1">
+                      <mat-icon>remove</mat-icon>
+                    </button>
+                    <div class="value">{{ r }}</div>
+                    <button type="button" class="icon" mat-icon-button (click)="inc('rooms')">
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Single inline error -->
+              <div class="inline-error" *ngIf="errorText">{{ errorText }}</div>
+
+              <button
+                mat-raised-button
+                color="primary"
+                class="wide"
+                type="submit"
+                [disabled]="form.invalid || submitting || nights < 2">
+                {{ submitting ? 'Booking...' : 'Request to book' }}
+              </button>
+
+              <div class="fineprint">
+                Free cancellation within 24 hours • You won’t be charged yet
+              </div>
+
             </form>
 
-            <div class="fineprint">
-              Free cancellation within 24 hours • You won’t be charged yet
-            </div>
           </mat-card-content>
         </mat-card>
       </div>
@@ -164,7 +168,7 @@
   </section>
 </ng-container>
 
-<!-- Skeleton -->
+<!-- SKELETON -->
 <ng-template #skeletonTpl>
   <div class="hero-skeleton shimmer"></div>
   <div class="container body-skeleton">

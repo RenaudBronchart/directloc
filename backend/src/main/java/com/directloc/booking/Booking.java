@@ -10,8 +10,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "bookings",
@@ -51,8 +51,8 @@ public class Booking {
 
     @CreatedDate
     @Column(updatable = false)
-    private OffsetDateTime createdAt;
+    private Instant  createdAt;
 
     @LastModifiedDate
-    private OffsetDateTime updatedAt;
+    private Instant updatedAt;
 }
