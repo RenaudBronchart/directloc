@@ -12,7 +12,6 @@ public class PropertyRequest {
     @NotBlank private String location;
     @NotNull @DecimalMin("0.0") private BigDecimal pricePerNight;
 
-    // optionnels
     @Min(0) private Integer bedrooms;
     @Min(0) private Integer bathrooms;
     @Min(1) private Integer maxGuests;

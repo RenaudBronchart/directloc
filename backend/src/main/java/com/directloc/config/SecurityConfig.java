@@ -46,7 +46,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/properties").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/properties/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/properties/**").authenticated()
-
+                        // booking
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/bookings").authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,  "/api/bookings/my").authenticated()
                         // Tout le reste
                         .anyRequest().authenticated()
                 )
