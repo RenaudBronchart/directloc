@@ -1,4 +1,3 @@
-<!-- src/app/pages/property/property-detail/property-detail.component.html -->
 <ng-container *ngIf="!loading && property as p; else skeletonTpl">
 
   <!-- HERO -->
@@ -86,15 +85,27 @@
 
             <form [formGroup]="form" (ngSubmit)="requestToBook()">
 
-              <!-- Real inputs for the range (hidden but functional) -->
-              <mat-date-range-input [rangePicker]="rangePicker" class="sr-only">
+              <!-- Inputs reales del range (ocultos) -->
+              <mat-date-range-input
+                [rangePicker]="rangePicker"
+                class="sr-only"
+                [dateFilter]="rangeDateFilter">
                 <input matStartDate formControlName="checkIn"  (dateChange)="onDateChanged()" />
                 <input matEndDate   formControlName="checkOut" (dateChange)="onDateChanged()" />
               </mat-date-range-input>
-              <mat-date-range-picker #rangePicker></mat-date-range-picker>
 
-              <!-- Button that opens the picker -->
-              <button type="button" mat-stroked-button class="date-ghost" (click)="openDates()" aria-label="Pick dates">
+              <!-- Picker con las clases por día -->
+              <mat-date-range-picker #rangePicker [dateClass]="dateClass"></mat-date-range-picker>
+
+              <!-- Botón que abre el picker -->
+              <button
+                type="button"
+                mat-stroked-button
+                class="date-ghost"
+                (click)="openDates()
+"
+                [disabled]="submitting"
+                aria-label="Pick dates">
                 <mat-icon>calendar_today</mat-icon>
                 <span>{{ datesLabel }}</span>
               </button>
@@ -105,11 +116,15 @@
                 <div class="qty-row">
                   <div class="lbl">Adults</div>
                   <div class="qty">
-                    <button type="button" class="icon" mat-icon-button (click)="dec('adults')" [disabled]="a<=1">
+                    <button type="button" class="icon" mat-icon-button
+                            (click)="dec('adults')"
+                            [disabled]="a<=1 || submitting">
                       <mat-icon>remove</mat-icon>
                     </button>
                     <div class="value">{{ a }}</div>
-                    <button type="button" class="icon" mat-icon-button (click)="inc('adults')">
+                    <button type="button" class="icon" mat-icon-button
+                            (click)="inc('adults')"
+                            [disabled]="guests >= (p.maxGuests || 999) || submitting">
                       <mat-icon>add</mat-icon>
                     </button>
                   </div>
@@ -118,11 +133,15 @@
                 <div class="qty-row">
                   <div class="lbl">Children</div>
                   <div class="qty">
-                    <button type="button" class="icon" mat-icon-button (click)="dec('children')" [disabled]="c<=0">
+                    <button type="button" class="icon" mat-icon-button
+                            (click)="dec('children')"
+                            [disabled]="c<=0 || submitting">
                       <mat-icon>remove</mat-icon>
                     </button>
                     <div class="value">{{ c }}</div>
-                    <button type="button" class="icon" mat-icon-button (click)="inc('children')">
+                    <button type="button" class="icon" mat-icon-button
+                            (click)="inc('children')"
+                            [disabled]="guests >= (p.maxGuests || 999) || submitting">
                       <mat-icon>add</mat-icon>
                     </button>
                   </div>
@@ -131,11 +150,15 @@
                 <div class="qty-row">
                   <div class="lbl">Rooms</div>
                   <div class="qty">
-                    <button type="button" class="icon" mat-icon-button (click)="dec('rooms')" [disabled]="r<=1">
+                    <button type="button" class="icon" mat-icon-button
+                            (click)="dec('rooms')"
+                            [disabled]="r<=1 || submitting">
                       <mat-icon>remove</mat-icon>
                     </button>
                     <div class="value">{{ r }}</div>
-                    <button type="button" class="icon" mat-icon-button (click)="inc('rooms')">
+                    <button type="button" class="icon" mat-icon-button
+                            (click)="inc('rooms')"
+                            [disabled]="submitting">
                       <mat-icon>add</mat-icon>
                     </button>
                   </div>
@@ -143,8 +166,16 @@
 
               </div>
 
-              <!-- Single inline error -->
-              <div class="inline-error" *ngIf="errorText">{{ errorText }}</div>
+              <!-- Hints -->
+              <div class="form-hint" *ngIf="p.maxGuests">
+                Max {{ p.maxGuests }} guests.
+              </div>
+              <div class="form-hint" *ngIf="nights < 2">
+                Minimum stay is 2 nights.
+              </div>
+
+              <!-- Error inline -->
+              <div class="inline-error" *ngIf="errorText" aria-live="polite">{{ errorText }}</div>
 
               <button
                 mat-raised-button

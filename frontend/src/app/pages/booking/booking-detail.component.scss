@@ -1,0 +1,61 @@
+/* Layout básico */
+.container { max-width: 1040px; margin: 0 auto; padding: 1rem; }
+.card { padding: 1rem; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+/* Header minimal */
+.bd-head{
+  display: flex;
+  align-items: center;
+  padding: 4px 0 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Botón “back”: compacto (solo icono) y se expande en hover/focus */
+.bd-back{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #475569;           /* slate-600 */
+  background: #f8fafc;      /* slate-50 */
+  border: 1px solid #e2e8f0;/* slate-200 */
+  transition: background .15s ease, color .15s ease, border-color .15s ease, transform .05s ease;
+}
+.bd-back mat-icon{ font-size: 20px; width: 20px; height: 20px; }
+.bd-back:hover{ background:#eef2f7; color:#111827; border-color:#d1d5db; }
+.bd-back:active{ transform: translateY(1px); }
+.bd-back:focus-visible{ outline: 3px solid rgba(25,118,210,.25); outline-offset: 2px; }
+
+/* Modo compacto: oculta el texto hasta hover/focus */
+.bd-back.compact .lbl{
+  max-width: 0;
+  opacity: 0;
+  margin-left: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width .2s ease, opacity .2s ease, margin-left .2s ease;
+}
+.bd-back.compact:hover .lbl,
+.bd-back.compact:focus-visible .lbl{
+  max-width: 160px;
+  opacity: 1;
+  margin-left: 4px;
+}
+
+/* Summary */
+.summary { display:grid; gap:10px; }
+.row { display:flex; justify-content:space-between; gap:12px; }
+.label { color:#6b7280; }
+.value { font-weight:600; }
+.link { color:#1976d2; text-decoration:none; }
+.link:hover { text-decoration:underline; }
+.muted { color:#6b7280; }
+.totals { margin-top:8px; }
+.line { display:flex; justify-content:space-between; align-items:center; font-size:1.05rem; }
+.hint { color:#6b7280; font-size:.9rem; margin-top:2px; }
+.actions { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }

@@ -6,6 +6,7 @@ import com.directloc.property.PropertyRepository;
 import com.directloc.user.User;
 import com.directloc.user.UserRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -77,6 +78,13 @@ public class BookingService {
         return repo.save(booking);
     }
 
+
+
+    public Booking getForCurrentUser(Long id) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return repo.findByIdAndGuestEmail(id, email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your booking"));
+    }
     public java.util.List<Booking> myBookings() {
         return repo.findMyBookings(currentUser().getEmail());
     }

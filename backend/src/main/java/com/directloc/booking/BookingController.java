@@ -22,4 +22,10 @@ public class BookingController {
     public List<BookingResponse> my(){
         return service.myBookings().stream().map(BookingMapper::toDto).toList();
     }
+
+    @GetMapping("/{id}")
+    public BookingResponse getById(@PathVariable Long id) {
+        return BookingMapper.toDto(service.getForCurrentUser(id));
+    }
+
 }

@@ -1,4 +1,3 @@
-// src/app/pages/property/property-detail/property-detail.component.ts
 import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
@@ -10,36 +9,23 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatCardModule } from '@angular/material/card';
-import { MatDatepickerModule, MatDateRangePicker } from '@angular/material/datepicker';
+import {
+  MatDatepickerModule,
+  MatDateRangePicker,
+  MatCalendarCellClassFunction
+} from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 
 import { PropertyService } from '../../../services/property.service';
 import { PropertyDetail } from '../../../models/property.model';
 import { AuthService } from '../../../services/auth.service';
+import { BookingService } from '../../../services/booking.service';
+import { BookingRequest } from '../../../types/booking';
 
-/* ===== Booking ===== */
-export interface BookingRequest {
-  propertyId: string; // UUID
-  checkIn: string;    // yyyy-MM-dd
-  checkOut: string;   // yyyy-MM-dd
-  adults: number;
-  children: number;
-  rooms: number;
-}
-class BookingService {
-  private API = 'http://localhost:8080/api';
-  constructor(private http: HttpClient, private auth: AuthService) {}
-  create(req: BookingRequest): Observable<any> {
-    const token = this.auth.getToken();
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-    return this.http.post(`${this.API}/bookings`, req, { headers });
-  }
-}
-/* ==================== */
+import { addDays, format } from 'date-fns';
 
 /* Strongly typed form */
 type DetailForm = {
@@ -69,7 +55,7 @@ export class PropertyDetailComponent implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
   private auth = inject(AuthService);
-  private booking = new BookingService(this.http, this.auth);
+  private booking = inject(BookingService);
 
   @ViewChild('rangePicker') rangePicker!: MatDateRangePicker<Date>;
 
@@ -78,13 +64,12 @@ export class PropertyDetailComponent implements OnInit {
   submitting = false;
   placeholder = 'assets/placeholder.webp';
 
-  // single declaration ✔
   errorText: string | null = null;
 
-  private readonly today = new Date();
-  private readonly tomorrow = new Date(
-    this.today.getFullYear(), this.today.getMonth(), this.today.getDate() + 1
-  );
+  // --- calendario: helpers y estado ---
+  private startOfDay(d: Date) { const x = new Date(d); x.setHours(0,0,0,0); return x; }
+  today = this.startOfDay(new Date());
+  booked = new Set<string>(); // días ocupados 'yyyy-MM-dd'
 
   form: FormGroup<DetailForm> = this.fb.group<DetailForm>({
     checkIn:  this.fb.control<Date | null>(null, { validators: Validators.required }),
@@ -94,18 +79,21 @@ export class PropertyDetailComponent implements OnInit {
     rooms:    this.fb.control<number>(1, { nonNullable: true, validators: [Validators.required, Validators.min(1)] }),
   });
 
-  // template helpers
+  // helpers
   get a() { return this.form.controls.adults.value ?? 1; }
   get c() { return this.form.controls.children.value ?? 0; }
   get r() { return this.form.controls.rooms.value ?? 1; }
+  get guests(): number { return this.a + this.c; }
+  get maxGuests(): number { return this.property?.maxGuests ?? Infinity; }
 
   get nights(): number {
     const ci = this.form.controls.checkIn.value;
     const co = this.form.controls.checkOut.value;
     if (!ci || !co) return 0;
-    const ms = new Date(co).setHours(0,0,0,0) - new Date(ci).setHours(0,0,0,0);
+    const ms = this.startOfDay(co).getTime() - this.startOfDay(ci).getTime();
     return Math.max(0, Math.round(ms / 86400000));
   }
+
   get estTotal(): number | null {
     if (!this.property || this.nights < 1) return null;
     return (this.property.pricePerNight || 0) * this.nights;
@@ -123,7 +111,19 @@ export class PropertyDetailComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.api.getPropertyById(id).subscribe({
-      next: p => { this.property = p; this.loading = false; },
+      next: p => {
+        this.property = p;
+        this.loading = false;
+
+        // cargar días ocupados para el calendario (6 meses vista)
+        if (p?.id) {
+          const from = format(this.today, 'yyyy-MM-dd');
+          const to   = format(addDays(this.today, 180), 'yyyy-MM-dd');
+          this.booking.getBookedDays(p.id, from, to).subscribe(days => {
+            this.booked = new Set(days ?? []);
+          });
+        }
+      },
       error: () => { this.loading = false; }
     });
 
@@ -136,14 +136,37 @@ export class PropertyDetailComponent implements OnInit {
     const r  = qp.get('rooms');
 
     const toDate = (s: string | null) => s ? new Date(s) : null;
+    const today = this.today;
+    const tomorrow = addDays(today, 1);
+
     this.form.patchValue({
-      checkIn:  toDate(ci) ?? this.today,
-      checkOut: toDate(co) ?? this.tomorrow,
+      checkIn:  toDate(ci) ?? today,
+      checkOut: toDate(co) ?? tomorrow,
       adults:   a ? +a : 2,
       children: c ? +c : 0,
       rooms:    r ? +r : 1
     }, { emitEvent: false });
   }
+
+  // --- calendario: pinta gris pasados, rojo ocupados ---
+  dateClass: MatCalendarCellClassFunction<Date> = (cellDate, view) => {
+    if (view !== 'month') return '';
+    const d = this.startOfDay(cellDate);
+    const iso = format(d, 'yyyy-MM-dd');
+    if (d < this.today) return 'date-past';
+    if (this.booked.has(iso)) return 'date-booked';
+    return '';
+  };
+
+  // --- calendario: bloquea selección de pasados/ocupados ---
+  rangeDateFilter = (d: Date | null): boolean => {
+    if (!d) return false;
+    const day = this.startOfDay(d);
+    const iso = format(day, 'yyyy-MM-dd');
+    if (day < this.today) return false;
+    if (this.booked.has(iso)) return false;
+    return true;
+  };
 
   openDates(): void { this.rangePicker.open(); }
 
@@ -151,7 +174,7 @@ export class PropertyDetailComponent implements OnInit {
     const ci = this.form.controls.checkIn.value;
     const co = this.form.controls.checkOut.value;
     if (ci && co && co <= ci) {
-      const fixed = new Date(ci); fixed.setDate(fixed.getDate() + 1);
+      const fixed = addDays(this.startOfDay(ci), 1);
       this.form.controls.checkOut.setValue(fixed);
     }
     this.errorText = null;
@@ -174,7 +197,7 @@ export class PropertyDetailComponent implements OnInit {
     }
     if (this.form.invalid) return;
 
-    // client guard: min 2 nights
+    // client guard: min 2 noches
     if (this.nights < 2) {
       this.errorText = 'Minimum stay is 2 nights.';
       this.snack.open(this.errorText, 'Close', { duration: 3000 });
@@ -182,7 +205,14 @@ export class PropertyDetailComponent implements OnInit {
     }
 
     const v = this.form.getRawValue();
-    const toYMD = (d: Date) => new Date(d).toISOString().slice(0, 10);
+    const toYMD = (d: Date) => {
+      const x = this.startOfDay(d);
+      const y = x.getFullYear();
+      const m = String(x.getMonth() + 1).padStart(2, '0');
+      const day = String(x.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+
     const payload: BookingRequest = {
       propertyId: this.property.id,
       checkIn:  toYMD(v.checkIn!),
@@ -204,15 +234,14 @@ export class PropertyDetailComponent implements OnInit {
       error: (err: HttpErrorResponse) => {
         this.submitting = false;
 
-        const apiMsg =
-          (err.error && (err.error.message || err.error.error || err.error.detail)) || '';
+        const apiMsg = (err.error && (err.error.message || err.error.error || err.error.detail)) || '';
 
         if (err.status === 409 || /Dates not available/i.test(apiMsg)) {
           this.errorText = 'These dates are already booked. Please pick different dates.';
         } else if (err.status === 400) {
           if (/Minimum.*2.*night/i.test(apiMsg)) {
             this.errorText = 'Minimum stay is 2 nights.';
-          } else if (/after.*checkIn/i.test(apiMsg)) {
+          } else if (/after.*check[- ]?in/i.test(apiMsg)) {
             this.errorText = 'Check-out must be after check-in.';
           } else {
             this.errorText = apiMsg || 'Invalid booking data.';
@@ -220,11 +249,7 @@ export class PropertyDetailComponent implements OnInit {
         } else if (err.status === 401) {
           this.errorText = 'Your session expired. Please sign in again.';
         } else if (err.status === 403) {
-          // If Security blocked it (no body), fall back to a useful hint
-          this.errorText = apiMsg ||
-            (this.nights >= 2
-              ? 'Could not complete booking. These dates may already be booked.'
-              : 'Your session is invalid. Please sign in again.');
+          this.errorText = apiMsg || 'Could not complete booking.';
         } else {
           this.errorText = apiMsg || 'Booking failed.';
         }
