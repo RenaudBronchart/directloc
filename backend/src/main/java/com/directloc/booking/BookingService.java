@@ -1,0 +1,91 @@
+// booking/BookingService.java
+package com.directloc.booking;
+
+import com.directloc.property.Property;
+import com.directloc.property.PropertyRepository;
+import com.directloc.user.User;
+import com.directloc.user.UserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
+import java.util.UUID;
+
+@Service
+public class BookingService {
+
+    private final BookingRepository repo;
+    private final PropertyRepository propertyRepo;
+    private final UserRepository userRepo;
+
+    public BookingService(BookingRepository repo, PropertyRepository propertyRepo, UserRepository userRepo) {
+        this.repo = repo; this.propertyRepo = propertyRepo; this.userRepo = userRepo;
+    }
+
+    private User currentUser() {
+        var email = org.springframework.security.core.context.SecurityContextHolder
+                .getContext().getAuthentication().getName();
+        return userRepo.findByEmail(email).orElseThrow();
+    }
+
+    @Transactional
+    public Booking createAndConfirm(BookingRequest req){
+        // 1) Dates
+        if (!req.checkOut().isAfter(req.checkIn())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Check-out must be after check-in.");
+        }
+        long nights = java.time.temporal.ChronoUnit.DAYS.between(req.checkIn(), req.checkOut());
+        if (nights < 2) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Minimum stay is 2 nights.");
+        }
+
+        // 2) Guests
+        int guestCount = req.adults() + req.children();
+
+        // 3) Lock + checks
+        Property property = propertyRepo.lockById(req.propertyId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Property not found"));
+
+        if (property.getMaxGuests() != null && guestCount > property.getMaxGuests()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Guest count exceeds the property limit.");
+        }
+
+        if (repo.existsOverlappingConfirmed(property.getId(), req.checkIn(), req.checkOut())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "These dates are already booked.");
+        }
+
+        // 4) Total
+        java.math.BigDecimal total = property.getPricePerNight()
+                .multiply(java.math.BigDecimal.valueOf(nights));
+
+        // 5) Save
+        Booking booking = Booking.builder()
+                .property(property)
+                .guest(currentUser())
+                .checkIn(req.checkIn())
+                .checkOut(req.checkOut())
+                .adults(req.adults())
+                .children(req.children())
+                .rooms(req.rooms())
+                .totalPrice(total)
+                .status(BookingStatus.CONFIRMED)
+                .build();
+
+        return repo.save(booking);
+    }
+
+
+
+    public Booking getForCurrentUser(Long id) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return repo.findByIdAndGuestEmail(id, email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your booking"));
+    }
+    public java.util.List<Booking> myBookings() {
+        return repo.findMyBookings(currentUser().getEmail());
+    }
+}

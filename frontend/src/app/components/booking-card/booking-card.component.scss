@@ -1,0 +1,23 @@
+:host { display:block; }
+.bk-card {
+  display:grid; grid-template-columns: 96px 1fr auto; gap:12px;
+  align-items:center; padding:10px; border:1px solid #e5e7eb; border-radius:12px;
+  background:#fff; transition: box-shadow .12s ease, transform .06s ease, border-color .12s ease;
+  &.clickable { cursor:pointer; }
+  &.clickable:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,.06); border-color:#dfe3ea; }
+}
+.thumb { width:96px; height:72px; object-fit:cover; border-radius:12px; background:#f3f4f6; }
+.info { display:grid; gap:4px; min-width:0; }
+.title { font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.meta, .dates, .guests { display:flex; align-items:center; gap:6px; color:#6b7280; font-size:.92rem; }
+.status { margin-top:2px; display:inline-block; padding:.22rem .5rem; border-radius:999px; font-size:.8rem; font-weight:600;
+  background:#eef2ff; color:#3949ab; border:1px solid rgba(57,73,171,.2);
+  &.confirmed { background:#e8faf0; color:#1b5e20; border-color:rgba(27,94,32,.2); }
+  &.pending   { background:#fff7e5; color:#9a6700; border-color:rgba(154,103,0,.25); }
+  &.cancelled { background:#ffe9e6; color:#d32f2f; border-color:rgba(211,47,47,.25); }
+}
+.price { font-weight:800; white-space:nowrap; color:#111827; }
+@media (max-width:560px){
+  .bk-card { grid-template-columns:84px 1fr; grid-template-areas: "thumb info" "thumb price"; align-items:start; }
+  .thumb { grid-area: thumb; } .info { grid-area: info; } .price { grid-area: price; justify-self:end; margin-top:4px; }
+}

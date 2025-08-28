@@ -10,7 +10,7 @@ import java.util.UUID;
 public class PropertyResponse {
     private UUID id;
     private String title;
-    private String description;     // 👈 ajouté
+    private String description;
     private String location;
     private BigDecimal pricePerNight;
     private String coverUrl;
@@ -18,6 +18,6 @@ public class PropertyResponse {
     private Integer bathrooms;
     private Integer maxGuests;
     private Instant createdAt;
-    private Instant updatedAt;      // 👈 ajouté (optionnel mais utile)
-    private String ownerEmail;      // 👈 ajouté (optionnel, pratique pour le front)
+    private Instant updatedAt;
+    private String ownerEmail;
 }

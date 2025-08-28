@@ -76,6 +76,15 @@ export const routes: Routes = [
         data: { title: 'My properties' }
       },
       {
+        path: 'bookings/:id',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./pages/booking/booking-detail.component')
+            .then(m => m.BookingDetailComponent),
+        data: { title: 'Booking detail' }
+      },
+
+      {
         path: 'profile',
         canActivate: [AuthGuard],
         loadComponent: () =>

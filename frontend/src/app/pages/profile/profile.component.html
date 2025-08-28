@@ -1,27 +1,35 @@
 <ng-container *ngIf="user$ | async as u; else loading">
   <div class="profile-container">
     <mat-card class="profile-card">
-      <div class="header">
-        <div class="avatar">{{ (u.email | slice:0:1) | uppercase }}</div>
 
-        <div class="title">
-          <h1>My profile</h1>
+      <!-- ===== Header ===== -->
+      <div class="header">
+        <div class="avatar" aria-hidden="true">
+          {{ (u.email | slice:0:1) | uppercase }}
+        </div>
+
+        <div class="title-wrap">
+          <h1 class="title">My profile</h1>
           <div class="meta">
             <span class="email">{{ u.email }}</span>
+            <!-- ❗️sin optional chaining -->
             <span class="chip" [ngClass]="u.role.toLowerCase()">{{ u.role }}</span>
           </div>
         </div>
 
         <span class="spacer"></span>
 
-        <button mat-stroked-button color="primary" routerLink="/my-properties">
-          <mat-icon>home_work</mat-icon>
-          <span>My properties</span>
-        </button>
+        <div class="header-actions">
+          <a mat-stroked-button color="primary" routerLink="/my-properties">
+            <mat-icon>home_work</mat-icon>
+            <span>My properties</span>
+          </a>
+        </div>
       </div>
 
       <mat-divider class="divider"></mat-divider>
 
+      <!-- ===== Info + Shortcuts ===== -->
       <div class="grid">
         <section class="section">
           <h3>Account</h3>
@@ -31,15 +39,6 @@
             <span class="value">{{ u.email }}</span>
           </div>
 
-          <div class="row">
-            <span class="label">Role</span>
-            <span class="value">{{ u.role }}</span>
-          </div>
-
-          <div class="row">
-            <span class="label">User ID</span>
-            <span class="value">#{{ u.id }}</span>
-          </div>
         </section>
 
         <section class="section">
@@ -57,6 +56,37 @@
           <p class="hint">More profile fields & password change arriving soon.</p>
         </section>
       </div>
+
+      <!-- ===== My bookings ===== -->
+      <mat-divider class="divider"></mat-divider>
+
+      <section class="section">
+        <div class="section-head">
+          <h3>My bookings</h3>
+          <span class="badge" *ngIf="(bookings$ | async)?.length as n">{{ n }}</span>
+        </div>
+
+        <ng-container *ngIf="bookings$ | async as bookings; else bookingsLoading">
+          <div *ngIf="bookings.length; else noBookings" class="bookings">
+            <app-booking-card
+              *ngFor="let b of bookings"
+              [data]="b"
+              (open)="goToBooking($event)">
+            </app-booking-card>
+          </div>
+        </ng-container>
+
+        <ng-template #noBookings>
+          <p class="hint">
+            No bookings yet. Start by <a routerLink="/properties">exploring stays</a>!
+          </p>
+        </ng-template>
+
+        <ng-template #bookingsLoading>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </ng-template>
+      </section>
+
     </mat-card>
   </div>
 </ng-container>

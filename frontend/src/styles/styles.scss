@@ -42,3 +42,17 @@ body {
 
 /* Footer global OK */
 .app-footer { background: #fff; border-top: 1px solid #e5e7eb; color: #6b7280; }
+
+
+.date-past .mat-calendar-body-cell-content {
+  background: #eee;
+  color: #777;
+  border-radius: 50%;
+}
+
+.date-booked .mat-calendar-body-cell-content {
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 50%;
+  text-decoration: line-through;
+}

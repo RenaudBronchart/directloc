@@ -1,0 +1,79 @@
+<div class="container" *ngIf="vm$ | async as vm">
+  <!-- Header mínimo -->
+  <div class="bd-head">
+    <a
+      class="bd-back compact"
+      routerLink="/profile"
+      aria-label="Back to profile"
+    >
+      <mat-icon aria-hidden="true">chevron_left</mat-icon>
+      <span class="lbl">Back to profile</span>
+    </a>
+  </div>
+
+  <!-- Tarjeta + resumen -->
+  <mat-card class="card">
+    <div class="grid">
+      <div class="col">
+        <!-- Reutilizamos tu card; no clicable aquí -->
+        <app-booking-card [data]="vm" [clickable]="false"></app-booking-card>
+      </div>
+
+      <div class="col">
+        <div class="summary">
+          <div class="row">
+            <span class="label">Property</span>
+            <a class="value link" [routerLink]="['/properties', vm.propertyId]">
+              {{ vm.propertyTitle }}
+            </a>
+          </div>
+
+          <div class="row">
+            <span class="label">Location</span>
+            <span class="value">{{ vm.propertyLocation }}</span>
+          </div>
+
+          <div class="row">
+            <span class="label">Dates</span>
+            <span class="value">
+              {{ vm.checkIn | date:'yyyy-MM-dd' }}
+              →
+              {{ vm.checkOut | date:'yyyy-MM-dd' }}
+              <span class="muted">
+                ({{ vm.nights }} night{{ vm.nights>1?'s':'' }})
+              </span>
+            </span>
+          </div>
+
+          <div class="row">
+            <span class="label">Guests</span>
+            <span class="value">
+              {{ vm.adults }} adult{{ vm.adults>1?'s':'' }} ·
+              {{ vm.children }} child{{ vm.children!==1?'ren':'' }} ·
+              {{ vm.rooms }} room{{ vm.rooms>1?'s':'' }}
+            </span>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <div class="totals">
+            <div class="line">
+              <span>Total</span>
+              <strong>{{ vm.totalNum | currency:'EUR':'symbol':'1.0-0' }}</strong>
+            </div>
+            <div class="hint" *ngIf="vm.perNight !== null">
+              ≈ {{ vm.perNight | currency:'EUR':'symbol':'1.0-0' }} / night
+            </div>
+          </div>
+
+          <div class="actions">
+            <a mat-stroked-button color="primary" [routerLink]="['/properties', vm.propertyId]">
+              <mat-icon>home</mat-icon>
+              View property
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </mat-card>
+</div>

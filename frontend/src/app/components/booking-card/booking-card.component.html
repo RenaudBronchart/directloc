@@ -1,0 +1,35 @@
+<div class="bk-card" [class.clickable]="clickable" (click)="openCard()">
+  <img class="thumb" [src]="data.propertyCoverUrl || 'assets/placeholder.webp'" alt="" />
+
+  <div class="info">
+    <div class="title">{{ data.propertyTitle }}</div>
+    <div class="meta">
+      <mat-icon>place</mat-icon>
+      <span>{{ data.propertyLocation }}</span>
+    </div>
+
+    <div class="dates">
+      <mat-icon>event</mat-icon>
+      <span>
+        {{ data.checkIn | date:'yyyy-MM-dd' }}
+        →
+        {{ data.checkOut | date:'yyyy-MM-dd' }}
+      </span>
+    </div>
+
+    <div class="guests">
+      <mat-icon>group</mat-icon>
+      <span>{{ data.adults }} ad · {{ data.children }} ni · {{ data.rooms }} hab</span>
+    </div>
+
+    <div class="status" [class.confirmed]="data.status==='CONFIRMED'"
+         [class.pending]="data.status==='PENDING'"
+         [class.cancelled]="data.status==='CANCELLED'">
+      {{ data.status }}
+    </div>
+  </div>
+
+  <div class="price">
+    {{ totalNum | currency:'EUR':'symbol':'1.0-0' }}
+  </div>
+</div>
