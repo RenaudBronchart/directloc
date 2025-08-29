@@ -1,3 +1,4 @@
+// src/main/java/com/directloc/auth/JwtFilter.java
 package com.directloc.auth;
 
 import jakarta.servlet.FilterChain;
@@ -37,18 +38,18 @@ public class JwtFilter extends OncePerRequestFilter {
 
         try {
             String username = jwtService.extractUsername(token);
+
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+
                 if (jwtService.isTokenValid(token, userDetails.getUsername())) {
                     UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails, null, userDetails.getAuthorities());
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
         } catch (Exception ex) {
-
             SecurityContextHolder.clearContext();
         }
 
@@ -57,10 +58,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            return true;
-        }
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
+
         String path = request.getServletPath();
-        return path.startsWith("/api/auth/");
+        // Skip ONLY the truly public auth endpoints
+        return path.equals("/api/auth/login")
+                || path.equals("/api/auth/register")
+                || path.equals("/api/auth/test");
+        // IMPORTANT: do NOT skip /api/auth/me here
     }
 }

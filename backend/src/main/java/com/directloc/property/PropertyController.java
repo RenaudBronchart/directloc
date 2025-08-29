@@ -15,6 +15,15 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.*;
 
+/**
+ * Property REST controller.
+ *
+ * Notes:
+ * - GET /{id}/booked-days now blocks on ACCEPTED bookings (new lifecycle),
+ *   not CONFIRMED.
+ * - Returned "days" are YYYY-MM-DD strings, inclusive of check-in and
+ *   exclusive of check-out, intersected with the requested [from, to) window.
+ */
 @RestController
 @RequestMapping("/api/properties")
 @RequiredArgsConstructor
@@ -61,21 +70,37 @@ public class PropertyController {
         return service.findMyProperties();
     }
 
+    /**
+     * Returns booked (unavailable) days for a property in the given [from, to) window.
+     * Uses ACCEPTED bookings (new model) and returns ISO dates ("yyyy-MM-dd").
+     */
     @GetMapping("/{id}/booked-days")
     public Map<String, List<String>> getBookedDays(
             @PathVariable UUID id,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
     ) {
-        var bookings = bookingRepo.findConfirmedOverlapping(id, from, to);
-        
-        Set<String> days = new HashSet<>();
+        // Guard: empty/invalid windows return empty list
+        if (from == null || to == null || !from.isBefore(to)) {
+            return Map.of("days", List.of());
+        }
+
+        //  IMPORTANT: block on ACCEPTED (not CONFIRMED)
+        var bookings = bookingRepo.findAcceptedOverlapping(id, from, to);
+
+        // TreeSet to keep natural ascending order while building
+        Set<String> days = new TreeSet<>();
+
+        // For each booking, add the intersection of [checkIn, checkOut) with [from, to)
         for (Booking b : bookings) {
-            for (LocalDate d = b.getCheckIn(); d.isBefore(b.getCheckOut()); d = d.plusDays(1)) {
-                days.add(d.toString()); // yyyy-MM-dd
+            LocalDate start = b.getCheckIn().isAfter(from) ? b.getCheckIn() : from;
+            LocalDate end   = b.getCheckOut().isBefore(to) ? b.getCheckOut() : to;
+
+            for (LocalDate d = start; d.isBefore(end); d = d.plusDays(1)) {
+                days.add(d.toString()); // ISO-8601 yyyy-MM-dd
             }
         }
-        var sorted = days.stream().sorted().toList();
-        return Map.of("days", sorted);
+
+        return Map.of("days", List.copyOf(days));
     }
 }

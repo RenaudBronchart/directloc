@@ -9,14 +9,22 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 
 import { BookingService } from '../../services/booking.service';
-import { Booking } from '../../types/booking';
+import { BookingModel } from '../../models/booking.model'; // <-- use shared model
 import { BookingCardComponent } from '../../components/booking-card/booking-card.component';
 
-type Vm = Booking & {
+type Vm = BookingModel & {
   nights: number;
   totalNum: number;
   perNight: number | null;
 };
+
+/** Parse a 'YYYY-MM-DD' string to a Date in UTC to avoid TZ off-by-one */
+function ymdToUtcDate(ymd: string): Date {
+  // Expect 'YYYY-MM-DD'
+  const [y, m, d] = ymd.split('-').map(n => parseInt(n, 10));
+  // Date.UTC uses month 0-based
+  return new Date(Date.UTC(y, (m ?? 1) - 1, d ?? 1));
+}
 
 @Component({
   standalone: true,
@@ -38,13 +46,17 @@ export class BookingDetailComponent {
     map(p => p.get('id')!),
     switchMap(id => this.bookingSvc.getById(id)),
     map((b): Vm => {
-      const nights = Math.max(
-        1,
-        Math.round((Date.parse(b.checkOut as any) - Date.parse(b.checkIn as any)) / 86400000)
-      );
-      const totalNum = typeof b.totalPrice === 'string'
-        ? Number(b.totalPrice)
-        : (b.totalPrice as unknown as number);
+      // Compute nights safely in UTC to prevent timezone drift
+      const ci = ymdToUtcDate(b.checkIn);
+      const co = ymdToUtcDate(b.checkOut);
+      const ms = co.getTime() - ci.getTime();
+      const nights = Math.max(1, Math.round(ms / 86400000));
+
+      // totalPrice should already be number in BookingModel; keep a guard anyway
+      const totalNum = typeof (b as any).totalPrice === 'string'
+        ? Number((b as any).totalPrice)
+        : (b.totalPrice ?? 0);
+
       const perNight = nights ? totalNum / nights : null;
       return { ...b, nights, totalNum, perNight };
     })

@@ -27,6 +27,7 @@
         <span *ngIf="p.maxGuests"><mat-icon>group</mat-icon> Up to {{ p.maxGuests }}</span>
       </div>
 
+      <!-- Solo utilidades aquí; el chat lo ponemos en la tarjeta de booking -->
       <div class="hero-actions">
         <button mat-stroked-button><mat-icon>ios_share</mat-icon> Share</button>
         <button mat-stroked-button><mat-icon>favorite_border</mat-icon> Save</button>
@@ -84,7 +85,6 @@
             </div>
 
             <form [formGroup]="form" (ngSubmit)="requestToBook()">
-
               <!-- Inputs reales del range (ocultos) -->
               <mat-date-range-input
                 [rangePicker]="rangePicker"
@@ -102,8 +102,7 @@
                 type="button"
                 mat-stroked-button
                 class="date-ghost"
-                (click)="openDates()
-"
+                (click)="openDates()"
                 [disabled]="submitting"
                 aria-label="Pick dates">
                 <mat-icon>calendar_today</mat-icon>
@@ -112,7 +111,6 @@
 
               <!-- Counters -->
               <div class="counters">
-
                 <div class="qty-row">
                   <div class="lbl">Adults</div>
                   <div class="qty">
@@ -163,7 +161,6 @@
                     </button>
                   </div>
                 </div>
-
               </div>
 
               <!-- Hints -->
@@ -186,10 +183,18 @@
                 {{ submitting ? 'Booking...' : 'Request to book' }}
               </button>
 
+              <!-- Botón de chat visible siempre -->
+              <div class="secondary-actions">
+                <button mat-stroked-button class="wide" type="button"
+                        (click)="openChat()" [disabled]="!property || submitting">
+                  <mat-icon>chat</mat-icon>
+                  Message host
+                </button>
+              </div>
+
               <div class="fineprint">
                 Free cancellation within 24 hours • You won’t be charged yet
               </div>
-
             </form>
 
           </mat-card-content>

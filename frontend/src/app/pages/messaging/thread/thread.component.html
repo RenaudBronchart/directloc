@@ -1,0 +1,18 @@
+<div class="thread-wrap">
+  <div class="msgs" #scrollArea>
+    <div *ngIf="loading" class="loading">Loading…</div>
+
+    <div *ngFor="let m of messages" class="msg" [class.mine]="m.mine">
+      <div class="bubble">
+        <div class="body">{{ m.body }}</div>
+        <div class="time">{{ m.createdAt | date:'short' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <form class="composer" [formGroup]="form" (ngSubmit)="send()">
+    <mat-icon>chat</mat-icon>
+    <input type="text" formControlName="body" placeholder="Write a message…" />
+    <button mat-raised-button color="primary" [disabled]="sending || form.invalid">Send</button>
+  </form>
+</div>

@@ -1,0 +1,22 @@
+<div class="inbox" *ngIf="items$ | async as items; else loading">
+  <a class="item" *ngFor="let it of items" [routerLink]="['/messages', it.id]">
+    <img class="thumb" [src]="it.propertyCoverUrl || 'assets/placeholder.webp'" alt="" />
+    <div class="meta">
+      <div class="row1">
+        <div class="title">{{ it.propertyTitle }}</div>
+        <div class="time" *ngIf="it.lastMessageAt as d">{{ d | date:'short' }}</div>
+      </div>
+      <div class="row2">
+        <span class="email">{{ it.otherUserEmail }}</span>
+        <span class="preview" *ngIf="it.lastMessagePreview"> · {{ it.lastMessagePreview }}</span>
+      </div>
+    </div>
+    <span class="badge" *ngIf="it.unreadCount">{{ it.unreadCount }}</span>
+  </a>
+
+  <div class="empty" *ngIf="!items.length">No messages yet.</div>
+</div>
+
+<ng-template #loading>
+  <div class="inbox-loading">Loading…</div>
+</ng-template>

@@ -1,5 +1,5 @@
 <div class="container" *ngIf="vm$ | async as vm">
-  <!-- Header mínimo -->
+  <!-- Minimal header -->
   <div class="bd-head">
     <a
       class="bd-back compact"
@@ -11,18 +11,18 @@
     </a>
   </div>
 
-  <!-- Tarjeta + resumen -->
+  <!-- Card + summary -->
   <mat-card class="card">
     <div class="grid">
       <div class="col">
-        <!-- Reutilizamos tu card; no clicable aquí -->
+        <!-- Reuse your card; not clickable here -->
         <app-booking-card [data]="vm" [clickable]="false"></app-booking-card>
       </div>
 
       <div class="col">
         <div class="summary">
           <div class="row">
-            <span class="label">Property</span>
+            <span class="label">Property</span> <!-- was "PropertyModel" -->
             <a class="value link" [routerLink]="['/properties', vm.propertyId]">
               {{ vm.propertyTitle }}
             </a>

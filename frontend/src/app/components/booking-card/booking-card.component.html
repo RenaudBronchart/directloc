@@ -3,6 +3,7 @@
 
   <div class="info">
     <div class="title">{{ data.propertyTitle }}</div>
+
     <div class="meta">
       <mat-icon>place</mat-icon>
       <span>{{ data.propertyLocation }}</span>
@@ -11,21 +12,21 @@
     <div class="dates">
       <mat-icon>event</mat-icon>
       <span>
-        {{ data.checkIn | date:'yyyy-MM-dd' }}
-        →
+        {{ data.checkIn | date:'yyyy-MM-dd' }} →
         {{ data.checkOut | date:'yyyy-MM-dd' }}
       </span>
     </div>
 
     <div class="guests">
       <mat-icon>group</mat-icon>
-      <span>{{ data.adults }} ad · {{ data.children }} ni · {{ data.rooms }} hab</span>
+      <span>{{ data.adults }} adults · {{ data.children }} children · {{ data.rooms }} rooms</span>
     </div>
 
-    <div class="status" [class.confirmed]="data.status==='CONFIRMED'"
-         [class.pending]="data.status==='PENDING'"
-         [class.cancelled]="data.status==='CANCELLED'">
-      {{ data.status }}
+    <!-- use your chip -->
+    <div class="status">
+      <span class="status-chip" [ngClass]="statusClass">
+        {{ statusLabel[data.status] }}
+      </span>
     </div>
   </div>
 

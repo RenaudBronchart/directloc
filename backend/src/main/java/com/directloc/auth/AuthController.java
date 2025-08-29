@@ -1,3 +1,4 @@
+// src/main/java/com/directloc/auth/AuthController.java
 package com.directloc.auth;
 
 import com.directloc.user.Role;
@@ -6,14 +7,14 @@ import com.directloc.user.UserDto;
 import com.directloc.user.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -32,6 +33,7 @@ public class AuthController {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
                 .build();
+
         userRepository.save(user);
         String token = jwtService.generateToken(user.getEmail());
         return ResponseEntity.ok(new AuthResponse(token));
@@ -45,15 +47,19 @@ public class AuthController {
         String token = jwtService.generateToken(request.getEmail());
         return ResponseEntity.ok(new AuthResponse(token));
     }
+
     @GetMapping("/test")
     public ResponseEntity<String> test() {
         return ResponseEntity.ok("API OK");
     }
+
     @GetMapping("/me")
     public ResponseEntity<UserDto> me(Authentication auth) {
-        String email = auth.getName(); // = subject du JWT
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+        String email = auth.getName();
         User user = userRepository.findByEmail(email).orElseThrow();
         return ResponseEntity.ok(new UserDto(user.getId(), user.getEmail(), user.getRole()));
     }
-
 }

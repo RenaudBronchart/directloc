@@ -1,9 +1,14 @@
+// src/main/java/com/directloc/user/UserService.java
 package com.directloc.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+/**
+ * User helper service:
+ * - Retrieve the current authenticated user entity by email (JWT subject).
+ */
 @Service
 @RequiredArgsConstructor
 public class UserService {

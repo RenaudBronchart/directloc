@@ -1,0 +1,15 @@
+.thread-wrap { display: grid; grid-template-rows: 1fr auto; height: calc(100vh - 220px); }
+.msgs { overflow: auto; padding: 12px; display: grid; gap: 8px; background: #fafafa; border-radius: 12px; border:1px solid #e5e7eb; }
+.msg { display: flex; }
+.msg.mine { justify-content: flex-end; }
+.bubble {
+  max-width: 72ch; padding: 8px 10px; border-radius: 12px; background:#fff; border:1px solid #e5e7eb;
+}
+.msg.mine .bubble { background:#e8f5e9; border-color:#c8e6c9; }
+.body { white-space: pre-wrap; }
+.time { color:#6b7280; font-size:.8rem; margin-top: 2px; }
+.composer {
+  margin-top: 10px; display:flex; gap:8px; align-items:center; padding:8px; border:1px solid #e5e7eb; border-radius:12px; background:#fff;
+}
+.composer input { flex:1; border:0; outline:0; font: inherit; }
+.loading { padding: 8px; color:#6b7280; }

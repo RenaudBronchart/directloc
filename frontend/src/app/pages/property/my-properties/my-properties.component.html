@@ -1,42 +1,43 @@
+<!-- src/app/pages/property/my-properties/my-properties.component.html -->
 <section class="container my-props">
-    <div class="header">
-        <h2>My Properties</h2>
-        <button mat-raised-button color="primary" (click)="openCreate()">
-            <mat-icon>add</mat-icon>
-            Create Property
-        </button>
-    </div>
+  <div class="header">
+    <h2>My Properties</h2>
+    <button mat-raised-button color="primary" (click)="openCreate()">
+      <mat-icon>add</mat-icon>
+      Create property
+    </button>
+  </div>
 
-    <ng-container *ngIf="!loading; else skeletons">
-        <ng-container *ngIf="items?.length; else empty">
-            <div class="grid">
-                <div class="card-wrap" *ngFor="let p of items; trackBy: trackById">
-                    <app-property-card [data]="p" (open)="openDetail($event)"></app-property-card>
+  <ng-container *ngIf="!loading; else skeletons">
+    <ng-container *ngIf="items?.length; else empty">
+      <div class="grid">
+        <div class="card-wrap" *ngFor="let p of items; trackBy: trackById">
+          <app-property-card [data]="p" (open)="openDetail($event)"></app-property-card>
 
-                    <div class="row-actions">
-                        <button mat-stroked-button color="primary" (click)="openEdit(p.id)">
-                            <mat-icon>edit</mat-icon> Edit
-                        </button>
-                        <button mat-stroked-button color="warn" (click)="delete(p.id)">
-                            <mat-icon>delete</mat-icon> Delete
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </ng-container>
+          <div class="row-actions">
+            <button mat-stroked-button color="primary" (click)="openEdit(p.id)">
+              <mat-icon>edit</mat-icon> Edit
+            </button>
+            <button mat-stroked-button color="warn" (click)="delete(p.id)">
+              <mat-icon>delete</mat-icon> Delete
+            </button>
+          </div>
+        </div>
+      </div>
     </ng-container>
+  </ng-container>
 
-    <ng-template #skeletons>
-        <div class="grid">
-            <app-property-card *ngFor="let s of [1,2,3,4,5,6]" [loading]="true"></app-property-card>
-        </div>
-    </ng-template>
+  <ng-template #skeletons>
+    <div class="grid">
+      <app-property-card *ngFor="let s of [1,2,3,4,5,6]" [loading]="true"></app-property-card>
+    </div>
+  </ng-template>
 
-    <ng-template #empty>
-        <div class="empty">
-            <mat-icon>home_work</mat-icon>
-            <p>You don’t have any properties yet.</p>
-            <button mat-raised-button color="primary" (click)="openCreate()">Create your first property</button>
-        </div>
-    </ng-template>
+  <ng-template #empty>
+    <div class="empty">
+      <mat-icon>home_work</mat-icon>
+      <p>You don’t have any properties yet.</p>
+      <button mat-raised-button color="primary" (click)="openCreate()">Create your first property</button>
+    </div>
+  </ng-template>
 </section>

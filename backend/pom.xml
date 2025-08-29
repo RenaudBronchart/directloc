@@ -12,7 +12,7 @@
 	<artifactId>directloc</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>directloc</name>
-	<description>Backend service for DirectLoc – Property Listing &amp; Authentication API</description>
+	<description>Backend service for DirectLoc – PropertyModel Listing &amp; Authentication API</description>
 	<url/>
 	<licenses>
 		<license/>

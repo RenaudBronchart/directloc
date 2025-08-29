@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 
-export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED';
+export type BookingStatus = 'REQUESTED' | 'ACCEPTED' | 'DECLINED' | 'CANCELLED';
 
 export interface BookingCardData {
   id: number;
@@ -15,8 +15,8 @@ export interface BookingCardData {
   adults: number;
   children: number;
   rooms: number;
-  totalPrice: string | number; // BigDecimal llega como string
-  status: BookingStatus;
+  totalPrice: string | number;
+  status: BookingStatus;         // <-- new vocabulary
 }
 
 @Component({
@@ -28,8 +28,21 @@ export interface BookingCardData {
 })
 export class BookingCardComponent {
   @Input() data!: BookingCardData;
-  @Input() clickable = true;               // para desactivar “mano/hover” en detalle
+  @Input() clickable = true;
   @Output() open = new EventEmitter<number>();
+
+  // class for the chip (requested|accepted|declined|cancelled)
+  get statusClass(): string {
+    return (this.data?.status ?? '').toLowerCase();
+  }
+
+  // pretty label (optional)
+  statusLabel: Record<BookingStatus, string> = {
+    REQUESTED: 'Requested',
+    ACCEPTED:  'Accepted',
+    DECLINED:  'Declined',
+    CANCELLED: 'Cancelled'
+  };
 
   get totalNum(): number {
     const v = this.data?.totalPrice as any;

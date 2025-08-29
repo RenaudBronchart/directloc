@@ -7,8 +7,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 
-import { PropertyRequest } from '../../../types/property-request.type';
+import { PropertyRequestDto } from '../../../dto/property.dto';
 import { PropertyService } from '../../../services/property.service';
 
 @Component({
@@ -27,9 +28,10 @@ import { PropertyService } from '../../../services/property.service';
   styleUrls: ['./property-form.component.scss']
 })
 export class PropertyFormComponent implements OnChanges {
-  /** id présent = mode édition ; absent = création */
+  /** If `id` is present → edit mode, otherwise → create mode */
   @Input() id?: string | null;
-  @Input() initialData?: PropertyRequest | null;
+  /** Optional initial data to prefill the form (edit mode) */
+  @Input() initialData?: PropertyRequestDto | null;
 
   loading = false;
 
@@ -64,12 +66,12 @@ export class PropertyFormComponent implements OnChanges {
     }
     this.loading = true;
 
-    // construit proprement le payload
+    // Build a clean payload that matches the backend DTO
     const v = this.form.value;
-    const payload: PropertyRequest = {
-      title: v.title!.trim(),
-      description: v.description!.trim(),
-      location: v.location!.trim(),
+    const payload: PropertyRequestDto = {
+      title: (v.title ?? '').trim(),
+      description: (v.description ?? '').trim(),
+      location: (v.location ?? '').trim(),
       pricePerNight: Number(v.pricePerNight),
       bedrooms: v.bedrooms ?? null,
       bathrooms: v.bathrooms ?? null,
@@ -81,16 +83,16 @@ export class PropertyFormComponent implements OnChanges {
       ? this.api.updateProperty(this.id, payload)
       : this.api.createProperty(payload);
 
-    req$.subscribe({
-      next: () => {
-        this.loading = false;
-        this.snack.open(this.id ? 'Property updated ' : 'Property created ', 'Close', { duration: 2500 });
-        this.router.navigate(['/my-properties']);
-      },
-      error: () => {
-        this.loading = false;
-        this.snack.open('Operation failed. Please try again.', 'Close', { duration: 3500 });
-      }
-    });
+    req$
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: () => {
+          this.snack.open(this.id ? 'Property updated' : 'Property created', 'Close', { duration: 2500 });
+          this.router.navigate(['/my-properties']);
+        },
+        error: () => {
+          this.snack.open('Operation failed. Please try again.', 'Close', { duration: 3500 });
+        }
+      });
   }
 }

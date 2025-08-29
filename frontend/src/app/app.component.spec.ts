@@ -1,10 +1,16 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
 import { AppComponent } from './app.component';
 
-describe('AppComponent', () => {
+describe('AppComponent (standalone)', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppComponent],
+      imports: [AppComponent],                // ⟵ standalone component
+      providers: [
+        provideRouter([]),                   // ⟵ if AppComponent uses <router-outlet>, keep this
+        provideHttpClient(),                 // ⟵ only if component hits HttpClient directly
+      ],
     }).compileComponents();
   });
 
@@ -13,8 +19,6 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
   });
-
-
 
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);

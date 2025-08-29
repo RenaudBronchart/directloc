@@ -1,4 +1,6 @@
-// src/app/guards/auth-guard.ts
+// Route guard to protect private routes.
+// If not authenticated, redirects to /login and keeps the target URL in ?redirect=.
+
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -9,7 +11,7 @@ export class AuthGuard implements CanActivate {
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
     return this.auth.isAuthenticated()
-        ? true
-        : this.router.createUrlTree(['/login'], { queryParams: { redirect: state.url } });
+      ? true
+      : this.router.createUrlTree(['/login'], { queryParams: { redirect: state.url } });
   }
 }

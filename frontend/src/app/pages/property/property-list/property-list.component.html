@@ -1,6 +1,6 @@
 <section class="list-layout">
 
-  <!-- Barre de recherche (même composant que Home) -->
+  <!-- Top search bar -->
   <section class="search-row">
     <div class="search-shell">
       <app-search-bar (search)="onTopSearch($event)"></app-search-bar>
@@ -8,7 +8,6 @@
   </section>
 
   <!-- ===== Sidebar (desktop) / Sheet (mobile) ===== -->
-  <!-- Backdrop mobile -->
   <div class="sidebar-backdrop" *ngIf="sidebarOpen" (click)="toggleFilters()"></div>
 
   <aside class="sidebar" [class.open]="sidebarOpen">
@@ -75,7 +74,6 @@
 
   <!-- ===== Results ===== -->
   <main class="results">
-    <!-- En-tête des résultats -->
     <div class="results-header card">
       <div class="summary">{{ summaryText }}</div>
 
@@ -96,7 +94,6 @@
       </div>
     </div>
 
-    <!-- Chips de filtres actifs -->
     <div class="active-filters" *ngIf="chips.length">
       <mat-chip-listbox aria-label="Active filters">
         <mat-chip *ngFor="let c of chips" selectable="false" removable (removed)="removeChip(c)">
@@ -107,7 +104,6 @@
       </mat-chip-listbox>
     </div>
 
-    <!-- Liste -->
     <div class="cards">
       <app-property-row-card
         *ngFor="let p of items; trackBy: trackById"
@@ -121,7 +117,6 @@
       </div>
     </div>
 
-    <!-- Paginación conditionnelle -->
     <mat-paginator
       *ngIf="total > pageSize"
       [length]="total"
