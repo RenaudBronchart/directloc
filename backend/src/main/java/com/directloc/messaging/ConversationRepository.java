@@ -51,4 +51,15 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
        order by c.lastMessageAt desc nulls last, c.createdAt desc
     """)
     Page<ConversationSummary> findSummariesForUser(@Param("userId") Long userId, Pageable pageable);
+
+    // Hilo general (sin booking)
+    @Query("""
+      select c from Conversation c
+      where c.property.id = :propertyId and c.guest.id = :guestId and c.booking is null
+    """)
+    Optional<Conversation> findGeneral(@Param("propertyId") java.util.UUID propertyId,
+                                       @Param("guestId") Long guestId);
+
+    // Hilo por reserva
+    Optional<Conversation> findByBookingId(Long bookingId);
 }

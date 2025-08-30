@@ -9,8 +9,8 @@ export interface PageModel<T> {
   content: T[];
   totalElements?: number;
   totalPages?: number;
-  number?: number;     // page index
-  size?: number;       // page size
+  number?: number;
+  size?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -19,17 +19,28 @@ export class MessagingService {
 
   constructor(private http: HttpClient) {}
 
-  /** Abre (o reutiliza) una conversación para una propiedad */
+  /** Back compat: alias que llama al general */
   open(propertyId: string): Observable<ConversationListItem> {
+    return this.openGeneral(propertyId);
+  }
+
+  /** Abrir/reutilizar hilo GENERAL (sin booking) */
+  openGeneral(propertyId: string): Observable<ConversationListItem> {
     return this.http
-      .post<ConversationSummaryDto>(`${this.API}/open`, { propertyId })
+      .post<ConversationSummaryDto>(`${this.API}/open-general`, { propertyId })
       .pipe(map(messagingAdapter.toConversationItem));
   }
 
-  /** Lista de conversaciones del usuario (devuelve SIEMPRE array en el front) */
+  /** Abrir/reutilizar hilo por RESERVA */
+  openForBooking(bookingId: number): Observable<ConversationListItem> {
+    return this.http
+      .post<ConversationSummaryDto>(`${this.API}/open-booking`, { bookingId })
+      .pipe(map(messagingAdapter.toConversationItem));
+  }
+
+  /** Lista de conversaciones (devuelve array en el front) */
   conversations(page = 0, size = 30): Observable<ConversationListItem[]> {
     const params = new HttpParams().set('page', page).set('size', size);
-
     return this.http
       .get<ConversationSummaryDto[] | PageModel<ConversationSummaryDto>>(
         `${this.API}/conversations`,
@@ -43,15 +54,11 @@ export class MessagingService {
       );
   }
 
-  /** Mensajes del hilo (devuelve SIEMPRE array en el front) */
-  thread(id: number, page = 0, size = 100): Observable<ChatMessage[]> {
+  /** Mensajes del hilo (array en el front) */
+  thread(id: number, page = 0, size = 200): Observable<ChatMessage[]> {
     const params = new HttpParams().set('page', page).set('size', size);
-
     return this.http
-      .get<MessageDto[] | PageModel<MessageDto>>(
-        `${this.API}/${id}/messages`,
-        { params }
-      )
+      .get<MessageDto[] | PageModel<MessageDto>>(`${this.API}/${id}/messages`, { params })
       .pipe(
         map(res => {
           const list = Array.isArray(res) ? res : res?.content;
@@ -60,7 +67,7 @@ export class MessagingService {
       );
   }
 
-  /** Enviar mensaje */
+  /** Enviar */
   send(id: number, body: string): Observable<ChatMessage> {
     return this.http
       .post<MessageDto>(`${this.API}/${id}`, { body })
@@ -68,13 +75,7 @@ export class MessagingService {
   }
 
   /** Marcar leído / archivar / desarchivar */
-  markRead(id: number): Observable<void> {
-    return this.http.patch<void>(`${this.API}/${id}/read`, {});
-  }
-  archive(id: number): Observable<void> {
-    return this.http.patch<void>(`${this.API}/${id}/archive`, {});
-  }
-  unarchive(id: number): Observable<void> {
-    return this.http.patch<void>(`${this.API}/${id}/unarchive`, {});
-  }
+  markRead(id: number): Observable<void> { return this.http.patch<void>(`${this.API}/${id}/read`, {}); }
+  archive(id: number): Observable<void> { return this.http.patch<void>(`${this.API}/${id}/archive`, {}); }
+  unarchive(id: number): Observable<void> { return this.http.patch<void>(`${this.API}/${id}/unarchive`, {}); }
 }

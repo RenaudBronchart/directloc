@@ -1,5 +1,6 @@
 package com.directloc.messaging;
 
+import com.directloc.booking.Booking;
 import com.directloc.property.Property;
 import com.directloc.user.User;
 import jakarta.persistence.*;
@@ -11,12 +12,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
 
 /**
- * 1:1 thread between a property owner (host) and a guest for a given property.
- * Uniqueness is (property, owner, guest) → avoids duplicates.
+ * Thread entre host (owner) y guest para una propiedad.
+ * Unicidad: (property, owner, guest, booking) — si booking es NULL es hilo general.
  */
 @Entity
 @Table(name = "conversations",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"property_id","owner_id","guest_id"}),
+        uniqueConstraints = @UniqueConstraint(columnNames = {"property_id","owner_id","guest_id","booking_id"}),
         indexes = {
                 @Index(name="idx_conv_property", columnList = "property_id"),
                 @Index(name="idx_conv_owner", columnList = "owner_id"),
@@ -33,6 +34,11 @@ public class Conversation {
     /** Property the thread refers to. */
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Property property;
+
+    /** Optional link to a booking; null means "general thread". */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
 
     /** Property owner (host). */
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -53,7 +59,7 @@ public class Conversation {
     private Instant ownerLastSeenAt;
     private Instant guestLastSeenAt;
 
-    /** Last message timestamp (used for ordering thread lists). */
+    /** Last message timestamp (used for ordering). */
     private Instant lastMessageAt;
 
     /** Small snippet of the last message (for list preview). */

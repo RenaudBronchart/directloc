@@ -1,5 +1,7 @@
 package com.directloc.messaging;
 
+import com.directloc.booking.Booking;
+import com.directloc.booking.BookingRepository;
 import com.directloc.property.Property;
 import com.directloc.property.PropertyRepository;
 import com.directloc.user.User;
@@ -22,26 +24,56 @@ public class MessagingService {
     private final ConversationRepository convRepo;
     private final MessageRepository msgRepo;
     private final PropertyRepository propertyRepo;
+    private final BookingRepository bookingRepo;
     private final UserService userService;
 
     private User me() { return userService.getCurrentUser(); }
 
-    /** Open (or reuse) a conversation between current guest and the property owner. */
+    /** Open (or reuse) GENERAL conversation (booking = null). */
     @Transactional
-    public Conversation openOrGet(UUID propertyId) {
+    public Conversation openGeneral(UUID propertyId) {
         var me = me();
         Property property = propertyRepo.findById(propertyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Property not found"));
+
         var owner = property.getOwner();
         if (owner.getId().equals(me.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Owner cannot open a conversation with self.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Owner cannot chat with self.");
         }
 
-        return convRepo.findByPropertyIdAndOwnerIdAndGuestId(propertyId, owner.getId(), me.getId())
+        return convRepo.findGeneral(propertyId, me.getId())
                 .orElseGet(() -> convRepo.save(Conversation.builder()
                         .property(property)
+                        .booking(null)
                         .owner(owner)
                         .guest(me)
+                        .status(ConversationStatus.OPEN)
+                        .lastMessageAt(Instant.now())
+                        .build()));
+    }
+
+    /** Open (or reuse) BOOKING conversation (one per booking). */
+    @Transactional
+    public Conversation openForBooking(Long bookingId) {
+        var me = me();
+        Booking booking = bookingRepo.findById(bookingId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+
+        var property = booking.getProperty();
+        var owner = property.getOwner();
+        var guest = booking.getGuest();
+
+        // Only participants may open
+        if (!me.getId().equals(owner.getId()) && !me.getId().equals(guest.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not a participant of this booking.");
+        }
+
+        return convRepo.findByBookingId(bookingId)
+                .orElseGet(() -> convRepo.save(Conversation.builder()
+                        .property(property)
+                        .booking(booking)
+                        .owner(owner)
+                        .guest(guest)
                         .status(ConversationStatus.OPEN)
                         .lastMessageAt(Instant.now())
                         .build()));
@@ -57,12 +89,10 @@ public class MessagingService {
         var conv = convRepo.findByIdForParticipant(conversationId, me.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Not a participant"));
 
-        // 🔒 Política de estado
         if (conv.getStatus() == ConversationStatus.CLOSED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Conversation is closed.");
         }
         if (conv.getStatus() == ConversationStatus.ARCHIVED) {
-            // UX: si alguien escribe, volvemos a mostrar el hilo
             conv.setStatus(ConversationStatus.OPEN);
         }
 
@@ -101,7 +131,6 @@ public class MessagingService {
         var conv = convRepo.findByIdForParticipant(conversationId, me.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Not a participant"));
 
-        // Bulk mark-read (simple loop). Si quieres un UPDATE masivo, haz un @Modifying.
         msgRepo.findByConversationOrderByCreatedAtAsc(conv, Pageable.unpaged())
                 .stream()
                 .filter(m -> m.getReadAt() == null && !m.getSender().getId().equals(me.getId()))

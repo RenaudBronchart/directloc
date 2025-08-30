@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-/** REST endpoints for the messaging feature. */
 @RestController
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
@@ -16,10 +15,17 @@ public class MessagingController {
     private final MessagingService service;
     private final MessagingMapper mapper;
 
-    /** Open or reuse a conversation for a property, return a full summary DTO. */
-    @PostMapping("/open")
-    public ConversationSummaryDto open(@RequestBody OpenConversationRequest req) {
-        var c = service.openOrGet(req.propertyId());
+    /** Open/reuse GENERAL conversation (property only). */
+    @PostMapping("/open-general")
+    public ConversationSummaryDto openGeneral(@RequestBody OpenGeneralRequest req) {
+        var c = service.openGeneral(req.propertyId());
+        return mapper.toSummaryDto(c);
+    }
+
+    /** Open/reuse BOOKING conversation (per booking). */
+    @PostMapping("/open-booking")
+    public ConversationSummaryDto openBooking(@RequestBody OpenBookingRequest req) {
+        var c = service.openForBooking(req.bookingId());
         return mapper.toSummaryDto(c);
     }
 
@@ -42,16 +48,12 @@ public class MessagingController {
     }
 
     /** Mark as read / archive / unarchive. */
-    @PatchMapping("/{id}/read")
-    public void markRead(@PathVariable Long id) { service.markRead(id); }
-
-    @PatchMapping("/{id}/archive")
-    public void archive(@PathVariable Long id) { service.archive(id); }
-
-    @PatchMapping("/{id}/unarchive")
-    public void unarchive(@PathVariable Long id) { service.unarchive(id); }
+    @PatchMapping("/{id}/read") public void markRead(@PathVariable Long id) { service.markRead(id); }
+    @PatchMapping("/{id}/archive") public void archive(@PathVariable Long id) { service.archive(id); }
+    @PatchMapping("/{id}/unarchive") public void unarchive(@PathVariable Long id) { service.unarchive(id); }
 
     // Payloads
-    public record OpenConversationRequest(@NotNull java.util.UUID propertyId) {}
+    public record OpenGeneralRequest(@NotNull java.util.UUID propertyId) {}
+    public record OpenBookingRequest(@NotNull Long bookingId) {}
     public record SendMessageRequest(@NotBlank String body) {}
 }
