@@ -16,18 +16,17 @@ import {
 } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { HttpErrorResponse } from '@angular/common/http';
 
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-
+import { MessagingService } from '../../../services/messaging.service';
 import { PropertyService } from '../../../services/property.service';
 import { PropertyDetail } from '../../../models/property.model';
 import { AuthService } from '../../../services/auth.service';
 import { BookingService } from '../../../services/booking.service';
-import { BookingRequest } from '../../../types/booking';
+import { BookingRequest } from '../../../models/booking.model';
 
 import { addDays, format } from 'date-fns';
 
-/* Strongly typed form */
 type DetailForm = {
   checkIn:  FormControl<Date | null>;
   checkOut: FormControl<Date | null>;
@@ -53,9 +52,9 @@ export class PropertyDetailComponent implements OnInit {
   private fb = inject(FormBuilder);
   private snack = inject(MatSnackBar);
   private router = inject(Router);
-  private http = inject(HttpClient);
   private auth = inject(AuthService);
   private booking = inject(BookingService);
+  private messaging = inject(MessagingService);
 
   @ViewChild('rangePicker') rangePicker!: MatDateRangePicker<Date>;
 
@@ -66,10 +65,9 @@ export class PropertyDetailComponent implements OnInit {
 
   errorText: string | null = null;
 
-  // --- calendario: helpers y estado ---
   private startOfDay(d: Date) { const x = new Date(d); x.setHours(0,0,0,0); return x; }
   today = this.startOfDay(new Date());
-  booked = new Set<string>(); // días ocupados 'yyyy-MM-dd'
+  booked = new Set<string>(); // 'yyyy-MM-dd'
 
   form: FormGroup<DetailForm> = this.fb.group<DetailForm>({
     checkIn:  this.fb.control<Date | null>(null, { validators: Validators.required }),
@@ -79,7 +77,7 @@ export class PropertyDetailComponent implements OnInit {
     rooms:    this.fb.control<number>(1, { nonNullable: true, validators: [Validators.required, Validators.min(1)] }),
   });
 
-  // helpers
+  // getters UI
   get a() { return this.form.controls.adults.value ?? 1; }
   get c() { return this.form.controls.children.value ?? 0; }
   get r() { return this.form.controls.rooms.value ?? 1; }
@@ -115,7 +113,6 @@ export class PropertyDetailComponent implements OnInit {
         this.property = p;
         this.loading = false;
 
-        // cargar días ocupados para el calendario (6 meses vista)
         if (p?.id) {
           const from = format(this.today, 'yyyy-MM-dd');
           const to   = format(addDays(this.today, 180), 'yyyy-MM-dd');
@@ -127,7 +124,7 @@ export class PropertyDetailComponent implements OnInit {
       error: () => { this.loading = false; }
     });
 
-    // prefill from query params
+    // Prefill from query params
     const qp = this.route.snapshot.queryParamMap;
     const ci = qp.get('checkIn');
     const co = qp.get('checkOut');
@@ -148,7 +145,7 @@ export class PropertyDetailComponent implements OnInit {
     }, { emitEvent: false });
   }
 
-  // --- calendario: pinta gris pasados, rojo ocupados ---
+  // Calendar: gray past, red booked
   dateClass: MatCalendarCellClassFunction<Date> = (cellDate, view) => {
     if (view !== 'month') return '';
     const d = this.startOfDay(cellDate);
@@ -158,7 +155,7 @@ export class PropertyDetailComponent implements OnInit {
     return '';
   };
 
-  // --- calendario: bloquea selección de pasados/ocupados ---
+  // Calendar: disable past & booked
   rangeDateFilter = (d: Date | null): boolean => {
     if (!d) return false;
     const day = this.startOfDay(d);
@@ -168,7 +165,23 @@ export class PropertyDetailComponent implements OnInit {
     return true;
   };
 
-  openDates(): void { this.rangePicker.open(); }
+  openDates(): void {
+    if (this.rangePicker) this.rangePicker.open();
+  }
+
+  openChat(): void {
+    if (!this.property) return;
+    if (!this.auth.isAuthenticated()) {
+      this.router.navigate(['/login'], { queryParams: { redirect: this.router.url }});
+      return;
+    }
+    this.messaging.openGeneral(this.property.id).subscribe({
+      next: c => this.router.navigate(['/messages', c.id]),
+      error: () => this.snack.open('Could not open conversation', 'Close', { duration: 2500 })
+    });
+  }
+
+
 
   onDateChanged(): void {
     const ci = this.form.controls.checkIn.value;
@@ -180,7 +193,7 @@ export class PropertyDetailComponent implements OnInit {
     this.errorText = null;
   }
 
-  step(ctrl: 'adults'|'children'|'rooms', delta: number): void {
+  private step(ctrl: 'adults'|'children'|'rooms', delta: number): void {
     const c = this.form.controls[ctrl];
     const min = ctrl === 'children' ? 0 : 1;
     c.setValue(Math.max(min, (c.value ?? min) + delta));
@@ -197,7 +210,6 @@ export class PropertyDetailComponent implements OnInit {
     }
     if (this.form.invalid) return;
 
-    // client guard: min 2 noches
     if (this.nights < 2) {
       this.errorText = 'Minimum stay is 2 nights.';
       this.snack.open(this.errorText, 'Close', { duration: 3000 });
@@ -226,10 +238,14 @@ export class PropertyDetailComponent implements OnInit {
     this.errorText = null;
 
     this.booking.create(payload).subscribe({
-      next: () => {
+      next: (b) => {
         this.submitting = false;
-        this.snack.open('Booking confirmed ✅', 'Close', { duration: 2500 });
-        this.router.navigate(['/profile']);
+        this.snack.open('Booking requested  ✅', 'Close', { duration: 2500 });
+        if (b?.id != null) {
+          this.router.navigate(['/bookings', b.id]);
+        } else {
+          this.router.navigate(['/profile']);
+        }
       },
       error: (err: HttpErrorResponse) => {
         this.submitting = false;

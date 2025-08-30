@@ -1,0 +1,53 @@
+<div class="container">
+  <h1>Inbox</h1>
+
+  <!-- Loading skeleton -->
+  <div class="skeleton" *ngIf="loading">
+    <div class="sk-row" *ngFor="let _ of [1,2,3,4]"></div>
+  </div>
+
+  <!-- Error -->
+  <div class="hint error" *ngIf="!loading && error">
+    Could not load your conversations.
+  </div>
+
+  <!-- Empty -->
+  <div class="empty" *ngIf="!loading && !error && items.length === 0">
+    <mat-icon>mark_chat_unread</mat-icon>
+    <div>No conversations yet</div>
+    <a mat-stroked-button routerLink="/properties">Explore stays</a>
+  </div>
+
+  <!-- List -->
+  <div class="list" *ngIf="!loading && !error && items.length">
+    <button
+      class="row"
+      *ngFor="let c of items; trackBy: trackId"
+      (click)="openThread(c)"
+      [class.unread]="c.unreadCount > 0"
+      [attr.aria-label]="'Open conversation ' + c.propertyTitle + ' with ' + c.otherUserEmail"
+    >
+      <img class="thumb" [src]="c.propertyCoverUrl || placeholder" [alt]="c.propertyTitle" />
+
+      <div class="info">
+        <div class="title">
+          {{ c.propertyTitle }}
+          <span class="chip chip--booking" *ngIf="c.hasBooking">Booking</span>
+          <span class="chip chip--general" *ngIf="!c.hasBooking">General</span>
+        </div>
+
+        <div class="meta">
+          <mat-icon>person</mat-icon>{{ c.otherUserEmail }}
+          <span class="dot">·</span>
+          <time class="time" [attr.datetime]="c.lastMessageAt | date:'yyyy-MM-ddTHH:mm:ss'">
+            {{ c.lastMessageAt | date:'short' }}
+          </time>
+        </div>
+
+        <div class="preview" [title]="c.preview">{{ c.preview }}</div>
+      </div>
+
+      <div class="badge" *ngIf="c.unreadCount > 0">{{ c.unreadCount }}</div>
+    </button>
+  </div>
+</div>

@@ -16,10 +16,11 @@ import { debounceTime, Subject, takeUntil } from 'rxjs';
 
 import { SearchBarComponent } from '../../../components/search-bar/search-bar.component';
 import { PropertyService } from '../../../services/property.service';
-import { Page, Property } from '../../../models/property.model';
+import { PageModel } from '../../../models/page.model';
+import { PropertyModel } from '../../../models/property.model';
 import { PropertyRowCardComponent } from '../../../components/property-row-card/property-row-card.component';
 
-/** Type local pour la barre top */
+/** Local type for top search bar output */
 type TopSearchParams = {
   q?: string;
   checkIn?: Date | null;
@@ -46,17 +47,17 @@ export class PropertyListComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   loading = true;
-  items: Property[] = [];
+  items: PropertyModel[] = [];
   total = 0;
 
   // pagination
   pageIndex = 0;
   pageSize = 12;
 
-  // tri
+  // sorting
   sort: 'newest' | 'price_asc' | 'price_desc' = 'newest';
 
-  // filtres (on garde checkIn/out pour futur)
+  // filters (we keep checkIn/out for future)
   form = this.fb.group({
     q: [''],
     checkIn: [null as Date | null],
@@ -84,7 +85,7 @@ export class PropertyListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // hydrate depuis l’URL
+    // hydrate from URL
     const qp = this.route.snapshot.queryParamMap;
 
     const ciStr = qp.get('checkIn');
@@ -109,7 +110,7 @@ export class PropertyListComponent implements OnInit, OnDestroy {
     this.pageSize  = +(qp.get('size') ?? 12);
     this.sort      = (qp.get('sort') as any) ?? 'newest';
 
-    // reload on filters change
+    // auto-reload on filter change
     this.form.valueChanges.pipe(debounceTime(250), takeUntil(this.destroy$)).subscribe(() => {
       this.pageIndex = 0;
       this.pushState();
@@ -123,13 +124,12 @@ export class PropertyListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroy$.next(); this.destroy$.complete();
-    // restore scroll if sidebar was open on mobile
     document.body.style.overflow = '';
   }
 
   /* ===== UI actions ===== */
 
-  trackById(_: number, p: Property) { return p.id; }
+  trackById(_: number, p: PropertyModel) { return p.id; }
 
   changeSort(v: 'newest' | 'price_asc' | 'price_desc') {
     this.sort = v;
@@ -145,7 +145,6 @@ export class PropertyListComponent implements OnInit, OnDestroy {
     this.load();
   }
 
-  // handler depuis la barre top
   onTopSearch(params: TopSearchParams) {
     this.form.patchValue({
       q: params.q ?? '',
@@ -164,7 +163,6 @@ export class PropertyListComponent implements OnInit, OnDestroy {
 
   toggleFilters() {
     this.sidebarOpen = !this.sidebarOpen;
-    // lock body scroll en sheet mobile
     if (window.innerWidth <= 1000) {
       document.body.style.overflow = this.sidebarOpen ? 'hidden' : '';
     }
@@ -280,7 +278,7 @@ export class PropertyListComponent implements OnInit, OnDestroy {
       page: this.pageIndex,
       size: this.pageSize
     }).subscribe({
-      next: (page: Page<Property>) => {
+      next: (page: PageModel<PropertyModel>) => {
         this.items = [...page.content].sort((a,b) => {
           if (this.sort === 'price_asc')  return (a.pricePerNight ?? 0) - (b.pricePerNight ?? 0);
           if (this.sort === 'price_desc') return (b.pricePerNight ?? 0) - (a.pricePerNight ?? 0);

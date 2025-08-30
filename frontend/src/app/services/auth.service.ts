@@ -1,9 +1,12 @@
-// src/app/services/auth.service.ts
+// Auth API: register/login + token/session helpers.
+// Uses environment.apiBase to build endpoints.
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
-import { User } from '../types/user';
+import { environment } from '../../environments/environment';
+import { User } from '../models/user.model';
 import { UserService } from './user.service';
 
 interface AuthResponse { token: string; }
@@ -12,7 +15,7 @@ interface RegisterRequest { email: string; password: string; }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API = 'http://localhost:8080/api';
+  private readonly API = `${environment.apiBase}api`; // -> http://localhost:8080/api
   private user$ = new BehaviorSubject<User | null>(null);
   private loadingUser = false;
 
@@ -24,7 +27,7 @@ export class AuthService {
   register(data: RegisterRequest): Observable<User> {
     return this.http.post<AuthResponse>(`${this.API}/auth/register`, data).pipe(
       tap(res => this.saveToken(res.token)),
-      switchMap(() => this.userSvc.me()),
+      switchMap(() => this.userSvc.me()),   // fetch /auth/me after storing token
       tap(user => this.user$.next(user))
     );
   }
@@ -41,6 +44,7 @@ export class AuthService {
   saveToken(token: string) { localStorage.setItem('token', token); }
   getToken(): string | null { return localStorage.getItem('token'); }
   logout() { localStorage.removeItem('token'); this.user$.next(null); }
+
   isAuthenticated(): boolean {
     const token = this.getToken(); if (!token) return false;
     const payload = this.decodeJwt<any>(token);
@@ -64,7 +68,11 @@ export class AuthService {
   private decodeJwt<T>(token: string): T | null {
     try {
       const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-      const json = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+      const json = decodeURIComponent(
+        atob(base64).split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
       return JSON.parse(json);
     } catch { return null; }
   }

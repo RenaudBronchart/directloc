@@ -13,3 +13,18 @@
 .cta mat-icon { margin-right: .35rem; }
 
 button[mat-icon-button] { width: 40px; height: 40px; }
+
+.inbox-btn {
+  margin-left: .5rem;
+
+  // Pulse on unread > 0
+  &[matbadge]:not([matbadgehidden="true"]) {
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%   { transform: scale(1) }
+  50%  { transform: scale(1.06) }
+  100% { transform: scale(1) }
+}

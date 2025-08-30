@@ -1,0 +1,22 @@
+export type ConversationStatus = 'OPEN' | 'ARCHIVED' | 'CLOSED';
+
+export interface ConversationListItem {
+  id: number;
+  propertyId: string;                 // UUID
+  propertyTitle: string;
+  otherUserEmail: string;
+  preview: string;
+  lastMessageAt: Date | null;
+  unreadCount: number;
+  status: ConversationStatus;
+  hasBooking: boolean;
+  propertyCoverUrl?: string | null;
+}
+
+export interface ChatMessage {
+  id: number;
+  senderEmail: string | null;
+  body: string;
+  createdAt: Date;
+  mine: boolean;
+}

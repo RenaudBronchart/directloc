@@ -1,7 +1,9 @@
 package com.directloc.booking;
 
 public enum BookingStatus {
-    PENDING,
-    CONFIRMED,
-    CANCELLED
+    REQUESTED,   //
+    ACCEPTED,    //
+    DECLINED,
+    CANCELLED,
+    EXPIRED
 }

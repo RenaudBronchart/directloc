@@ -1,13 +1,17 @@
+// src/main/java/com/directloc/user/UserDetailsImpl.java
 package com.directloc.user;
 
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Bridges your User entity to Spring Security's UserDetails:
+ * - Exposes ROLE_... authority expected by Spring.
+ */
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 

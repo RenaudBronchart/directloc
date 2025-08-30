@@ -58,6 +58,13 @@ $detail-width: 960px;
       span { display: inline-flex; align-items: center; gap: .35rem; }
       mat-icon { font-size: 20px; height: 20px; width: 20px; }
     }
+
+    .hero-actions {
+      margin-top: .75rem;
+      display: flex; gap: .5rem; flex-wrap: wrap;
+      button[mat-stroked-button] { text-transform: none; border-radius: $radius-md; }
+      mat-icon { margin-right: .35rem; }
+    }
   }
 }
 
@@ -109,6 +116,8 @@ $detail-width: 960px;
         border-radius: 12px; text-transform: none;
         border-color: #e5e7eb; background: #fff;
       }
+      .date-ghost:hover { background: #f8fafc; }
+      .date-ghost:focus-visible { outline: 3px solid rgba($primary-color, .25); outline-offset: 2px; }
 
       .counters { display: grid; gap: 12px; margin: 6px 0 10px; }
 

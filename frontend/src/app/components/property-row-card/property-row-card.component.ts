@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Property } from '../../models/property.model';
+import { PropertyModel } from '../../models/property.model';
 
 @Component({
   selector: 'app-property-row-card',
@@ -13,7 +13,7 @@ import { Property } from '../../models/property.model';
   styleUrls: ['./property-row-card.component.scss']
 })
 export class PropertyRowCardComponent {
-  @Input() data!: Property;
+  @Input() data!: PropertyModel;
   @Input() loading = false;
   @Output() open = new EventEmitter<string>();
 

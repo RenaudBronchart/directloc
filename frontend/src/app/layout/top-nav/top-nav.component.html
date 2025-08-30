@@ -1,3 +1,4 @@
+<!-- src/app/components/top-nav/top-nav.component.html -->
 <mat-toolbar class="topbar">
   <div class="dl-container bar">
     <a class="brand" routerLink="/">
@@ -6,19 +7,37 @@
 
     <span class="spacer"></span>
 
-    <!-- CTA visible -->
+    <!-- Inbox icon visible when logged in -->
+    <ng-container *ngIf="isLoggedIn">
+      <button
+        mat-icon-button
+        routerLink="/messages"
+        aria-label="Open inbox"
+        [matBadge]="(unread$ | async) ?? 0"
+        [matBadgeHidden]="((unread$ | async) ?? 0) === 0"
+        matBadgeColor="accent"
+        matBadgeOverlap="false"
+      >
+        <mat-icon>mail</mat-icon>
+      </button>
+    </ng-container>
+
+    <!-- CTA -->
     <button mat-raised-button color="primary" class="dl-btn-pill cta" (click)="goCreate()">
       <mat-icon>add_home</mat-icon>
       <span>List your property</span>
     </button>
 
-    <!-- Menu unique -->
+    <!-- Menu -->
     <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Open menu">
       <mat-icon>menu</mat-icon>
     </button>
 
     <mat-menu #menu="matMenu">
       <ng-container *ngIf="isLoggedIn; else guest">
+        <button mat-menu-item routerLink="/messages">
+          <mat-icon>mail</mat-icon><span>Inbox</span>
+        </button>
         <button mat-menu-item routerLink="/my-properties"><mat-icon>home_work</mat-icon><span>My properties</span></button>
         <button mat-menu-item routerLink="/properties"><mat-icon>search</mat-icon><span>Explore stays</span></button>
         <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>My profile</span></button>

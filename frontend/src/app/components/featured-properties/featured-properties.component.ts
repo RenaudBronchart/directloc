@@ -4,7 +4,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterModule } from '@angular/router';
 
 import { PropertyService } from '../../services/property.service';
-import { Property } from '../../models/property.model';
+import { PropertyModel } from '../../models/property.model';
 import { PropertyCardComponent } from '../property-card/property-card.component';
 
 type FeaturedParams = {
@@ -27,7 +27,7 @@ export class FeaturedPropertiesComponent implements OnInit {
   @Input() params: FeaturedParams | null = null;
 
   loading = true;
-  items: Property[] = [];
+  items: PropertyModel[] = [];
 
   constructor(private api: PropertyService, private router: Router) {}
 
@@ -47,7 +47,7 @@ export class FeaturedPropertiesComponent implements OnInit {
     });
   }
 
-  trackById(_: number, p: Property) { return p.id; }
+  trackById(_: number, p: PropertyModel) { return p.id; }
 
   go(id: string) {
     this.router.navigate(['/properties', id]);

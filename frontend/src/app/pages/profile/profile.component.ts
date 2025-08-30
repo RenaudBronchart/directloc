@@ -10,7 +10,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { AuthService } from '../../services/auth.service';
 import { BookingService } from '../../services/booking.service';
-import { Booking } from '../../types/booking';
+import { BookingModel } from '../../models/booking.model';
 import { BookingCardComponent } from '../../components/booking-card/booking-card.component';
 
 import { Observable, of } from 'rxjs';
@@ -33,18 +33,18 @@ import { catchError, map } from 'rxjs/operators';
   styleUrls: ['./profile.component.scss']
 })
 export class ProfileComponent {
-  // Usuario autenticado
+  /** Current authenticated user (can be null briefly on bootstrap) */
   private auth = inject(AuthService);
   user$ = this.auth.currentUser$();
 
-  // Reservas del usuario
+  /** Current user's bookings, normalized to an empty array on error */
   private bookingSvc = inject(BookingService);
-  bookings$: Observable<Booking[]> = this.bookingSvc.my().pipe(
+  bookings$: Observable<BookingModel[]> = this.bookingSvc.my().pipe(
     map(list => list ?? []),
-    catchError(() => of([])) // silencio errores en la UI
+    catchError(() => of([]))
   );
 
-  // Navegación al detalle
+  /** Navigate to a booking detail */
   private router = inject(Router);
   goToBooking(id: number) {
     this.router.navigate(['/bookings', id]);

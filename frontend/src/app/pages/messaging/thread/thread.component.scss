@@ -1,0 +1,83 @@
+:host { display:block; }
+
+.chat-page {
+  /* ocupa viewport menos el header global aproximado */
+  min-height: calc(100vh - 72px);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: #f8fafc;
+}
+
+/* Header */
+.chat-header {
+  display:flex; align-items:center; gap:12px;
+  padding: 10px 14px;
+  background:#fff; border-bottom:1px solid #e5e7eb;
+
+  .back { display:inline-flex; align-items:center; gap:4px; text-decoration:none; }
+  .title { flex:1; min-width:0; }
+  .title .primary { font-weight:800; }
+  .title .secondary { color:#6b7280; font-size:.9rem; overflow:hidden; text-overflow:ellipsis; }
+  .actions { display:flex; gap:8px; }
+}
+
+/* Lista de mensajes */
+.thread {
+  overflow:auto;
+  padding: 16px 12px 8px;
+}
+
+.day-sep {
+  margin: 8px auto 16px; width:max-content;
+  background:#e5e7eb; color:#374151; font-weight:700;
+  font-size:.75rem; padding:4px 10px; border-radius:999px; opacity:.85;
+}
+
+.msg {
+  display:flex; margin: 6px 0;
+  &.mine { justify-content:flex-end; }
+}
+
+.bubble {
+  max-width: min(640px, 85vw);
+  padding: 10px 12px; border-radius: 16px;
+  background:#fff; box-shadow: 0 1px 0 rgba(0,0,0,.04);
+  border:1px solid #e5e7eb;
+
+  .body { white-space: pre-wrap; word-wrap: break-word; }
+  .meta { margin-top:4px; font-size:.75rem; color:#6b7280; text-align:right; }
+}
+
+.msg.mine .bubble {
+  background:#ecfdf5; /* verde muy suave */
+  border-color: rgba(16,185,129,.25);
+}
+
+/* vacío */
+.empty {
+  margin: 24px auto; display:grid; place-items:center; gap:6px; color:#6b7280;
+  mat-icon { opacity:.6; }
+}
+
+/* Composer fijo */
+.composer {
+  position: sticky; bottom: 0;
+  background: linear-gradient(#fff, #fff); border-top:1px solid #e5e7eb;
+  padding: 10px;
+
+  .composer-form {
+    display:grid; grid-template-columns: 24px 1fr auto; align-items:end; gap:8px;
+    background:#fff; border:1px solid #e5e7eb; border-radius: 14px; padding:8px 8px 8px 6px;
+  }
+
+  .leading { color:#64748b; align-self:center; }
+  textarea {
+    width:100%; resize:none; border:0; outline:0; font: inherit; line-height:1.35;
+    max-height: 34vh; /* evita crecer infinito en móvil */
+  }
+}
+
+/* móvil */
+@media (max-width: 640px) {
+  .bubble { max-width: 92vw; }
+}
