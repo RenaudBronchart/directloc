@@ -1,20 +1,30 @@
-.inbox { display: grid; gap: 10px; }
-.item {
-  display: grid; grid-template-columns: 84px 1fr auto; gap: 12px;
-  padding: 10px; border-radius: 12px; background: #fff; border: 1px solid #e5e7eb;
-  text-decoration: none; color: inherit;
+.container { max-width: 880px; margin: 0 auto; padding: 1rem; }
+h1 { margin: 0 0 .75rem; font-size: 1.4rem; font-weight: 800; }
+.hint { color:#6b7280; }
+.hint.error { color:#c62828; }
+.list { display: grid; gap: 8px; }
+
+.row {
+  display: grid; grid-template-columns: 80px 1fr auto; gap: 12px;
+  align-items: center; padding: 8px; border: 1px solid #e5e7eb;
+  border-radius: 12px; background: #fff; cursor: pointer;
+  text-align: left;
 }
-.item:hover { box-shadow: 0 1px 8px rgba(0,0,0,.06); }
-.thumb { width: 84px; height: 64px; object-fit: cover; border-radius: 8px; }
-.meta { display: grid; gap: 4px; }
-.row1 { display: flex; justify-content: space-between; gap: 8px; }
+.row:hover { background: #f9fafb; }
+.thumb { width: 80px; height: 64px; object-fit: cover; border-radius: 8px; }
+.info { display: grid; gap: 2px; }
 .title { font-weight: 800; }
-.time { color: #6b7280; font-size: .9rem; white-space: nowrap; }
-.row2 { color: #6b7280; font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meta { display:flex; align-items:center; gap:6px; color:#6b7280; font-size:.9rem; }
+.meta mat-icon { font-size: 18px; width: 18px; height: 18px; }
+.preview { color:#374151; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
 .badge {
-  align-self: start; display: inline-flex; min-width: 22px; height: 22px;
-  padding: 0 8px; border-radius: 999px; font-weight: 800; font-size: .75rem;
-  background: #eef2ff; color: #3949ab; border: 1px solid rgba(57,73,171,.25);
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width: 22px; height: 22px; padding: 0 8px; border-radius:999px;
+  background:#eef2ff; color:#3949ab; font-weight:800; font-size:.75rem;
+  border:1px solid rgba(57,73,171,.25);
 }
-.empty { color:#6b7280; padding: 12px; }
-.inbox-loading { padding: 12px; }
+.dot { opacity:.6; }
+.empty {
+  margin: 2rem 0; display:grid; place-items:center; gap:.5rem; color:#6b7280;
+  mat-icon { font-size: 40px; width: 40px; height: 40px; opacity:.5; }
+}

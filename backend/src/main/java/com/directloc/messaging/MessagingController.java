@@ -31,8 +31,10 @@ public class MessagingController {
 
     /** List conversation summaries for current user (projection). */
     @GetMapping("/conversations")
-    public Page<ConversationSummary> list(Pageable pageable) {
-        return service.listMyConversations(pageable);
+    public Page<ConversationSummaryDto> list(Pageable pageable) {
+        return service
+                .listMyConversations(pageable)       // Page<ConversationSummary> (proyección)
+                .map(mapper::fromProjection);        // -> Page<ConversationSummaryDto>
     }
 
     /** List messages in a conversation (ASC) as DTOs. */
@@ -51,6 +53,13 @@ public class MessagingController {
     @PatchMapping("/{id}/read") public void markRead(@PathVariable Long id) { service.markRead(id); }
     @PatchMapping("/{id}/archive") public void archive(@PathVariable Long id) { service.archive(id); }
     @PatchMapping("/{id}/unarchive") public void unarchive(@PathVariable Long id) { service.unarchive(id); }
+
+    @GetMapping("/unread-count")
+    public long unreadCount() {
+        return service.unreadCount();
+    }
+
+
 
     // Payloads
     public record OpenGeneralRequest(@NotNull java.util.UUID propertyId) {}

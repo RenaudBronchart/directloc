@@ -1,22 +1,32 @@
-<div class="inbox" *ngIf="items$ | async as items; else loading">
-  <a class="item" *ngFor="let it of items" [routerLink]="['/messages', it.id]">
-    <img class="thumb" [src]="it.propertyCoverUrl || 'assets/placeholder.webp'" alt="" />
-    <div class="meta">
-      <div class="row1">
-        <div class="title">{{ it.propertyTitle }}</div>
-        <div class="time" *ngIf="it.lastMessageAt as d">{{ d | date:'short' }}</div>
-      </div>
-      <div class="row2">
-        <span class="email">{{ it.otherUserEmail }}</span>
-        <span class="preview" *ngIf="it.lastMessagePreview"> · {{ it.lastMessagePreview }}</span>
-      </div>
+<div class="container">
+  <h1>Messages</h1>
+
+  <div *ngIf="loading" class="hint">Loading…</div>
+  <div *ngIf="error" class="hint error">Could not load your conversations.</div>
+
+  <ng-container *ngIf="!loading && !error">
+    <div *ngIf="!items.length" class="empty">
+      <mat-icon>chat</mat-icon>
+      <div>No conversations yet</div>
+      <a mat-stroked-button color="primary" routerLink="/properties">
+        Explore stays
+      </a>
     </div>
-    <span class="badge" *ngIf="it.unreadCount">{{ it.unreadCount }}</span>
-  </a>
 
-  <div class="empty" *ngIf="!items.length">No messages yet.</div>
+    <div *ngIf="items.length" class="list">
+      <button class="row" *ngFor="let c of items; trackBy: trackId" (click)="openThread(c)">
+        <img class="thumb" [src]="c.propertyCoverUrl || 'assets/placeholder.webp'" alt="" />
+        <div class="info">
+          <div class="title">{{ c.propertyTitle }}</div>
+          <div class="meta">
+            <mat-icon>person</mat-icon>{{ c.otherUserEmail }}
+            <span class="dot">•</span>
+            <mat-icon>schedule</mat-icon>{{ c.lastMessageAt | date:'short' }}
+          </div>
+          <div class="preview" *ngIf="c.lastMessagePreview">{{ c.lastMessagePreview }}</div>
+        </div>
+        <span class="badge" *ngIf="c.unreadCount > 0">{{ c.unreadCount }}</span>
+      </button>
+    </div>
+  </ng-container>
 </div>
-
-<ng-template #loading>
-  <div class="inbox-loading">Loading…</div>
-</ng-template>

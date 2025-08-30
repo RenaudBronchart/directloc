@@ -152,4 +152,10 @@ public class MessagingService {
         conv.setStatus(ConversationStatus.OPEN);
         return convRepo.save(conv);
     }
+
+
+    @Transactional(readOnly = true)
+    public long unreadCount() {
+        return convRepo.unreadCountForUser(me().getId());
+    }
 }

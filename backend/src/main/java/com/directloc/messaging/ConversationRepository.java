@@ -62,4 +62,14 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
 
     // Hilo por reserva
     Optional<Conversation> findByBookingId(Long bookingId);
+
+    @Query("""
+  select count(m) from Message m
+  where (m.conversation.owner.id = :userId or m.conversation.guest.id = :userId)
+    and m.readAt is null
+    and m.sender.id <> :userId
+""")
+    long unreadCountForUser(@Param("userId") Long userId);
+
+
 }

@@ -1,18 +1,63 @@
-<div class="thread-wrap">
-  <div class="msgs" #scrollArea>
-    <div *ngIf="loading" class="loading">Loading…</div>
+<div class="chat-page">
+  <!-- Header -->
+  <header class="chat-header">
+    <a class="back" routerLink="/messages" aria-label="Back to inbox">
+      <mat-icon>chevron_left</mat-icon> Inbox
+    </a>
 
-    <div *ngFor="let m of messages" class="msg" [class.mine]="m.mine">
-      <div class="bubble">
-        <div class="body">{{ m.body }}</div>
-        <div class="time">{{ m.createdAt | date:'short' }}</div>
-      </div>
+    <div class="title">
+      <div class="primary">{{ headerTitle || 'Conversation' }}</div>
+      <div class="secondary" *ngIf="otherEmail">{{ otherEmail }}</div>
     </div>
-  </div>
 
-  <form class="composer" [formGroup]="form" (ngSubmit)="send()">
-    <mat-icon>chat</mat-icon>
-    <input type="text" formControlName="body" placeholder="Write a message…" />
-    <button mat-raised-button color="primary" [disabled]="sending || form.invalid">Send</button>
-  </form>
+    <div class="actions">
+      <button mat-stroked-button color="primary" (click)="archive()" *ngIf="!archived">
+        <mat-icon>inventory_2</mat-icon> Archive
+      </button>
+      <button mat-stroked-button (click)="unarchive()" *ngIf="archived">
+        <mat-icon>unarchive</mat-icon> Unarchive
+      </button>
+    </div>
+  </header>
+
+  <!-- Mensajes -->
+  <main #scrollRegion class="thread" aria-live="polite">
+    <ng-container *ngFor="let m of messages; let i = index; trackBy: trackId">
+      <!-- Separador por día -->
+      <div class="day-sep" *ngIf="showDateSeparator(i)">
+        {{ formatDay(m.createdAt) }}
+      </div>
+
+      <!-- Burbuja -->
+      <div class="msg" [class.mine]="m.mine">
+        <div class="bubble">
+          <div class="body">{{ m.body }}</div>
+          <div class="meta">{{ m.createdAt | date:'shortTime' }}</div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Loading / vacío -->
+    <div class="empty" *ngIf="!loading && messages.length === 0">
+      <mat-icon>chat</mat-icon>
+      Start the conversation
+    </div>
+  </main>
+
+  <!-- Composer -->
+  <footer class="composer">
+    <form [formGroup]="form" (ngSubmit)="send()" class="composer-form">
+      <mat-icon class="leading">chat_bubble</mat-icon>
+      <textarea
+        formControlName="body"
+        rows="1"
+        placeholder="Write a message…"
+        (keydown)="onKeydown($event)"
+        (input)="autogrow($event)"
+      ></textarea>
+      <button mat-raised-button color="primary" [disabled]="sending || form.invalid">
+        Send
+      </button>
+    </form>
+  </footer>
 </div>

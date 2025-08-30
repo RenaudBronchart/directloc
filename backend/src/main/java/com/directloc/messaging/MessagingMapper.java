@@ -46,4 +46,17 @@ public class MessagingMapper {
                 c.getStatus()
         );
     }
+
+    public ConversationSummaryDto fromProjection(ConversationSummary p) {
+        return new ConversationSummaryDto(
+                p.getId(),
+                p.getPropertyId(),
+                p.getPropertyTitle(),
+                p.getOtherUserEmail(),
+                p.getLastMessagePreview(),
+                p.getLastMessageAt(),
+                p.getUnreadCount(),
+                p.getStatus()
+        );
+    }
 }

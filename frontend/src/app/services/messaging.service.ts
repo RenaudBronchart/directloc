@@ -74,6 +74,10 @@ export class MessagingService {
       .pipe(map(messagingAdapter.toMessage));
   }
 
+  unreadCount() {
+    return this.http.get<number>(`${this.API}/unread-count`);
+  }
+
   /** Marcar leído / archivar / desarchivar */
   markRead(id: number): Observable<void> { return this.http.patch<void>(`${this.API}/${id}/read`, {}); }
   archive(id: number): Observable<void> { return this.http.patch<void>(`${this.API}/${id}/archive`, {}); }
