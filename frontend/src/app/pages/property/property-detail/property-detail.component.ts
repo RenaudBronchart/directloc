@@ -175,11 +175,13 @@ export class PropertyDetailComponent implements OnInit {
       this.router.navigate(['/login'], { queryParams: { redirect: this.router.url }});
       return;
     }
-    this.messaging.open(this.property.id).subscribe({
+    this.messaging.openGeneral(this.property.id).subscribe({
       next: c => this.router.navigate(['/messages', c.id]),
       error: () => this.snack.open('Could not open conversation', 'Close', { duration: 2500 })
     });
   }
+
+
 
   onDateChanged(): void {
     const ci = this.form.controls.checkIn.value;

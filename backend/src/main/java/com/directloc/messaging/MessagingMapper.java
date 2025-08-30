@@ -29,12 +29,25 @@ public class MessagingMapper {
     }
 
     /** Map Conversation → Summary DTO including unread count for current user. */
+    /** Map Conversation entity → DTO (includes unread count for current user). */
     public ConversationSummaryDto toSummaryDto(Conversation c) {
         User me = userService.getCurrentUser();
+
         long unread = messageRepository.countUnreadForUser(c.getId(), me.getId());
+
         String other = c.getOwner().getId().equals(me.getId())
                 ? c.getGuest().getEmail()
                 : c.getOwner().getEmail();
+
+        // Whether this thread is tied to a booking (entity -> just check null)
+        boolean hasBooking = c.getBooking() != null;
+
+        // Property cover image URL (CHANGE the getter name to your field if different)
+        String coverUrl = null;
+        // e.g. if your Property has getCoverImageUrl() or getMainImageUrl()
+        // coverUrl = c.getProperty().getCoverImageUrl();
+        // coverUrl = c.getProperty().getMainImageUrl();
+
         return new ConversationSummaryDto(
                 c.getId(),
                 c.getProperty().getId(),
@@ -43,7 +56,9 @@ public class MessagingMapper {
                 c.getLastMessagePreview(),
                 c.getLastMessageAt(),
                 unread,
-                c.getStatus()
+                c.getStatus(),
+                hasBooking,     // NEW
+                coverUrl        // NEW
         );
     }
 
@@ -56,7 +71,10 @@ public class MessagingMapper {
                 p.getLastMessagePreview(),
                 p.getLastMessageAt(),
                 p.getUnreadCount(),
-                p.getStatus()
+                p.getStatus(),
+                Boolean.TRUE.equals(p.getHasBooking()),
+                p.getPropertyCoverUrl()
         );
     }
+
 }

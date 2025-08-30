@@ -14,4 +14,6 @@ public interface ConversationSummary {
     Instant getLastMessageAt();
     long getUnreadCount();
     ConversationStatus getStatus();
+    Boolean getHasBooking();
+    String getPropertyCoverUrl();
 }

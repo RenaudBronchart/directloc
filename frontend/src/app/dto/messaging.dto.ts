@@ -1,23 +1,22 @@
-// DTOs as returned by the backend messaging endpoints
-
 export type ConversationStatus = 'OPEN' | 'ARCHIVED' | 'CLOSED';
 
 export interface ConversationSummaryDto {
-  id: number;              // Conversation id (Long)
-  propertyId: string;      // UUID
+  id: number;
+  propertyId: string;                 // UUID
   propertyTitle: string;
-  propertyCoverUrl?: string | null; // optional (projection may not include it)
   otherUserEmail: string;
-  lastMessagePreview?: string | null;
-  lastMessageAt?: string | null;     // ISO
+  lastMessagePreview: string | null;
+  lastMessageAt: string | null;       // ISO
   unreadCount: number;
-  status?: ConversationStatus;       // optional if projection doesn't include it
+  status: ConversationStatus;
+  hasBooking: boolean;                // <-- new
+  propertyCoverUrl?: string | null;   // <-- new
 }
 
 export interface MessageDto {
   id: number;
-  senderEmail: string;
+  senderEmail: string | null;
   body: string;
-  createdAt: string;       // ISO
+  createdAt: string;                  // ISO
   mine: boolean;
 }

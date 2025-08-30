@@ -1,32 +1,53 @@
 <div class="container">
-  <h1>Messages</h1>
+  <h1>Inbox</h1>
 
-  <div *ngIf="loading" class="hint">Loading…</div>
-  <div *ngIf="error" class="hint error">Could not load your conversations.</div>
+  <!-- Loading skeleton -->
+  <div class="skeleton" *ngIf="loading">
+    <div class="sk-row" *ngFor="let _ of [1,2,3,4]"></div>
+  </div>
 
-  <ng-container *ngIf="!loading && !error">
-    <div *ngIf="!items.length" class="empty">
-      <mat-icon>chat</mat-icon>
-      <div>No conversations yet</div>
-      <a mat-stroked-button color="primary" routerLink="/properties">
-        Explore stays
-      </a>
-    </div>
+  <!-- Error -->
+  <div class="hint error" *ngIf="!loading && error">
+    Could not load your conversations.
+  </div>
 
-    <div *ngIf="items.length" class="list">
-      <button class="row" *ngFor="let c of items; trackBy: trackId" (click)="openThread(c)">
-        <img class="thumb" [src]="c.propertyCoverUrl || 'assets/placeholder.webp'" alt="" />
-        <div class="info">
-          <div class="title">{{ c.propertyTitle }}</div>
-          <div class="meta">
-            <mat-icon>person</mat-icon>{{ c.otherUserEmail }}
-            <span class="dot">•</span>
-            <mat-icon>schedule</mat-icon>{{ c.lastMessageAt | date:'short' }}
-          </div>
-          <div class="preview" *ngIf="c.lastMessagePreview">{{ c.lastMessagePreview }}</div>
+  <!-- Empty -->
+  <div class="empty" *ngIf="!loading && !error && items.length === 0">
+    <mat-icon>mark_chat_unread</mat-icon>
+    <div>No conversations yet</div>
+    <a mat-stroked-button routerLink="/properties">Explore stays</a>
+  </div>
+
+  <!-- List -->
+  <div class="list" *ngIf="!loading && !error && items.length">
+    <button
+      class="row"
+      *ngFor="let c of items; trackBy: trackId"
+      (click)="openThread(c)"
+      [class.unread]="c.unreadCount > 0"
+      [attr.aria-label]="'Open conversation ' + c.propertyTitle + ' with ' + c.otherUserEmail"
+    >
+      <img class="thumb" [src]="c.propertyCoverUrl || placeholder" [alt]="c.propertyTitle" />
+
+      <div class="info">
+        <div class="title">
+          {{ c.propertyTitle }}
+          <span class="chip chip--booking" *ngIf="c.hasBooking">Booking</span>
+          <span class="chip chip--general" *ngIf="!c.hasBooking">General</span>
         </div>
-        <span class="badge" *ngIf="c.unreadCount > 0">{{ c.unreadCount }}</span>
-      </button>
-    </div>
-  </ng-container>
+
+        <div class="meta">
+          <mat-icon>person</mat-icon>{{ c.otherUserEmail }}
+          <span class="dot">·</span>
+          <time class="time" [attr.datetime]="c.lastMessageAt | date:'yyyy-MM-ddTHH:mm:ss'">
+            {{ c.lastMessageAt | date:'short' }}
+          </time>
+        </div>
+
+        <div class="preview" [title]="c.preview">{{ c.preview }}</div>
+      </div>
+
+      <div class="badge" *ngIf="c.unreadCount > 0">{{ c.unreadCount }}</div>
+    </button>
+  </div>
 </div>

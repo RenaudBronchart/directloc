@@ -11,7 +11,7 @@ import { MatMenuModule }    from '@angular/material/menu';
 import { MatButtonModule }  from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatBadgeModule }   from '@angular/material/badge';
-
+import { distinctUntilChanged } from 'rxjs/operators';
 import { timer, switchMap, catchError, of, shareReplay } from 'rxjs';
 
 import { AuthService } from '../../services/auth.service';
@@ -40,12 +40,22 @@ export class TopNavComponent {
   unread$ = timer(0, 15000).pipe(
     switchMap(() => this.isLoggedIn ? this.messaging.unreadCount() : of(0)),
     catchError(() => of(0)),
+    distinctUntilChanged(),
     shareReplay({ bufferSize: 1, refCount: true })
   );
+
 
   logout() {
     this.auth.logout();
     this.router.navigate(['/login']);
+  }
+
+  goInbox() {
+    if (this.isLoggedIn) {
+      this.router.navigate(['/messages']);
+    } else {
+      this.router.navigate(['/login'], { queryParams: { redirect: '/messages' } });
+    }
   }
 
   goCreate() {

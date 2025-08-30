@@ -1,23 +1,22 @@
-// UI models for chat components
+export type ConversationStatus = 'OPEN' | 'ARCHIVED' | 'CLOSED';
 
 export interface ConversationListItem {
   id: number;
-  propertyId: string;
+  propertyId: string;                 // UUID
   propertyTitle: string;
-  propertyCoverUrl?: string | null;
   otherUserEmail: string;
-  lastMessagePreview?: string | null;
-  lastMessageAt?: Date | null;
+  preview: string;
+  lastMessageAt: Date | null;
   unreadCount: number;
-  status?: 'OPEN' | 'ARCHIVED' | 'CLOSED';
+  status: ConversationStatus;
+  hasBooking: boolean;
+  propertyCoverUrl?: string | null;
 }
 
 export interface ChatMessage {
   id: number;
-  senderEmail: string;
+  senderEmail: string | null;
   body: string;
   createdAt: Date;
   mine: boolean;
 }
-
-export type ConversationSummary = ConversationListItem;

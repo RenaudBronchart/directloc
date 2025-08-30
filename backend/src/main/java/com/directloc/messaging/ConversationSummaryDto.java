@@ -12,5 +12,7 @@ public record ConversationSummaryDto(
         String lastMessagePreview,
         Instant lastMessageAt,
         long unreadCount,
-        ConversationStatus status
+        ConversationStatus status,
+        boolean hasBooking,           // NEW
+        String propertyCoverUrl
 ) {}
