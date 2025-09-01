@@ -134,6 +134,18 @@ export const routes: Routes = [
             .then(m => m.ProfileComponent),
         data: { title: 'My profile' }
       },
+      /* --- onboarding --- */
+      {
+        path: 'onboarding',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./pages/onboarding/onboarding.component')
+            .then(m => m.OnboardingComponent),
+        data: { title: 'onboarding' }
+      },
+
+
+
     ]
   },
 

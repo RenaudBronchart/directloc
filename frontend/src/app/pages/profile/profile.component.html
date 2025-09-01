@@ -1,98 +1,306 @@
-<ng-container *ngIf="user$ | async as u; else loading">
-  <div class="profile-container">
-    <mat-card class="profile-card">
+<div class="container">
 
-      <!-- ===== Header ===== -->
-      <div class="header">
-        <div class="avatar" aria-hidden="true">
-          {{ (u.email | slice:0:1) | uppercase }}
+  <!-- Top row: My profile (left) + My data (right) -->
+  <div class="top-grid">
+    <!-- My profile -->
+    <mat-card class="card page-header">
+      <div class="ph-grid">
+        <button class="avatar" (click)="pickAvatar()" aria-label="Change avatar">
+          <img *ngIf="avatarUrl; else avatarFallback"
+               [src]="fileUrl(avatarUrl)" (error)="imgError($event)" alt="Avatar">
+          <ng-template #avatarFallback>
+            <span>{{ initials(email) }}</span>
+          </ng-template>
+        </button>
+
+        <div class="id">
+          <h1>My profile</h1>
+          <div class="sub">{{ email }}</div>
+          <div class="chips"><span class="chip">User</span></div>
         </div>
+      </div>
 
-        <div class="title-wrap">
-          <h1 class="title">My profile</h1>
-          <div class="meta">
-            <span class="email">{{ u.email }}</span>
-            <!-- ❗️sin optional chaining -->
-            <span class="chip" [ngClass]="u.role.toLowerCase()">{{ u.role }}</span>
-          </div>
+      <!-- Mini-cards 2x2 -->
+      <div class="mini-grid">
+        <div class="mini">
+          <div class="n">{{ tripsCount }}</div>
+          <div class="l">Trips</div>
         </div>
+        <div class="mini">
+          <div class="n">{{ nightsCount }}</div>
+          <div class="l">Nights</div>
+        </div>
+        <div class="mini">
+          <div class="n">{{ memberSince }}</div>
+          <div class="l">Member since</div>
+        </div>
+        <div class="mini">
+          <div class="n">{{ formatMoney(spentTotal) }}</div>
+          <div class="l">Spent</div>
+        </div>
+      </div>
 
+      <input #file type="file" accept="image/*" class="hidden" (change)="onFile(file)">
+    </mat-card>
+
+    <!-- My data (inline edit per field) -->
+    <mat-card class="card data">
+      <mat-card-header class="data-head">
+        <mat-card-title>My data</mat-card-title>
         <span class="spacer"></span>
+        <span class="hint">Click ✎ to edit a field</span>
+      </mat-card-header>
 
-        <div class="header-actions">
-          <a mat-stroked-button color="primary" routerLink="/my-properties">
-            <mat-icon>home_work</mat-icon>
-            <span>My properties</span>
-          </a>
-        </div>
-      </div>
-
-      <mat-divider class="divider"></mat-divider>
-
-      <!-- ===== Info + Shortcuts ===== -->
-      <div class="grid">
-        <section class="section">
-          <h3>Account</h3>
-
-          <div class="row">
-            <span class="label">Email</span>
-            <span class="value">{{ u.email }}</span>
-          </div>
-
-        </section>
-
-        <section class="section">
-          <h3>Shortcuts</h3>
+      <mat-card-content>
+        <!-- Email (readonly) -->
+        <div class="row">
+          <div class="k">Email</div>
+          <div class="v">{{ email || '—' }}</div>
           <div class="actions">
-            <a mat-stroked-button color="primary" routerLink="/properties/create">
-              <mat-icon>add_home</mat-icon>
-              <span>List your property</span>
-            </a>
-            <a mat-stroked-button routerLink="/properties">
-              <mat-icon>search</mat-icon>
-              <span>Explore stays</span>
-            </a>
+            <button mat-icon-button (click)="copyEmail()" [disabled]="!email" aria-label="Copy email">
+              <mat-icon>content_copy</mat-icon>
+            </button>
           </div>
-          <p class="hint">More profile fields & password change arriving soon.</p>
-        </section>
-      </div>
-
-      <!-- ===== My bookings ===== -->
-      <mat-divider class="divider"></mat-divider>
-
-      <section class="section">
-        <div class="section-head">
-          <h3>My bookings</h3>
-          <span class="badge" *ngIf="(bookings$ | async)?.length as n">{{ n }}</span>
         </div>
 
-        <ng-container *ngIf="bookings$ | async as bookings; else bookingsLoading">
-          <div *ngIf="bookings.length; else noBookings" class="bookings">
-            <app-booking-card
-              *ngFor="let b of bookings"
-              [data]="b"
-              (open)="goToBooking($event)">
-            </app-booking-card>
+        <!-- Full name -->
+        <div class="row">
+          <div class="k">Full name</div>
+          <div class="v">
+            <ng-container *ngIf="editing!=='fullName'; else editFull">
+              {{ f.fullName.value || '—' }}
+            </ng-container>
+            <ng-template #editFull>
+              <div class="inline-edit">
+                <mat-form-field appearance="outline" class="inline">
+                  <input matInput [formControl]="f.fullName" maxlength="120" autocomplete="name">
+                </mat-form-field>
+                <button mat-stroked-button (click)="cancelField('fullName')" [disabled]="saving">Cancel</button>
+                <button mat-raised-button color="primary"
+                        (click)="saveField('fullName')"
+                        [disabled]="f.fullName.invalid || saving">Save</button>
+              </div>
+            </ng-template>
           </div>
-        </ng-container>
+          <div class="actions" *ngIf="editing!=='fullName'">
+            <button mat-icon-button (click)="startField('fullName')" aria-label="Edit full name">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </div>
+        </div>
 
-        <ng-template #noBookings>
-          <p class="hint">
-            No bookings yet. Start by <a routerLink="/properties">exploring stays</a>!
-          </p>
-        </ng-template>
+        <!-- Phone (country + prefix + number) -->
+        <div class="row">
+          <div class="k">Phone</div>
+          <div class="v">
+            <ng-container *ngIf="editing!=='phone'; else editPhone">
+              {{ f.phone.value || '—' }}
+            </ng-container>
+            <ng-template #editPhone>
+              <div class="inline-edit phone-group">
+                <!-- Country selector with flag -->
+                <div class="country-select">
+                  <select class="native country" [formControl]="f.phoneCountry" aria-label="Select phone country">
+                    <option [ngValue]="''">🌐</option>
+                    <option *ngFor="let c of countries" [ngValue]="c.code">
+                      {{ flag(c.code) }} {{ c.name }}
+                    </option>
+                  </select>
+                </div>
 
-        <ng-template #bookingsLoading>
-          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        </ng-template>
-      </section>
+                <!-- Prefix (readonly visual) -->
+                <div class="prefix" *ngIf="f.phoneCountry.value as iso">
+                  {{ prefixByIso[iso] || '' }}
+                </div>
 
+                <!-- Phone input -->
+                <mat-form-field appearance="outline" class="inline phone-input">
+                  <input matInput [formControl]="f.phone" maxlength="40" autocomplete="tel" placeholder="Phone number">
+                </mat-form-field>
+
+                <button mat-stroked-button (click)="cancelField('phone')" [disabled]="saving">Cancel</button>
+                <button mat-raised-button color="primary"
+                        (click)="saveField('phone')"
+                        [disabled]="f.phone.invalid || saving">Save</button>
+              </div>
+            </ng-template>
+          </div>
+          <div class="actions" *ngIf="editing!=='phone'">
+            <button mat-icon-button (click)="startField('phone')" aria-label="Edit phone">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Gender -->
+        <div class="row">
+          <div class="k">Gender</div>
+          <div class="v">
+            <ng-container *ngIf="editing!=='gender'; else editGender">
+              {{ f.gender.value || '—' }}
+            </ng-container>
+            <ng-template #editGender>
+              <div class="inline-edit">
+                <select class="native" [formControl]="f.gender">
+                  <option [ngValue]="''">—</option>
+                  <option *ngFor="let g of genders" [ngValue]="g">{{ g }}</option>
+                </select>
+                <button mat-stroked-button (click)="cancelField('gender')" [disabled]="saving">Cancel</button>
+                <button mat-raised-button color="primary" (click)="saveField('gender')">Save</button>
+              </div>
+            </ng-template>
+          </div>
+          <div class="actions" *ngIf="editing!=='gender'">
+            <button mat-icon-button (click)="startField('gender')" aria-label="Edit gender">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Nationality -->
+        <div class="row">
+          <div class="k">Nationality</div>
+          <div class="v">
+            <ng-container *ngIf="editing!=='nationality'; else editNationality">
+              {{ f.nationality.value || '—' }}
+            </ng-container>
+            <ng-template #editNationality>
+              <div class="inline-edit">
+                <select class="native" [formControl]="f.nationality">
+                  <option [ngValue]="''">—</option>
+                  <option *ngFor="let c of countries" [ngValue]="c.code">
+                    {{ c.name }}
+                  </option>
+                </select>
+                <button mat-stroked-button (click)="cancelField('nationality')" [disabled]="saving">Cancel</button>
+                <button mat-raised-button color="primary" (click)="saveField('nationality')">Save</button>
+              </div>
+            </ng-template>
+          </div>
+          <div class="actions" *ngIf="editing!=='nationality'">
+            <button mat-icon-button (click)="startField('nationality')" aria-label="Edit nationality">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Date of birth -->
+        <div class="row">
+          <div class="k">Date of birth</div>
+          <div class="v">
+            <ng-container *ngIf="editing!=='dateOfBirth'; else editDob">
+              {{ f.dateOfBirth.value || '—' }}
+            </ng-container>
+            <ng-template #editDob>
+              <div class="inline-edit">
+                <input class="native" type="date" [formControl]="f.dateOfBirth">
+                <button mat-stroked-button (click)="cancelField('dateOfBirth')" [disabled]="saving">Cancel</button>
+                <button mat-raised-button color="primary" (click)="saveField('dateOfBirth')">Save</button>
+              </div>
+            </ng-template>
+          </div>
+          <div class="actions" *ngIf="editing!=='dateOfBirth'">
+            <button mat-icon-button (click)="startField('dateOfBirth')" aria-label="Edit date of birth">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Phone sharing (renamed from Phone visibility) -->
+        <div class="row">
+          <div class="k">Phone sharing</div>
+          <div class="v">
+            <ng-container *ngIf="editing!=='phoneVisibility'; else editVis">
+              {{ f.phoneVisibility.value || '—' }}
+            </ng-container>
+            <ng-template #editVis>
+              <div class="inline-edit">
+                <select class="native" [formControl]="f.phoneVisibility">
+                  <option [ngValue]="''">—</option>
+                  <option *ngFor="let v of phoneVisibilities" [ngValue]="v.value">{{ v.label }}</option>
+                </select>
+                <button mat-stroked-button (click)="cancelField('phoneVisibility')" [disabled]="saving">Cancel</button>
+                <button mat-raised-button color="primary" (click)="saveField('phoneVisibility')">Save</button>
+              </div>
+            </ng-template>
+          </div>
+          <div class="actions" *ngIf="editing!=='phoneVisibility'">
+            <button mat-icon-button (click)="startField('phoneVisibility')" aria-label="Edit phone sharing">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-card-content>
     </mat-card>
   </div>
-</ng-container>
 
-<ng-template #loading>
-  <div class="loading">
-    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-  </div>
-</ng-template>
+  <!-- Bookings (unchanged) -->
+  <mat-card class="card bookings">
+    <div class="toolbar">
+      <div class="tabs">
+        <button mat-button [class.sel]="tab==='upcoming'" (click)="setTab('upcoming')">Upcoming</button>
+        <button mat-button [class.sel]="tab==='past'"      (click)="setTab('past')">Past</button>
+        <button mat-button [class.sel]="tab==='cancelled'" (click)="setTab('cancelled')">Cancelled</button>
+        <button mat-button [class.sel]="tab==='all'"       (click)="setTab('all')">All</button>
+      </div>
+
+      <div class="search">
+        <mat-icon>search</mat-icon>
+        <input type="search" [value]="q" (input)="onSearch($event)" placeholder="Search bookings (title, city, dates)…">
+      </div>
+    </div>
+
+    <div class="skeleton" *ngIf="bookingsLoading">
+      <div class="sk-row" *ngFor="let _ of [1,2,3]"></div>
+    </div>
+
+    <div class="hint error" *ngIf="!bookingsLoading && bookingsError">
+      Could not load your bookings.
+    </div>
+
+    <div class="empty" *ngIf="!bookingsLoading && !bookingsError && displayed.length===0">
+      <mat-icon>event_busy</mat-icon>
+      <div>No bookings here</div>
+      <a mat-stroked-button routerLink="/properties">Explore stays</a>
+    </div>
+
+    <div class="list" *ngIf="!bookingsLoading && !bookingsError && displayed.length">
+      <div class="bk" *ngFor="let b of displayed; trackBy: trackBookingId" (click)="goBooking(b)">
+        <img class="thumb"
+             [src]="b.propertyCoverUrl ? fileUrl(b.propertyCoverUrl) : placeholder"
+             (error)="imgError($event)" [alt]="b.propertyTitle">
+
+        <div class="info">
+          <div class="t">
+            {{ b.propertyTitle }}
+            <span class="chip" [ngClass]="statusClass(b.status)">{{ statusLabel(b.status) }}</span>
+          </div>
+
+          <div class="meta">
+            <mat-icon>place</mat-icon> {{ b.propertyLocation || '—' }}
+            <span class="dot">·</span>
+            <mat-icon>event</mat-icon>
+            <time [attr.datetime]="b.checkIn">{{ b.checkIn }}</time> —
+            <time [attr.datetime]="b.checkOut">{{ b.checkOut }}</time>
+            <span class="dot">·</span>
+            <mat-icon>group</mat-icon> {{ b.adults }} adults, {{ b.children }} children
+            <span class="dot">·</span>
+            <mat-icon>meeting_room</mat-icon> {{ b.rooms }} rooms
+          </div>
+        </div>
+
+        <div class="side">
+          <div class="price" *ngIf="b.totalPrice != null">{{ formatMoney(b.totalPrice) }}</div>
+          <div class="row-actions">
+            <button mat-stroked-button (click)="goBooking(b); $event.stopPropagation()">
+              <mat-icon>open_in_new</mat-icon> Details
+            </button>
+            <button mat-raised-button color="primary" (click)="messageHost(b); $event.stopPropagation()">
+              <mat-icon>mail</mat-icon> Message host
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </mat-card>
+</div>

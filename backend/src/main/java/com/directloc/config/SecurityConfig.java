@@ -63,9 +63,13 @@ public class SecurityConfig {
                         // Profile
                         .requestMatchers(HttpMethod.GET, "/api/profile").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/profile").authenticated()
-
+                        .requestMatchers(HttpMethod.POST, "/api/profile/avatar").authenticated()
                         // Messaging
                         .requestMatchers("/api/messages/**").authenticated()
+                        //// Static uploaded files (public read)
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+
+
 
                         // Default
                         .anyRequest().authenticated()

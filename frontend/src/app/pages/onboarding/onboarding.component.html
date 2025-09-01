@@ -1,0 +1,150 @@
+<div class="wrap">
+  <mat-card class="card onboarding">
+    <header class="head">
+      <h1>Welcome! Let’s set up your profile</h1>
+      <p class="sub">This takes less than a minute and improves your booking experience.</p>
+    </header>
+
+    <!-- progress -->
+    <div class="steps">
+      <div class="dot" [class.on]="step>=1"><span>1</span> Basics</div>
+      <div class="sep"></div>
+      <div class="dot" [class.on]="step>=2"><span>2</span> Personal</div>
+      <div class="sep"></div>
+      <div class="dot" [class.on]="step>=3"><span>3</span> Preferences</div>
+    </div>
+
+    <!-- STEP 1: BASICS -->
+    <section *ngIf="step===1" class="pane">
+      <div class="grid">
+        <div class="avatar-box">
+          <button class="avatar" (click)="pickAvatar()" aria-label="Change avatar">
+            <img *ngIf="avatarUrl; else fallback" [src]="fileUrl(avatarUrl)" alt="Avatar">
+            <ng-template #fallback><span>{{ email ? email[0].toUpperCase() : 'U' }}</span></ng-template>
+          </button>
+          <input #file type="file" accept="image/*" class="hidden" (change)="onFile(file)">
+          <button mat-stroked-button (click)="pickAvatar()">Upload photo</button>
+        </div>
+
+        <div class="fields">
+          <div class="line">
+            <div class="k">Email</div>
+            <div class="v email">{{ email || '—' }}</div>
+          </div>
+
+          <div class="line">
+            <div class="k">Full name</div>
+            <div class="v">
+              <mat-form-field appearance="outline" class="w">
+                <input matInput [formControl]="f1.fullName" maxlength="120" autocomplete="name" placeholder="Your full name">
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="actions">
+        <span class="spacer"></span>
+        <button mat-raised-button color="primary" [disabled]="saving" (click)="saveStep(1)">Continue</button>
+      </footer>
+    </section>
+
+    <!-- STEP 2: PERSONAL -->
+    <section *ngIf="step===2" class="pane">
+      <div class="line">
+        <div class="k">Phone</div>
+        <div class="v phone-group">
+          <select class="native country" [formControl]="f2.phoneCountry" aria-label="Phone country">
+            <option [ngValue]="''">🌐</option>
+            <option *ngFor="let c of countries" [ngValue]="c.code">{{ flag(c.code) }} {{ c.name }}</option>
+          </select>
+          <div class="prefix" *ngIf="f2.phoneCountry.value as iso">{{ prefixByIso[iso] || '' }}</div>
+          <mat-form-field appearance="outline" class="w">
+            <input matInput [formControl]="f2.phone" maxlength="40" autocomplete="tel" placeholder="Phone number">
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="line">
+        <div class="k">Gender</div>
+        <div class="v">
+          <select class="native w" [formControl]="f2.gender">
+            <option [ngValue]="''">—</option>
+            <option *ngFor="let g of genders" [ngValue]="g">{{ g }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="line">
+        <div class="k">Nationality</div>
+        <div class="v">
+          <select class="native w" [formControl]="f2.nationality">
+            <option [ngValue]="''">—</option>
+            <option *ngFor="let c of countries" [ngValue]="c.code">{{ c.name }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="line">
+        <div class="k">Date of birth</div>
+        <div class="v">
+          <input class="native w" type="date" [formControl]="f2.dateOfBirth">
+        </div>
+      </div>
+
+      <footer class="actions">
+        <button mat-stroked-button (click)="back()">Back</button>
+        <span class="spacer"></span>
+        <button mat-raised-button color="primary" [disabled]="saving" (click)="saveStep(2)">Continue</button>
+      </footer>
+    </section>
+
+    <!-- STEP 3: PREFERENCES -->
+    <section *ngIf="step===3" class="pane">
+      <div class="line">
+        <div class="k">Phone sharing</div>
+        <div class="v">
+          <select class="native w" [formControl]="f3.phoneVisibility">
+            <option [ngValue]="''">—</option>
+            <option *ngFor="let v of phoneVisibilities" [ngValue]="v.value">{{ v.label }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="line">
+        <div class="k">Become a host</div>
+        <div class="v">
+          <select class="native w" [formControl]="f3.wantsToHost">
+            <option [ngValue]="null">—</option>
+            <option [ngValue]="true">Yes</option>
+            <option [ngValue]="false">No</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="line">
+        <div class="k">Language</div>
+        <div class="v">
+          <mat-form-field appearance="outline" class="w">
+            <input matInput [formControl]="f3.locale" placeholder="e.g. en, es, fr">
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="line">
+        <div class="k">Time zone</div>
+        <div class="v">
+          <mat-form-field appearance="outline" class="w">
+            <input matInput [formControl]="f3.timezone" placeholder="e.g. Europe/Madrid">
+          </mat-form-field>
+        </div>
+      </div>
+
+      <footer class="actions">
+        <button mat-stroked-button (click)="back()">Back</button>
+        <span class="spacer"></span>
+        <button mat-raised-button color="primary" [disabled]="saving" (click)="saveStep(3)">Finish</button>
+      </footer>
+    </section>
+  </mat-card>
+</div>
