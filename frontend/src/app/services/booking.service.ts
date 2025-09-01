@@ -14,6 +14,7 @@ export class BookingService {
 
   constructor(private http: HttpClient) {}
 
+
   /** Create booking (REQUESTED) */
   create(data: BookingRequest): Observable<BookingModel> {
     const payload: BookingRequestDto = requestToDto(data);

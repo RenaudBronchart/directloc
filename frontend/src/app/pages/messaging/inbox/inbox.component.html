@@ -1,6 +1,19 @@
 <div class="container">
   <h1>Inbox</h1>
 
+  <!-- Tabs with counters -->
+  <nav class="tabs" role="tablist" aria-label="Inbox filters">
+    <button role="tab" class="tab" [class.active]="view==='all'" (click)="view='all'">
+      All <span class="pill">{{ countAll }}</span>
+    </button>
+    <button role="tab" class="tab" [class.active]="view==='unread'" (click)="view='unread'">
+      Unread <span class="pill" [class.warn]="countUnread>0">{{ countUnread }}</span>
+    </button>
+    <button role="tab" class="tab" [class.active]="view==='archived'" (click)="view='archived'">
+      Archived <span class="pill">{{ countArchived }}</span>
+    </button>
+  </nav>
+
   <!-- Loading skeleton -->
   <div class="skeleton" *ngIf="loading">
     <div class="sk-row" *ngFor="let _ of [1,2,3,4]"></div>
@@ -15,19 +28,33 @@
   <div class="empty" *ngIf="!loading && !error && items.length === 0">
     <mat-icon>mark_chat_unread</mat-icon>
     <div>No conversations yet</div>
-    <a mat-stroked-button routerLink="/properties">Explore stays</a>
+    <a mat-stroked-button color="primary" routerLink="/properties">Explore stays</a>
   </div>
 
   <!-- List -->
-  <div class="list" *ngIf="!loading && !error && items.length">
+  <div
+    class="list"
+    *ngIf="!loading && !error && displayed.length"
+    role="list"
+    tabindex="0"
+    (keydown)="onListKeydown($event)"
+    aria-label="Conversation list"
+  >
     <button
       class="row"
-      *ngFor="let c of items; trackBy: trackId"
+      role="listitem"
+      *ngFor="let c of displayed; trackBy: trackId; let i = index"
       (click)="openThread(c)"
       [class.unread]="c.unreadCount > 0"
+      [class.active]="i === activeIndex"
       [attr.aria-label]="'Open conversation ' + c.propertyTitle + ' with ' + c.otherUserEmail"
     >
-      <img class="thumb" [src]="c.propertyCoverUrl || placeholder" [alt]="c.propertyTitle" />
+      <img
+        class="thumb"
+        [src]="c.propertyCoverUrl || placeholder"
+        [alt]="c.propertyTitle"
+        (error)="imgError($event)"
+      />
 
       <div class="info">
         <div class="title">
@@ -39,15 +66,21 @@
         <div class="meta">
           <mat-icon>person</mat-icon>{{ c.otherUserEmail }}
           <span class="dot">·</span>
-          <time class="time" [attr.datetime]="c.lastMessageAt | date:'yyyy-MM-ddTHH:mm:ss'">
-            {{ c.lastMessageAt | date:'short' }}
-          </time>
+          <ng-container *ngIf="c.lastMessageAt as d">
+            <time
+              class="time"
+              [attr.datetime]="d | date:'yyyy-MM-ddTHH:mm:ss'"
+              [attr.title]="d | date:'medium'"
+            >
+              {{ d | ago }}
+            </time>
+          </ng-container>
         </div>
 
         <div class="preview" [title]="c.preview">{{ c.preview }}</div>
       </div>
 
-      <div class="badge" *ngIf="c.unreadCount > 0">{{ c.unreadCount }}</div>
+      <div class="badge unread" *ngIf="c.unreadCount > 0">{{ c.unreadCount }}</div>
     </button>
   </div>
 </div>

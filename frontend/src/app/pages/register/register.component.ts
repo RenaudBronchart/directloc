@@ -60,7 +60,7 @@ export class RegisterComponent {
       next: () => {
         this.loading = false;
         this.snack.open('Welcome to DirectLoc! 🎉', 'Close', { duration: 2500 });
-        this.router.navigate(['/home']);
+        this.router.navigate(['/onboarding'], { replaceUrl: true });
       },
       error: (err) => {
         this.loading = false;

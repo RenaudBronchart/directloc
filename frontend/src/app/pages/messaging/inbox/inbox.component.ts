@@ -7,11 +7,12 @@ import { finalize } from 'rxjs/operators';
 
 import { MessagingService } from '../../../services/messaging.service';
 import { ConversationListItem } from '../../../models/messaging.model';
+import { AgoPipe } from '../../../pipes/pipe';
 
 @Component({
   standalone: true,
   selector: 'app-inbox',
-  imports: [CommonModule, RouterModule, MatIconModule, MatButtonModule, DatePipe],
+  imports: [CommonModule, RouterModule, MatIconModule, MatButtonModule, DatePipe, AgoPipe],
   templateUrl: './inbox.component.html',
   styleUrls: ['./inbox.component.scss']
 })
@@ -22,7 +23,28 @@ export class InboxComponent {
   loading = true;
   error = false;
   items: ConversationListItem[] = [];
+
+  // Tabs state (single source of truth)
+  view: 'all' | 'unread' | 'archived' = 'all';
+
+  // Keyboard navigation
+  activeIndex = 0;
+
   placeholder = 'assets/placeholder.webp';
+
+  // Counters for tabs
+  get countAll()      { return this.items.length; }
+  get countUnread()   { return this.items.filter(i => i.unreadCount > 0 && i.status !== 'ARCHIVED').length; }
+  get countArchived() { return this.items.filter(i => i.status === 'ARCHIVED').length; }
+
+  // Items shown according to selected tab
+  get displayed(): ConversationListItem[] {
+    switch (this.view) {
+      case 'unread':   return this.items.filter(i => i.unreadCount > 0 && i.status !== 'ARCHIVED');
+      case 'archived': return this.items.filter(i => i.status === 'ARCHIVED');
+      default:         return this.items;
+    }
+  }
 
   ngOnInit() {
     this.svc.conversations(0, 30)
@@ -39,10 +61,28 @@ export class InboxComponent {
     });
   }
 
-  // Fallback to placeholder once, avoiding infinite loop
+  onListKeydown(e: KeyboardEvent) {
+    if (!this.displayed.length) return;
+
+    if (e.key === 'j' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      this.activeIndex = Math.min(this.activeIndex + 1, this.displayed.length - 1);
+    } else if (e.key === 'k' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      this.activeIndex = Math.max(this.activeIndex - 1, 0);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const c = this.displayed[this.activeIndex];
+      if (c) this.openThread(c);
+    }
+  }
+
   imgError(evt: Event) {
-    const img = evt.target as HTMLImageElement;
-    if (img && img.src !== location.origin + '/' + this.placeholder) {
+    const img = evt.target as HTMLImageElement | null;
+    if (!img) return;
+    const ds = img.dataset as DOMStringMap;
+    if (!ds['fallback']) {
+      ds['fallback'] = '1';
       img.src = this.placeholder;
     }
   }
