@@ -1,13 +1,31 @@
 <div class="chat-page">
   <!-- Header -->
-  <header class="chat-header">
+  <header class="chat-header" [class.scrolled]="scrolled">
     <a class="back" routerLink="/messages" aria-label="Back to inbox">
       <mat-icon>chevron_left</mat-icon> Inbox
     </a>
 
     <div class="title">
       <div class="primary">{{ headerTitle || 'Conversation' }}</div>
-      <div class="secondary" *ngIf="otherEmail">{{ otherEmail }}</div>
+
+      <!-- Contact chips -->
+      <div class="contacts" *ngIf="otherEmail || otherPhone">
+        <span class="pill" *ngIf="otherEmail">
+          <mat-icon>alternate_email</mat-icon>
+          <span class="mono">{{ otherEmail }}</span>
+          <button class="mini" mat-icon-button (click)="copy(otherEmail!)" [attr.aria-label]="'Copy '+otherEmail">
+            <mat-icon>content_copy</mat-icon>
+          </button>
+        </span>
+
+        <a class="pill" *ngIf="otherPhone" [href]="'tel:'+otherPhone">
+          <mat-icon>call</mat-icon>
+          <span>{{ otherPhone }}</span>
+          <button class="mini" mat-icon-button type="button" (click)="copy(otherPhone!)" [attr.aria-label]="'Copy '+otherPhone" (click)="$event.preventDefault()">
+            <mat-icon>content_copy</mat-icon>
+          </button>
+        </a>
+      </div>
     </div>
 
     <div class="actions">
@@ -20,15 +38,38 @@
     </div>
   </header>
 
+  <!-- Booking banner (si hay datos) -->
+  <section class="booking-banner" *ngIf="booking.available">
+    <mat-icon>event</mat-icon>
+    <div class="bcol">
+      <div class="line">
+        <span class="dates">{{ booking.dateRange }}</span>
+        <span class="dot" *ngIf="booking.nights != null">·</span>
+        <span class="nights" *ngIf="booking.nights != null">{{ booking.nights }} nights</span>
+        <span class="dot" *ngIf="booking.formattedPrice">·</span>
+        <span class="price" *ngIf="booking.formattedPrice">{{ booking.formattedPrice }}</span>
+        <span class="dot" *ngIf="booking.status">·</span>
+        <span class="chip chip-status" *ngIf="booking.status" [ngClass]="statusClass(booking.status)">
+          {{ statusLabel(booking.status) }}
+        </span>
+      </div>
+      <div class="sub" *ngIf="booking.isSoon">Starts soon</div>
+    </div>
+
+    <span class="spacer"></span>
+
+    <a *ngIf="booking.bookingId != null" class="details" [routerLink]="['/bookings', booking.bookingId]">
+      <mat-icon>open_in_new</mat-icon> Details
+    </a>
+  </section>
+
   <!-- Mensajes -->
-  <main #scrollRegion class="thread" aria-live="polite">
+  <main #scrollRegion class="thread" (scroll)="onScrolled()">
     <ng-container *ngFor="let m of messages; let i = index; trackBy: trackId">
-      <!-- Separador por día -->
       <div class="day-sep" *ngIf="showDateSeparator(i)">
         {{ formatDay(m.createdAt) }}
       </div>
 
-      <!-- Burbuja -->
       <div class="msg" [class.mine]="m.mine">
         <div class="bubble">
           <div class="body">{{ m.body }}</div>
@@ -37,11 +78,15 @@
       </div>
     </ng-container>
 
-    <!-- Loading / vacío -->
     <div class="empty" *ngIf="!loading && messages.length === 0">
       <mat-icon>chat</mat-icon>
       Start the conversation
     </div>
+
+    <!-- Jump to bottom -->
+    <button class="jump" *ngIf="showJump" (click)="jumpToBottom()">
+      New messages ↓
+    </button>
   </main>
 
   <!-- Composer -->
@@ -49,13 +94,14 @@
     <form [formGroup]="form" (ngSubmit)="send()" class="composer-form">
       <mat-icon class="leading">chat_bubble</mat-icon>
       <textarea
+        #bodyInput
         formControlName="body"
         rows="1"
         placeholder="Write a message…"
         (keydown)="onKeydown($event)"
         (input)="autogrow($event)"
       ></textarea>
-      <button mat-raised-button color="primary" [disabled]="sending || form.invalid">
+      <button mat-raised-button color="primary" [disabled]="sending || !canSend">
         Send
       </button>
     </form>

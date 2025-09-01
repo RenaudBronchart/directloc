@@ -31,56 +31,86 @@
     <a mat-stroked-button color="primary" routerLink="/properties">Explore stays</a>
   </div>
 
-  <!-- List -->
-  <div
-    class="list"
-    *ngIf="!loading && !error && displayed.length"
-    role="list"
-    tabindex="0"
-    (keydown)="onListKeydown($event)"
-    aria-label="Conversation list"
-  >
-    <button
-      class="row"
-      role="listitem"
-      *ngFor="let c of displayed; trackBy: trackId; let i = index"
-      (click)="openThread(c)"
-      [class.unread]="c.unreadCount > 0"
-      [class.active]="i === activeIndex"
-      [attr.aria-label]="'Open conversation ' + c.propertyTitle + ' with ' + c.otherUserEmail"
-    >
-      <img
-        class="thumb"
-        [src]="c.propertyCoverUrl || placeholder"
-        [alt]="c.propertyTitle"
-        (error)="imgError($event)"
-      />
+  <!-- Sections -->
+  <div *ngIf="!loading && !error && groupedDisplayed.length">
+    <section class="section" *ngFor="let s of groupedDisplayed">
+      <header class="section-head" *ngIf="s.label">{{ s.label }}</header>
 
-      <div class="info">
-        <div class="title">
-          {{ c.propertyTitle }}
-          <span class="chip chip--booking" *ngIf="c.hasBooking">Booking</span>
-          <span class="chip chip--general" *ngIf="!c.hasBooking">General</span>
-        </div>
+      <div class="list" role="list" tabindex="0" (keydown)="onListKeydown($event)" aria-label="Conversation list">
+        <button
+          class="row"
+          role="listitem"
+          *ngFor="let c of s.items; let i = index"
+          (click)="openThread(c)"
+          [class.unread]="c.unreadCount > 0"
+          [class.active]="(s.offset + i) === activeIndex"
+          [class.pinned]="c.pinned === true"
+          [attr.aria-label]="'Open conversation ' + c.propertyTitle + ' with ' + c.otherUserEmail"
+        >
+          <img class="thumb" [src]="c.propertyCoverUrl || placeholder" [alt]="c.propertyTitle" (error)="imgError($event)"/>
 
-        <div class="meta">
-          <mat-icon>person</mat-icon>{{ c.otherUserEmail }}
-          <span class="dot">·</span>
-          <ng-container *ngIf="c.lastMessageAt as d">
-            <time
-              class="time"
-              [attr.datetime]="d | date:'yyyy-MM-ddTHH:mm:ss'"
-              [attr.title]="d | date:'medium'"
-            >
-              {{ d | ago }}
-            </time>
-          </ng-container>
-        </div>
+          <div class="info">
+            <div class="title">
+              <span class="name">{{ c.propertyTitle }}</span>
+              <span class="chip chip--booking" *ngIf="c.hasBooking">Booking</span>
+              <span class="chip chip--general" *ngIf="!c.hasBooking">General</span>
+              <span class="chip chip--pin" *ngIf="c.pinned === true">Pinned</span>
+            </div>
 
-        <div class="preview" [title]="c.preview">{{ c.preview }}</div>
+            <div class="meta">
+              <mat-icon>person</mat-icon>{{ c.otherUserEmail }}
+              <span class="dot">·</span>
+              <ng-container *ngIf="c.lastMessageAt as d">
+                <time class="time" [attr.datetime]="d | date:'yyyy-MM-ddTHH:mm:ss'" [attr.title]="d | date:'medium'">
+                  {{ d | ago }}
+                </time>
+              </ng-container>
+            </div>
+
+            <!-- Booking line -->
+            <div class="booking" *ngIf="c.hasBooking">
+              <mat-icon>event</mat-icon>
+
+              <span class="dates">{{ dateRangeShort(c.checkIn, c.checkOut) }}</span>
+
+              <span class="dot" *ngIf="nights(c.checkIn, c.checkOut) as n">·</span>
+              <span class="nights" *ngIf="nights(c.checkIn, c.checkOut) as n">{{ n }} nights</span>
+
+              <span class="dot" *ngIf="c.totalPrice != null">·</span>
+              <span class="price" *ngIf="c.totalPrice != null">{{ formatMoney(c.totalPrice, c.currency || 'EUR') }}</span>
+
+              <span class="dot" *ngIf="c.bookingStatus">·</span>
+              <span class="chip chip-status" *ngIf="c.bookingStatus" [ngClass]="statusClass(c.bookingStatus)">
+                {{ statusLabel(c.bookingStatus) }}
+              </span>
+
+              <span class="soon" *ngIf="isSoon(c)">Soon</span>
+            </div>
+
+            <div class="preview" [title]="c.preview">{{ c.preview }}</div>
+          </div>
+
+          <!-- Right side: unread badge + quick actions -->
+          <div class="side">
+            <div class="badge unread" *ngIf="c.unreadCount > 0">{{ c.unreadCount }}</div>
+
+            <div class="actions">
+              <button mat-icon-button (click)="$event.stopPropagation(); toggleUnread(c)" [attr.aria-label]="c.unreadCount>0 ? 'Mark as read' : 'Mark as unread'">
+                <mat-icon>{{ c.unreadCount>0 ? 'mark_email_read' : 'mark_email_unread' }}</mat-icon>
+              </button>
+              <button mat-icon-button (click)="$event.stopPropagation(); togglePin(c)" aria-label="Pin">
+                <mat-icon>push_pin</mat-icon>
+              </button>
+              <button mat-icon-button *ngIf="c.status!=='ARCHIVED'" (click)="$event.stopPropagation(); archiveThread(c)" aria-label="Archive">
+                <mat-icon>archive</mat-icon>
+              </button>
+              <button mat-icon-button *ngIf="c.status==='ARCHIVED'" (click)="$event.stopPropagation(); unarchiveThread(c)" aria-label="Unarchive">
+                <mat-icon>unarchive</mat-icon>
+              </button>
+            </div>
+          </div>
+        </button>
       </div>
-
-      <div class="badge unread" *ngIf="c.unreadCount > 0">{{ c.unreadCount }}</div>
-    </button>
+    </section>
   </div>
 </div>

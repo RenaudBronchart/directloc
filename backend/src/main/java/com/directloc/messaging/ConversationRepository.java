@@ -1,3 +1,4 @@
+// src/main/java/com/directloc/messaging/ConversationRepository.java
 package com.directloc.messaging;
 
 import jakarta.persistence.QueryHint;
@@ -15,75 +16,75 @@ import static org.hibernate.jpa.HibernateHints.HINT_READ_ONLY;
 /** Data access for conversation threads. */
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
 
-    /** Enforce single thread per (property, owner, guest). */
     Optional<Conversation> findByPropertyIdAndOwnerIdAndGuestId(UUID propertyId, Long ownerId, Long guestId);
 
-    /** All threads where the user participates (as owner OR guest), newest first. */
     @Query("""
-       select c from Conversation c
-       where c.owner.id = :userId or c.guest.id = :userId
-       order by c.lastMessageAt desc nulls last, c.createdAt desc
-    """)
+     select c from Conversation c
+     where c.owner.id = :userId or c.guest.id = :userId
+     order by c.lastMessageAt desc nulls last, c.createdAt desc
+  """)
     @QueryHints(@QueryHint(name = HINT_READ_ONLY, value = "true"))
     List<Conversation> findAllForUser(@Param("userId") Long userId);
 
-    /** Resolve a conversation ONLY if the given user is a participant. */
     @Query("""
-       select c from Conversation c
-       where c.id = :id and (c.owner.id = :userId or c.guest.id = :userId)
-    """)
+     select c from Conversation c
+     where c.id = :id and (c.owner.id = :userId or c.guest.id = :userId)
+  """)
     Optional<Conversation> findByIdForParticipant(@Param("id") Long id, @Param("userId") Long userId);
 
-    /** General thread (no booking). */
     @Query("""
-      select c from Conversation c
-      where c.property.id = :propertyId and c.guest.id = :guestId and c.booking is null
-    """)
+    select c from Conversation c
+    where c.property.id = :propertyId and c.guest.id = :guestId and c.booking is null
+  """)
     Optional<Conversation> findGeneral(@Param("propertyId") UUID propertyId,
                                        @Param("guestId") Long guestId);
 
-    /** Per-booking thread. */
     Optional<Conversation> findByBookingId(Long bookingId);
 
-    /** Unread counter for the inbox badge (messages from the other participant only). */
     @Query("""
-      select count(m) from Message m
-      where (m.conversation.owner.id = :userId or m.conversation.guest.id = :userId)
-        and m.readAt is null
-        and m.sender.id <> :userId
-    """)
+    select count(m) from Message m
+    where (m.conversation.owner.id = :userId or m.conversation.guest.id = :userId)
+      and m.readAt is null
+      and m.sender.id <> :userId
+  """)
     long unreadCountForUser(@Param("userId") Long userId);
 
     /**
-     * Inbox projection (paged) with unread counts and extra flags.
-     * NOTE: 'unreadCount' excludes messages sent by the current user.
-     *
-     * Tip: explicit countQuery keeps pagination fast and avoids rewriting the SELECT.
+     * Inbox projection (paged) con campos de booking.
      */
     @Query(
             value = """
-     select c.id as id,
-            c.property.id as propertyId,
-            c.property.title as propertyTitle,
-            (case when c.owner.id = :userId
-                  then c.guest.email else c.owner.email end) as otherUserEmail,
-            c.lastMessagePreview as lastMessagePreview,
-            c.lastMessageAt as lastMessageAt,
-            (select count(m) from Message m
-               where m.conversation = c
-                 and m.readAt is null
-                 and m.sender.id <> :userId) as unreadCount,
-            c.status as status,
-            (case when c.booking is null then false else true end) as hasBooking,
-            c.property.coverUrl as propertyCoverUrl   
-     from Conversation c
-     where c.owner.id = :userId or c.guest.id = :userId
-     order by c.lastMessageAt desc nulls last, c.createdAt desc
+    select
+      c.id                                                                 as id,
+      c.property.id                                                         as propertyId,
+      c.property.title                                                      as propertyTitle,
+      (case when c.owner.id = :userId then c.guest.email else c.owner.email end)
+                                                                            as otherUserEmail,
+      c.lastMessagePreview                                                  as lastMessagePreview,
+      c.lastMessageAt                                                       as lastMessageAt,
+      (select count(m) from Message m
+         where m.conversation = c
+           and m.readAt is null
+           and m.sender.id <> :userId)                                      as unreadCount,
+      c.status                                                              as status,
+      (case when c.booking is null then false else true end)                as hasBooking,
+      c.property.coverUrl                                                   as propertyCoverUrl,
+
+      b.id                                                                  as bookingId,
+      b.checkIn                                                             as checkIn,
+      b.checkOut                                                            as checkOut,
+      b.status                                                              as bookingStatus,
+      b.totalPrice                                                          as totalPrice,
+      'EUR'                                                                 as currency
+    from Conversation c
+    left join c.booking b
+    where c.owner.id = :userId or c.guest.id = :userId
+    order by c.lastMessageAt desc nulls last, c.createdAt desc
   """,
             countQuery = """
-     select count(c)
-     from Conversation c
-     where c.owner.id = :userId or c.guest.id = :userId
+    select count(c)
+    from Conversation c
+    where c.owner.id = :userId or c.guest.id = :userId
   """
     )
     @QueryHints(@QueryHint(name = HINT_READ_ONLY, value = "true"))

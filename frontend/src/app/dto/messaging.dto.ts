@@ -9,8 +9,14 @@ export interface ConversationSummaryDto {
   lastMessageAt: string | null;       // ISO
   unreadCount: number;
   status: ConversationStatus;
-  hasBooking: boolean;                // <-- new
-  propertyCoverUrl?: string | null;   // <-- new
+  hasBooking: boolean;                //
+  propertyCoverUrl?: string | null;   //
+  bookingId?: number | null;
+  checkIn?: string | null;            // yyyy-MM-dd
+  checkOut?: string | null;           // yyyy-MM-dd
+  bookingStatus?: string | null;      // REQUESTED/ACCEPTED/...
+  totalPrice?: number | null;         // BigDecimal en back → number en JSON
+  currency?: string | null;
 }
 
 export interface MessageDto {
