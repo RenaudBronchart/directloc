@@ -1,61 +1,125 @@
 package com.directloc.property;
 
+import com.directloc.property.PropertyType;
+import com.directloc.property.ViewType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.*;
+
 import java.math.BigDecimal;
+import java.time.LocalTime;
 
 /**
- * DTO used to create/update properties from the API.
- *
- * Validation notes:
- * - We mirror constraints from the JPA entity to fail fast on the API layer
- *   instead of at the DB (e.g. description length).
- * - Price can be zero with @DecimalMin("0.0"). If you want strictly > 0,
- *   switch to @DecimalMin(value = "0.0", inclusive = false).
- * - Integer fields are nullable so they remain optional in updates. When provided,
- *   their minimums are enforced.
+ * Request DTO to create/update a Property.
+ * Keep this class flat and tolerant: most fields are optional so the server
+ * can derive sensible defaults (e.g. currency/location) and evolve over time.
  */
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
 public class PropertyRequest {
 
-    /** Human-friendly title. DB default length is usually 255; we enforce it here. */
+    /* ---------- Basic info ---------- */
+
     @NotBlank
     @Size(max = 255, message = "Title must be at most 255 characters.")
     private String title;
 
-    /** Long description. Entity column is length=2000 → enforce same limit here. */
     @NotBlank
     @Size(max = 2000, message = "Description must be at most 2000 characters.")
     private String description;
 
-    /** City/area/country string; cap length for safety. */
+    /** Region label or slug (e.g., "Gironde · France"). */
     @NotBlank
+    @Size(max = 120)
+    private String region;
+
+    /** City name (e.g., "Bordeaux"). */
+    @NotBlank
+    @Size(max = 120)
+    private String city;
+
+    /**
+     * Legacy free-form location; optional.
+     * If null/blank, the entity will derive it from "city · region".
+     */
     @Size(max = 255, message = "Location must be at most 255 characters.")
     private String location;
 
-    /**
-     * Nightly price. Accepts zero; change inclusive=false to require > 0.
-     * Consider normalizing scale (2 decimals) in the service layer.
-     */
+    /* ---------- Pricing ---------- */
+
     @NotNull
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be > 0.")
     private BigDecimal pricePerNight;
 
-    /** Optional numeric attributes with lower bounds. */
-    @Min(value = 0, message = "Bedrooms cannot be negative.")
-    private Integer bedrooms;
+    /** ISO-4217 currency code; optional (defaults to EUR). */
+    @Size(max = 3)
+    private String currency;
 
-    @Min(value = 0, message = "Bathrooms cannot be negative.")
-    private Integer bathrooms;
+    /* ---------- Capacities ---------- */
 
-    @Min(value = 1, message = "Max guests must be at least 1.")
+    @Min(1)
     private Integer maxGuests;
 
-    /**
-     * Optional cover URL. If null/blank, the entity @PrePersist/@PreUpdate
-     * will auto-generate a Picsum URL based on the title.
-     * If you want to validate URL format, you could add a @Pattern here.
-     */
+    @Min(0)
+    private Integer bedrooms;
+
+    @Min(0)
+    private Integer bathrooms;
+
+    @Min(0)
+    private Integer beds;
+
+    /** Area in square meters. */
+    @Min(0)
+    private Integer areaM2;
+
+    /* ---------- Types ---------- */
+
+    private String propertyType;  // APARTMENT/HOUSE/...
+    private String viewType;          // SEA/MOUNTAIN/...
+
+    /* ---------- Amenities / rules ---------- */
+
+    private Boolean parking;
+    private Boolean workspace;
+    private Boolean pool;
+    private Boolean terrace;
+
+    private Boolean petFriendly;
+    private Boolean airConditioning;
+    private Boolean hotTub;
+    private Boolean balcony;
+
+    private Boolean smokingAllowed;
+    private Boolean heating;
+    private Boolean garden;
+    private Boolean accessible;
+
+    /** Wi-Fi speed in Mbps. */
+    @Min(0)
+    private Integer wifiMbps;
+
+    /** Minimum nights required for a booking. */
+    @Min(0)
+    private Integer minNights;
+
+    /** Check-in / check-out time hints (HH:mm). */
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime checkInFrom;
+
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime checkOutUntil;
+
+    /* ---------- Distances ---------- */
+
+    @DecimalMin(value = "0.0")
+    private BigDecimal distanceToBeachKm;
+
+    @DecimalMin(value = "0.0")
+    private BigDecimal distanceToCenterKm;
+
+    /* ---------- Media ---------- */
+
+    /** Optional cover image; entity will auto-generate if blank. */
     private String coverUrl;
 }

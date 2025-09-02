@@ -20,7 +20,7 @@ import { PageModel } from '../../../models/page.model';
 import { PropertyModel } from '../../../models/property.model';
 import { PropertyRowCardComponent } from '../../../components/property-row-card/property-row-card.component';
 
-/** Local type for top search bar output */
+/** Top search bar output type (from app-search-bar) */
 type TopSearchParams = {
   q?: string;
   checkIn?: Date | null;
@@ -29,6 +29,12 @@ type TopSearchParams = {
   children?: number;
   rooms?: number;
 };
+
+/** Sort UI → backend mapping */
+type SortKey = 'newest' | 'price_asc' | 'price_desc';
+const toSortByEnum = (s: SortKey) =>
+  s === 'price_asc'  ? 'PRICE_ASC' :
+    s === 'price_desc' ? 'PRICE_DESC' : 'NEWEST';
 
 @Component({
   standalone: true,
@@ -54,22 +60,55 @@ export class PropertyListComponent implements OnInit, OnDestroy {
   pageIndex = 0;
   pageSize = 12;
 
-  // sorting
-  sort: 'newest' | 'price_asc' | 'price_desc' = 'newest';
+  // sorting (client → server mapped)
+  sort: SortKey = 'newest';
 
-  // filters (we keep checkIn/out for future)
+  /** Small catalogs for selects – keep names aligned with backend enums */
+  propertyTypes: string[] = ['APARTMENT','HOUSE','STUDIO','VILLA','CABIN','COTTAGE','ROOM'];
+  viewTypes: string[] = ['SEA','MOUNTAIN','CITY','GARDEN','PARK','RIVER','FOREST','LAKE'];
+
+  // All filters handled on this page (dates come from top bar too)
   form = this.fb.group({
     q: [''],
+
     checkIn: [null as Date | null],
     checkOut: [null as Date | null],
+
     adults: [2],
     children: [0],
     rooms: [1],
+
     minPrice: [null as number | null],
     maxPrice: [null as number | null],
-    bedrooms: [null as number | null],
+
+    bedroomsMin: [null as number | null],
+    bathroomsMin: [null as number | null],
+    bedsMin: [null as number | null],
+    maxGuestsMin: [null as number | null],
+    areaM2Min: [null as number | null],
+    minNightsMin: [null as number | null],
+
+    maxDistCenterKm: [null as number | null],
+    maxDistBeachKm: [null as number | null],
+
+    wifiMin: [null as number | null],
+
+    propertyType: [null as string | null],
+    viewType: [null as string | null],
+
+    // amenities
     pool: [false],
-    wifi: [false],
+    parking: [false],
+    petFriendly: [false],
+    smokingAllowed: [false],
+    garden: [false],
+    terrace: [false],
+    balcony: [false],
+    hotTub: [false],
+    airConditioning: [false],
+    heating: [false],
+    accessible: [false],
+    workspace: [false],
   });
 
   chips: Array<{ key: string; label: string }> = [];
@@ -85,8 +124,10 @@ export class PropertyListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // hydrate from URL
+    // Hydrate from URL (defensively parse numbers)
     const qp = this.route.snapshot.queryParamMap;
+    const num  = (k: string) => (qp.get(k) !== null ? Number(qp.get(k)) : null);
+    const bool = (k: string) => (qp.get(k) ?? 'false') === 'true';
 
     const ciStr = qp.get('checkIn');
     const coStr = qp.get('checkOut');
@@ -100,23 +141,52 @@ export class PropertyListComponent implements OnInit, OnDestroy {
       adults: +(qp.get('adults') ?? 2),
       children: +(qp.get('children') ?? 0),
       rooms: +(qp.get('rooms') ?? 1),
-      minPrice: qp.get('minPrice') ? +(qp.get('minPrice')!) : null,
-      maxPrice: qp.get('maxPrice') ? +(qp.get('maxPrice')!) : null,
-      pool: (qp.get('pool') ?? 'false') === 'true',
-      wifi: (qp.get('wifi') ?? 'false') === 'true',
+
+      minPrice: num('minPrice'),
+      maxPrice: num('maxPrice'),
+
+      bedroomsMin: num('bedroomsMin'),
+      bathroomsMin: num('bathroomsMin'),
+      bedsMin: num('bedsMin'),
+      maxGuestsMin: num('maxGuestsMin'),
+      areaM2Min: num('areaM2Min'),
+      minNightsMin: num('minNightsMin'),
+
+      maxDistCenterKm: num('maxDistCenterKm'),
+      maxDistBeachKm: num('maxDistBeachKm'),
+
+      wifiMin: num('wifiMin'),
+
+      propertyType: qp.get('propertyType'),
+      viewType: qp.get('viewType'),
+
+      pool: bool('pool'),
+      parking: bool('parking'),
+      petFriendly: bool('petFriendly'),
+      smokingAllowed: bool('smokingAllowed'),
+      garden: bool('garden'),
+      terrace: bool('terrace'),
+      balcony: bool('balcony'),
+      hotTub: bool('hotTub'),
+      airConditioning: bool('airConditioning'),
+      heating: bool('heating'),
+      accessible: bool('accessible'),
+      workspace: bool('workspace'),
     }, { emitEvent: false });
 
     this.pageIndex = +(qp.get('page') ?? 0);
     this.pageSize  = +(qp.get('size') ?? 12);
-    this.sort      = (qp.get('sort') as any) ?? 'newest';
+    this.sort      = (qp.get('sort') as SortKey) ?? 'newest';
 
-    // auto-reload on filter change
-    this.form.valueChanges.pipe(debounceTime(250), takeUntil(this.destroy$)).subscribe(() => {
-      this.pageIndex = 0;
-      this.pushState();
-      this.buildChips();
-      this.load();
-    });
+    // auto-reload on any filter change
+    this.form.valueChanges
+      .pipe(debounceTime(250), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.pageIndex = 0;
+        this.pushState();
+        this.buildChips();
+        this.load();
+      });
 
     this.buildChips();
     this.load();
@@ -131,7 +201,7 @@ export class PropertyListComponent implements OnInit, OnDestroy {
 
   trackById(_: number, p: PropertyModel) { return p.id; }
 
-  changeSort(v: 'newest' | 'price_asc' | 'price_desc') {
+  changeSort(v: SortKey) {
     this.sort = v;
     this.pageIndex = 0;
     this.pushState();
@@ -169,19 +239,38 @@ export class PropertyListComponent implements OnInit, OnDestroy {
   }
 
   removeChip(c: { key: string }) {
+    // Defaults used when clearing a single chip
     const defaults: any = {
-      q:'', checkIn:null, checkOut:null, adults:2, children:0, rooms:1,
-      minPrice:null, maxPrice:null, pool:false, wifi:false
+      q:'', checkIn:null, checkOut:null,
+      adults:2, children:0, rooms:1,
+      minPrice:null, maxPrice:null,
+      bedroomsMin:null, bathroomsMin:null, bedsMin:null,
+      maxGuestsMin:null, areaM2Min:null, minNightsMin:null,
+      maxDistCenterKm:null, maxDistBeachKm:null,
+      wifiMin:null, propertyType:null, viewType:null,
+      pool:false, parking:false, petFriendly:false, smokingAllowed:false,
+      garden:false, terrace:false, balcony:false, hotTub:false,
+      airConditioning:false, heating:false, accessible:false, workspace:false
     };
     const patch: any = {}; patch[c.key] = defaults[c.key];
     this.form.patchValue(patch);
   }
 
   clearAll() {
-    this.form.patchValue({
-      q:'', checkIn:null, checkOut:null, adults:2, children:0, rooms:1,
-      minPrice:null, maxPrice:null, pool:false, wifi:false
+    this.form.reset({
+      q:'',
+      checkIn:null, checkOut:null,
+      adults:2, children:0, rooms:1,
+      minPrice:null, maxPrice:null,
+      bedroomsMin:null, bathroomsMin:null, bedsMin:null,
+      maxGuestsMin:null, areaM2Min:null, minNightsMin:null,
+      maxDistCenterKm:null, maxDistBeachKm:null,
+      wifiMin:null, propertyType:null, viewType:null,
+      pool:false, parking:false, petFriendly:false, smokingAllowed:false,
+      garden:false, terrace:false, balcony:false, hotTub:false,
+      airConditioning:false, heating:false, accessible:false, workspace:false
     }, { emitEvent: false });
+
     this.pageIndex = 0;
     this.pushState();
     this.buildChips();
@@ -222,6 +311,7 @@ export class PropertyListComponent implements OnInit, OnDestroy {
     const out: Array<{ key: string; label: string }> = [];
 
     if (v.q) out.push({ key: 'q', label: v.q });
+
     if (v.checkIn && v.checkOut) {
       out.push({ key: 'checkIn',  label: `Check-in ${new Date(v.checkIn).toLocaleDateString()}` });
       out.push({ key: 'checkOut', label: `Check-out ${new Date(v.checkOut).toLocaleDateString()}` });
@@ -230,15 +320,37 @@ export class PropertyListComponent implements OnInit, OnDestroy {
     const adults   = v.adults   ?? 0;
     const children = v.children ?? 0;
     const rooms    = v.rooms    ?? 0;
-
     if (adults && adults !== 2)   out.push({ key: 'adults',   label: `${adults} ${adults > 1 ? 'adults' : 'adult'}` });
     if (children > 0)             out.push({ key: 'children', label: `${children} ${children > 1 ? 'children' : 'child'}` });
     if (rooms && rooms !== 1)     out.push({ key: 'rooms',    label: `${rooms} ${rooms > 1 ? 'rooms' : 'room'}` });
 
     if (v.minPrice != null) out.push({ key: 'minPrice', label: `€${v.minPrice}+` });
     if (v.maxPrice != null) out.push({ key: 'maxPrice', label: `≤ €${v.maxPrice}` });
-    if (v.pool) out.push({ key: 'pool', label: 'Pool' });
-    if (v.wifi) out.push({ key: 'wifi', label: 'Wi-Fi' });
+
+    if (v.bedroomsMin != null)  out.push({ key: 'bedroomsMin',  label: `${v.bedroomsMin}+ bd` });
+    if (v.bathroomsMin != null) out.push({ key: 'bathroomsMin', label: `${v.bathroomsMin}+ ba` });
+    if (v.bedsMin != null)      out.push({ key: 'bedsMin',      label: `${v.bedsMin}+ beds` });
+    if (v.maxGuestsMin != null) out.push({ key: 'maxGuestsMin', label: `${v.maxGuestsMin}+ guests` });
+    if (v.areaM2Min != null)    out.push({ key: 'areaM2Min',    label: `≥ ${v.areaM2Min} m²` });
+    if (v.minNightsMin != null) out.push({ key: 'minNightsMin', label: `≥ ${v.minNightsMin} nights` });
+
+    if (v.maxDistCenterKm != null) out.push({ key: 'maxDistCenterKm', label: `≤ ${v.maxDistCenterKm} km center` });
+    if (v.maxDistBeachKm != null)  out.push({ key: 'maxDistBeachKm',  label: `≤ ${v.maxDistBeachKm} km beach` });
+
+    if (v.wifiMin != null) out.push({ key: 'wifiMin', label: `Wi-Fi ≥ ${v.wifiMin} Mbps` });
+
+    if (v.propertyType) out.push({ key: 'propertyType', label: v.propertyType });
+    if (v.viewType)     out.push({ key: 'viewType',     label: v.viewType });
+
+    // amenities: only show those that are true
+    ([
+      ['pool','Pool'], ['parking','Parking'], ['petFriendly','Pet friendly'],
+      ['smokingAllowed','Smoking'], ['garden','Garden'], ['terrace','Terrace'],
+      ['balcony','Balcony'], ['hotTub','Hot tub'], ['airConditioning','A/C'],
+      ['heating','Heating'], ['accessible','Accessible'], ['workspace','Workspace']
+    ] as const).forEach(([k, lbl]) => {
+      if ((v as any)[k]) out.push({ key: k, label: lbl });
+    });
 
     this.chips = out;
   }
@@ -258,8 +370,18 @@ export class PropertyListComponent implements OnInit, OnDestroy {
         checkIn: this.toDateParam(v.checkIn),
         checkOut: this.toDateParam(v.checkOut),
         adults: v.adults, children: v.children, rooms: v.rooms,
+
         minPrice: v.minPrice, maxPrice: v.maxPrice,
-        pool: v.pool, wifi: v.wifi,
+        bedroomsMin: v.bedroomsMin, bathroomsMin: v.bathroomsMin, bedsMin: v.bedsMin,
+        maxGuestsMin: v.maxGuestsMin, areaM2Min: v.areaM2Min, minNightsMin: v.minNightsMin,
+        maxDistCenterKm: v.maxDistCenterKm, maxDistBeachKm: v.maxDistBeachKm,
+        wifiMin: v.wifiMin,
+        propertyType: v.propertyType, viewType: v.viewType,
+
+        pool: v.pool, parking: v.parking, petFriendly: v.petFriendly, smokingAllowed: v.smokingAllowed,
+        garden: v.garden, terrace: v.terrace, balcony: v.balcony, hotTub: v.hotTub,
+        airConditioning: v.airConditioning, heating: v.heating, accessible: v.accessible, workspace: v.workspace,
+
         page: this.pageIndex, size: this.pageSize, sort: this.sort
       },
       queryParamsHandling: 'merge'
@@ -272,18 +394,47 @@ export class PropertyListComponent implements OnInit, OnDestroy {
 
     this.api.getAll({
       q: (v.q || '').trim() || undefined,
+
       adults: v.adults ?? undefined,
       children: v.children ?? undefined,
       rooms: v.rooms ?? undefined,
+
+      minPrice: v.minPrice ?? undefined,
+      maxPrice: v.maxPrice ?? undefined,
+
+      areaM2Min: v.areaM2Min ?? undefined,
+      minNightsMin: v.minNightsMin ?? undefined,
+
+      maxDistCenterKm: v.maxDistCenterKm ?? undefined,
+      maxDistBeachKm: v.maxDistBeachKm ?? undefined,
+
+      wifiMin: v.wifiMin ?? undefined,
+
+      propertyType: v.propertyType ?? undefined,
+      viewType: v.viewType ?? undefined,
+
+      pool: v.pool ?? undefined,
+      parking: v.parking ?? undefined,
+      petFriendly: v.petFriendly ?? undefined,
+      smokingAllowed: v.smokingAllowed ?? undefined,
+      garden: v.garden ?? undefined,
+      terrace: v.terrace ?? undefined,
+      balcony: v.balcony ?? undefined,
+      hotTub: v.hotTub ?? undefined,
+      airConditioning: v.airConditioning ?? undefined,
+      heating: v.heating ?? undefined,
+      accessible: v.accessible ?? undefined,
+      workspace: v.workspace ?? undefined,
+
+      checkIn: v.checkIn ?? undefined,
+      checkOut: v.checkOut ?? undefined,
+
+      sortBy: toSortByEnum(this.sort),
       page: this.pageIndex,
       size: this.pageSize
     }).subscribe({
       next: (page: PageModel<PropertyModel>) => {
-        this.items = [...page.content].sort((a,b) => {
-          if (this.sort === 'price_asc')  return (a.pricePerNight ?? 0) - (b.pricePerNight ?? 0);
-          if (this.sort === 'price_desc') return (b.pricePerNight ?? 0) - (a.pricePerNight ?? 0);
-          return 0;
-        });
+        this.items = page.content;       // keep server order
         this.total = page.totalElements;
         this.buildChips();
         this.loading = false;

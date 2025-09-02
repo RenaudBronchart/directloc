@@ -3,8 +3,12 @@
 /* Encapsulation */
 :host { display: block; }
 
+/* Allow compact variant from host */
+:host.dense .prop-card { --img-h: 180px; }
+:host.dense .prop-card .actions button { padding: 0 10px; }
+
 /* ============================= */
-/* Variante GRILLE : .prop-card  */
+/* Grid variant : .prop-card     */
 /* ============================= */
 .prop-card {
   border-radius: $radius-lg;
@@ -16,14 +20,14 @@
   flex-direction: column;
   background: #fff;
 
-  /* hauteur image par défaut (modifiable depuis la page via --img-h) */
+  /* default image height (page can override via --img-h) */
   --img-h: 220px;
 
   &:hover { transform: translateY(-2px); box-shadow: $shadow-md; }
 
   .image-wrap {
     position: relative;
-    height: var(--img-h);         /* contrôle par variable */
+    height: var(--img-h);
     overflow: hidden;
     background: #f3f4f6;
 
@@ -45,7 +49,12 @@
 
   mat-card-content {
     padding: .75rem .9rem .25rem;
-    .title { font-weight: 700; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .title {
+      font-weight: 700; font-size: 1rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
     .sub   { color: #6b7280; font-size: .9rem; margin-top: .15rem; }
     .meta  { margin-top: .35rem; color: #6b7280; font-size: .85rem; }
   }
@@ -53,13 +62,14 @@
   .actions {
     padding: .5rem .9rem .9rem;
     display: flex; align-items: center; justify-content: space-between;
+
     .price .amount { font-weight: 800; }
     .price .per { color: #6b7280; margin-left: .15rem; }
     button { text-transform: none; border-radius: $radius-md; }
   }
 }
 
-/* Skeleton pour prop-card (même hauteur que la carte) */
+/* Skeleton same height as card */
 .prop-card.skeleton {
   border-radius: $radius-lg; overflow: hidden; background: #fff; box-shadow: $shadow-sm;
 
@@ -70,9 +80,10 @@
   .line.tiny { width: 40%; margin-bottom: 0; }
 }
 
-/* Effet shimmer (optionnel) */
+/* Shimmer effect */
 .shimmer {
   position: relative; overflow: hidden;
+
   &::after {
     content: ""; position: absolute; inset: 0;
     transform: translateX(-100%);

@@ -1,28 +1,45 @@
-<mat-card class="prop-card" *ngIf="!loading; else skeleton" (click)="openCard()">
+<mat-card
+  class="prop-card"
+  *ngIf="!loading; else skeleton"
+  (click)="openCard()"
+  [attr.aria-label]="data.title || 'Property card'"
+>
   <div class="image-wrap">
     <img
       [src]="data.coverUrl || 'assets/placeholder.webp'"
-      [alt]="data.title"
+      [alt]="data.title || 'Property cover image'"
       loading="lazy"
+      decoding="async"
     />
-    <div class="badge" *ngIf="data.maxGuests">Up to {{ data.maxGuests }} guests</div>
+    <div class="badge" *ngIf="data.maxGuests">
+      {{ guestsBadge }}
+    </div>
   </div>
 
   <mat-card-content>
-    <div class="title" matTooltip="{{data.title}}">{{ data.title }}</div>
-    <div class="sub">{{ data.location }}</div>
+    <div class="title" [matTooltip]="data.title">{{ data.title }}</div>
+
+    <!-- Prefer city/region if provided, fallback to location -->
+    <div class="sub">
+      {{ displayLocation }}
+    </div>
+
     <div class="meta">
-      <span *ngIf="data.bedrooms">{{ data.bedrooms }} bd</span>
-      <span *ngIf="data.bathrooms">• {{ data.bathrooms }} ba</span>
+      <span *ngIf="data.bedrooms != null">{{ data.bedrooms }} bd</span>
+      <span *ngIf="data.bathrooms != null">• {{ data.bathrooms }} ba</span>
     </div>
   </mat-card-content>
 
   <mat-card-actions class="actions" (click)="$event.stopPropagation()">
-    <div class="price">
-      <span class="amount">{{ data.pricePerNight | currency:'EUR':'symbol':'1.0-0' }}</span>
+    <div class="price" aria-label="Price per night">
+      <span class="amount">
+        {{ data.pricePerNight | currency:currencyCode:'symbol':'1.0-0' }}
+      </span>
       <span class="per">/ night</span>
     </div>
+
     <button
+      type="button"
       mat-stroked-button
       color="primary"
       (click)="open.emit(data.id); $event.stopPropagation()"
@@ -33,7 +50,7 @@
 </mat-card>
 
 <ng-template #skeleton>
-  <div class="prop-card skeleton">
+  <div class="prop-card skeleton" aria-hidden="true">
     <div class="image-wrap shimmer"></div>
     <div class="lines">
       <div class="line shimmer"></div>

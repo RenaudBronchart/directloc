@@ -1,7 +1,10 @@
 <section class="container edit-wrap" *ngIf="formData as data; else loadingTpl">
   <h2>Edit property</h2>
   <div class="form-card">
-    <app-property-form [id]="property?.id" [initialData]="data"></app-property-form>
+    <app-property-form
+      [id]="property?.id"
+      [initialData]="data">
+    </app-property-form>
   </div>
 </section>
 

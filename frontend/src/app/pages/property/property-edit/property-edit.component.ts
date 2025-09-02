@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { finalize } from 'rxjs/operators';
+import { finalize } from 'rxjs';                       // ✅ preferred import path
+import { environment } from '../../../../environments/environment';
 
 import { PropertyService } from '../../../services/property.service';
 import { PropertyDetail } from '../../../models/property.model';
@@ -14,15 +15,21 @@ import { PropertyFormComponent } from '../property-form/property-form.component'
   standalone: true,
   imports: [CommonModule, PropertyFormComponent],
   templateUrl: './property-edit.component.html',
-  styleUrls: ['./property-edit.component.scss']
+  styleUrls: ['./property-edit.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PropertyEditComponent implements OnInit {
   /** Loaded property (UI model) */
   property: PropertyDetail | null = null;
+
   /** Initial form payload (DTO expected by the form/service) */
   formData: PropertyRequestDto | null = null;
 
   loading = true;
+
+  /** Centralize default currency; falls back to EUR if not provided */
+  private readonly DEFAULT_CURRENCY =
+    (environment as { defaultCurrency?: string })?.defaultCurrency ?? 'EUR';
 
   constructor(
     private route: ActivatedRoute,
@@ -38,7 +45,11 @@ export class PropertyEditComponent implements OnInit {
           this.property = p;
           this.formData = this.toRequestDto(p);
         },
-        error: () => { /* Optionally toast/snack */ }
+        error: () => {
+          // Optional: surface a toast/snack or navigate away if needed
+          this.property = null;
+          this.formData = null;
+        }
       });
   }
 
@@ -49,6 +60,7 @@ export class PropertyEditComponent implements OnInit {
       description: p.description ?? '',
       location: p.location,
       pricePerNight: p.pricePerNight,
+      currency: this.DEFAULT_CURRENCY,              // ✅ ensure required field
       bedrooms: p.bedrooms ?? null,
       bathrooms: p.bathrooms ?? null,
       maxGuests: p.maxGuests ?? null,

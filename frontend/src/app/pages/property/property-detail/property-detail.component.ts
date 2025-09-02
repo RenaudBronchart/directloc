@@ -35,6 +35,27 @@ type DetailForm = {
   rooms:    FormControl<number>;
 };
 
+/** URL search params (typed to avoid index-signature errors in template) */
+interface SearchQueryParams {
+  q?: string;
+  region?: string;
+  checkIn?: string;
+  checkOut?: string;
+  adults?: number;
+  children?: number;
+  rooms?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  bedroomsMin?: number;
+  bathroomsMin?: number;
+  guestsMin?: number;
+  sortBy?: string;
+}
+
+/** Small display helpers */
+type MetaItem = { icon: string; label: string; value: string };
+type AmenityItem = { icon: string; label: string };
+
 @Component({
   selector: 'app-property-detail',
   standalone: true,
@@ -65,6 +86,21 @@ export class PropertyDetailComponent implements OnInit {
 
   errorText: string | null = null;
 
+  /** Derived presentation data */
+  metaItems: MetaItem[] = [];
+  amenityItems: AmenityItem[] = [];
+
+  /** Current search params mirrored from URL (for “Back to results”). */
+  currentSearchParams: SearchQueryParams = {};
+  get hasAnyFilter(): boolean {
+    const s = this.currentSearchParams;
+    return !!(
+      s.q || s.region || s.checkIn || s.checkOut ||
+      s.adults || s.children || s.rooms ||
+      s.minPrice || s.maxPrice || s.bedroomsMin || s.bathroomsMin
+    );
+  }
+
   private startOfDay(d: Date) { const x = new Date(d); x.setHours(0,0,0,0); return x; }
   today = this.startOfDay(new Date());
   booked = new Set<string>(); // 'yyyy-MM-dd'
@@ -77,7 +113,7 @@ export class PropertyDetailComponent implements OnInit {
     rooms:    this.fb.control<number>(1, { nonNullable: true, validators: [Validators.required, Validators.min(1)] }),
   });
 
-  // getters UI
+  // UI getters
   get a() { return this.form.controls.adults.value ?? 1; }
   get c() { return this.form.controls.children.value ?? 0; }
   get r() { return this.form.controls.rooms.value ?? 1; }
@@ -113,6 +149,11 @@ export class PropertyDetailComponent implements OnInit {
         this.property = p;
         this.loading = false;
 
+        // Build meta + amenities for display
+        this.metaItems = this.buildMeta(p);
+        this.amenityItems = this.buildAmenities(p);
+
+        // Prefetch booked days for the next 6 months
         if (p?.id) {
           const from = format(this.today, 'yyyy-MM-dd');
           const to   = format(addDays(this.today, 180), 'yyyy-MM-dd');
@@ -124,28 +165,42 @@ export class PropertyDetailComponent implements OnInit {
       error: () => { this.loading = false; }
     });
 
-    // Prefill from query params
+    // ---- Read query params (for back link + prefill) ----
     const qp = this.route.snapshot.queryParamMap;
-    const ci = qp.get('checkIn');
-    const co = qp.get('checkOut');
-    const a  = qp.get('adults');
-    const c  = qp.get('children');
-    const r  = qp.get('rooms');
+    const toNum = (s: string | null) => (s != null ? +s : undefined);
 
+    const sp: SearchQueryParams = {
+      q: qp.get('q') || undefined,
+      region: qp.get('region') || undefined,
+      checkIn: qp.get('checkIn') || undefined,
+      checkOut: qp.get('checkOut') || undefined,
+      adults: toNum(qp.get('adults')),
+      children: toNum(qp.get('children')),
+      rooms: toNum(qp.get('rooms')),
+      minPrice: toNum(qp.get('minPrice')),
+      maxPrice: toNum(qp.get('maxPrice')),
+      bedroomsMin: toNum(qp.get('bedroomsMin')),
+      bathroomsMin: toNum(qp.get('bathroomsMin')),
+      guestsMin: toNum(qp.get('guestsMin')),
+      sortBy: qp.get('sortBy') || undefined
+    };
+    this.currentSearchParams = sp;
+
+    // Prefill booking form
     const toDate = (s: string | null) => s ? new Date(s) : null;
     const today = this.today;
     const tomorrow = addDays(today, 1);
 
     this.form.patchValue({
-      checkIn:  toDate(ci) ?? today,
-      checkOut: toDate(co) ?? tomorrow,
-      adults:   a ? +a : 2,
-      children: c ? +c : 0,
-      rooms:    r ? +r : 1
+      checkIn:  toDate(qp.get('checkIn')) ?? today,
+      checkOut: toDate(qp.get('checkOut')) ?? tomorrow,
+      adults:   toNum(qp.get('adults')) ?? 2,
+      children: toNum(qp.get('children')) ?? 0,
+      rooms:    toNum(qp.get('rooms')) ?? 1
     }, { emitEvent: false });
   }
 
-  // Calendar: gray past, red booked
+  // Calendar classes/filters
   dateClass: MatCalendarCellClassFunction<Date> = (cellDate, view) => {
     if (view !== 'month') return '';
     const d = this.startOfDay(cellDate);
@@ -154,8 +209,6 @@ export class PropertyDetailComponent implements OnInit {
     if (this.booked.has(iso)) return 'date-booked';
     return '';
   };
-
-  // Calendar: disable past & booked
   rangeDateFilter = (d: Date | null): boolean => {
     if (!d) return false;
     const day = this.startOfDay(d);
@@ -180,8 +233,6 @@ export class PropertyDetailComponent implements OnInit {
       error: () => this.snack.open('Could not open conversation', 'Close', { duration: 2500 })
     });
   }
-
-
 
   onDateChanged(): void {
     const ci = this.form.controls.checkIn.value;
@@ -249,9 +300,7 @@ export class PropertyDetailComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.submitting = false;
-
         const apiMsg = (err.error && (err.error.message || err.error.error || err.error.detail)) || '';
-
         if (err.status === 409 || /Dates not available/i.test(apiMsg)) {
           this.errorText = 'These dates are already booked. Please pick different dates.';
         } else if (err.status === 400) {
@@ -269,9 +318,63 @@ export class PropertyDetailComponent implements OnInit {
         } else {
           this.errorText = apiMsg || 'Booking failed.';
         }
-
         this.snack.open(this.errorText ?? 'Booking failed.', 'Close', { duration: 3500 });
       }
     });
   }
+
+  /* ------------ helpers to build “everything” sections ------------ */
+  private titleize(s?: string | null): string {
+    if (!s) return '';
+    return s.toString().split('_').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
+  }
+
+  private buildMeta(p: PropertyDetail): MetaItem[] {
+    const out: MetaItem[] = [];
+    const add = (label: string, value: string | number | null | undefined, icon = 'info') => {
+      if (value !== null && value !== undefined && value !== '') {
+        out.push({ icon, label, value: String(value) });
+      }
+    };
+
+    add('Type', this.titleize(p.propertyType), 'home');
+    add('Bedrooms', p.bedrooms, 'bed');
+    add('Bathrooms', p.bathrooms, 'bathtub');
+    add('Beds', p.beds, 'single_bed');
+    add('Max guests', p.maxGuests ? `Up to ${p.maxGuests}` : null, 'group');
+    add('Area', p.areaM2 ? `${p.areaM2} m²` : null, 'square_foot');
+    add('Minimum nights', p.minNights ? `≥ ${p.minNights}` : null, 'nights_stay');
+    add('Wi-Fi', p.wifiMbps != null ? `${p.wifiMbps} Mbps` : null, 'wifi');
+    add('View', this.titleize(p.viewType), 'landscape');
+    add('To center', p.distanceToCenterKm != null ? `${p.distanceToCenterKm} km` : null, 'location_city');
+    add('To beach', p.distanceToBeachKm != null ? `${p.distanceToBeachKm} km` : null, 'beach_access');
+    add('Check-in', p.checkInFrom, 'schedule');
+    add('Check-out', p.checkOutUntil, 'schedule');
+
+    return out;
+  }
+
+  private buildAmenities(p: PropertyDetail): AmenityItem[] {
+    const items: AmenityItem[] = [];
+    const add = (cond: any, label: string, icon: string) => { if (cond) items.push({ label, icon }); };
+
+    add(p.pool, 'Pool', 'pool');
+    add(p.parking, 'Parking', 'local_parking');
+    add(p.petFriendly, 'Pet friendly', 'pets');
+    add(p.smokingAllowed, 'Smoking allowed', 'smoking_rooms');
+    add(p.garden, 'Garden', 'yard');
+    add(p.terrace, 'Terrace', 'deck');
+    add(p.balcony, 'Balcony', 'balcony');
+    add(p.hotTub, 'Hot tub', 'hot_tub');
+    add(p.airConditioning, 'Air conditioning', 'ac_unit');
+    add(p.heating, 'Heating', 'whatshot');
+    add(p.accessible, 'Accessible', 'accessible');
+    add(p.workspace, 'Workspace', 'work');
+
+
+    return items;
+  }
+
+  trackMeta = (_: number, m: MetaItem) => m.label;
+  trackAmenity = (_: number, a: AmenityItem) => a.label;
 }

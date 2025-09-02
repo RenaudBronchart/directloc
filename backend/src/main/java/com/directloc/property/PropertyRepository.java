@@ -6,6 +6,7 @@ import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor; // ← add
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
@@ -17,11 +18,12 @@ import java.util.UUID;
  * Repository for Property entity.
  *
  * Notes:
+ * - Extends JpaSpecificationExecutor to allow criteria/specification-based search.
  * - lockById(): PESSIMISTIC_WRITE is used during booking creation to avoid race conditions.
  * - searchAvailable(): excludes properties that have any ACCEPTED booking overlapping
  *   the requested window.
  */
-public interface PropertyRepository extends JpaRepository<Property, UUID> {
+public interface PropertyRepository extends JpaRepository<Property, UUID>, JpaSpecificationExecutor<Property> { // ← add
 
     /** Owner listings */
     List<Property> findByOwner(User owner);
@@ -32,7 +34,7 @@ public interface PropertyRepository extends JpaRepository<Property, UUID> {
     Optional<Property> lockById(@Param("id") UUID id);
 
     /**
-     * Search with optional filters:
+     * Legacy search with optional filters:
      *  - q: substring match on location (case-insensitive)
      *  - guests: minimum capacity
      *  - availability window [checkIn, checkOut): exclude props with ACCEPTED overlap
