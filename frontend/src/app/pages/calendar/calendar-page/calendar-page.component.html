@@ -1,93 +1,78 @@
 <section class="cal-wrap">
+  <!-- Toolbar -->
   <mat-card class="toolbar">
     <div class="tabs">
-      <button mat-stroked-button [color]="tab==='host' ? 'primary' : undefined" (click)="changeTab('host')">
+      <button *ngIf="canHost"
+              mat-stroked-button
+              [color]="tab==='host' ? 'primary' : undefined"
+              (click)="changeTab('host')">
         <mat-icon>home</mat-icon> Host
       </button>
-      <button mat-stroked-button [color]="tab==='guest' ? 'primary' : undefined" (click)="changeTab('guest')">
+
+      <button mat-stroked-button
+              [color]="tab==='guest' ? 'primary' : undefined"
+              (click)="changeTab('guest')">
         <mat-icon>person</mat-icon> Guest
-      </button>
-    </div>
-
-    <div class="range">
-      <button mat-icon-button (click)="rangePrev()" aria-label="Previous range"><mat-icon>chevron_left</mat-icon></button>
-
-      <mat-form-field appearance="outline">
-        <mat-label>From</mat-label>
-        <input matInput [matDatepicker]="dp1" [formControl]="form.controls.from">
-        <mat-datepicker #dp1></mat-datepicker>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>To</mat-label>
-        <input matInput [matDatepicker]="dp2" [formControl]="form.controls.to">
-        <mat-datepicker #dp2></mat-datepicker>
-      </mat-form-field>
-
-      <button mat-icon-button (click)="rangeNext()" aria-label="Next range"><mat-icon>chevron_right</mat-icon></button>
-
-      <span class="spacer"></span>
-
-      <button *ngIf="tab==='host'" mat-flat-button color="primary" (click)="newBlock()">
-        <mat-icon>event_busy</mat-icon> New block
       </button>
     </div>
   </mat-card>
 
-  <mat-card class="list" [attr.aria-busy]="loading">
-    <ng-container *ngIf="!loading; else loadingTpl">
+  <!-- Grid: calendario + sidebar (tarjeta partida) -->
+  <div class="cal-grid" [attr.aria-busy]="loading">
+    <!-- Columna izquierda: calendario mensual -->
+    <mat-card class="month">
+      <app-calendar-month
+        [events]="events"
+        [prices]="{}"
+        (monthChange)="onMonthChange($event)">
+      </app-calendar-month>
 
-      <div *ngIf="!events.length" class="empty">
-        <mat-icon>event</mat-icon>
-        <div>No events in this range.</div>
+      <!-- overlay de carga sin desmontar el calendario -->
+      <div class="busy" *ngIf="loading">
+        <span class="spinner"></span> Loading…
       </div>
+    </mat-card>
 
-      <div class="group" *ngFor="let g of groupedByProperty">
-        <div class="g-head">
-          <div class="g-title">
-            <a [routerLink]="['/properties', g.propertyId]">{{ g.propertyTitle }}</a>
-          </div>
-          <button *ngIf="tab==='host'" mat-stroked-button (click)="newBlock(g.propertyId)">
-            <mat-icon>add</mat-icon> Block here
-          </button>
+    <!-- Columna derecha: próximas reservas (solo Guest) -->
+    <aside class="side" *ngIf="tab==='guest'">
+      <mat-card class="side-card">
+        <div class="side-header">
+          <h3>Upcoming</h3>
         </div>
 
-        <mat-divider></mat-divider>
-
-        <mat-list>
-          <mat-list-item *ngFor="let ev of g.items">
-            <mat-icon matListItemIcon>
-              {{ ev.isBooking ? 'event_available' : 'event_busy' }}
-            </mat-icon>
-
-            <div matListItemTitle>
-              {{ ev.title }}
-              <span *ngIf="ev.status" class="status">• {{ ev.status }}</span>
-            </div>
-            <div matListItemLine class="dates">
-              {{ ev.start | date:'MMM d, y' }} – {{ ev.end | date:'MMM d, y' }}
+        <ng-container *ngIf="upcomingBookings.length; else emptyUpcoming">
+          <div class="up-item"
+               *ngFor="let ev of upcomingBookings"
+               [ngClass]="statusClass(ev.status)">
+            <div class="up-head">
+              <a class="up-title" [routerLink]="['/properties', ev.propertyId]">{{ ev.propertyTitle }}</a>
+              <span class="badge" [ngClass]="statusClass(ev.status)">{{ statusLabel(ev.status) }}</span>
             </div>
 
-            <div class="row-actions" matListItemMeta>
+            <div class="up-meta">
+              <mat-icon>event</mat-icon>
+              <span>{{ ev.start | date:'MMM d, y' }} – {{ ev.end | date:'MMM d, y' }}</span>
+              <span class="dot">•</span>
+              <span>{{ nights(ev) }} nights</span>
+            </div>
+
+            <div class="up-actions">
               <a *ngIf="ev.isBooking && ev.bookingId != null"
                  mat-stroked-button
                  [routerLink]="['/bookings', ev.bookingId]">
                 Details
               </a>
-              <button *ngIf="ev.isBlock && ev.blockId != null"
-                      mat-icon-button color="warn"
-                      (click)="deleteBlock(ev)"
-                      aria-label="Delete block">
-                <mat-icon>delete</mat-icon>
-              </button>
             </div>
-          </mat-list-item>
-        </mat-list>
-      </div>
-    </ng-container>
-  </mat-card>
+          </div>
+        </ng-container>
 
-  <ng-template #loadingTpl>
-    <div class="loading"><span class="spinner"></span> Loading…</div>
-  </ng-template>
+        <ng-template #emptyUpcoming>
+          <div class="empty">
+            <mat-icon>event</mat-icon>
+            <div>No upcoming bookings.</div>
+          </div>
+        </ng-template>
+      </mat-card>
+    </aside>
+  </div>
 </section>
