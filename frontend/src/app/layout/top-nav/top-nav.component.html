@@ -1,4 +1,3 @@
-<!-- src/app/components/top-nav/top-nav.component.html -->
 <mat-toolbar class="topbar">
   <div class="dl-container bar">
     <a class="brand" routerLink="/">
@@ -7,8 +6,18 @@
 
     <span class="spacer"></span>
 
-    <!-- Inbox icon visible when logged in -->
+    <!-- Accesos rápidos visibles cuando hay sesión -->
     <ng-container *ngIf="isLoggedIn">
+      <!-- Calendario (icono rápido) -->
+      <button
+        mat-icon-button
+        routerLink="/calendar"
+        aria-label="Open calendar"
+        matTooltip="Calendar">
+        <mat-icon>calendar_month</mat-icon>
+      </button>
+
+      <!-- Inbox -->
       <button
         mat-icon-button
         routerLink="/messages"
@@ -17,7 +26,7 @@
         [matBadgeHidden]="((unread$ | async) ?? 0) === 0"
         matBadgeColor="accent"
         matBadgeOverlap="false"
-      >
+        matTooltip="Inbox">
         <mat-icon>mail</mat-icon>
       </button>
     </ng-container>
@@ -28,27 +37,53 @@
       <span>List your property</span>
     </button>
 
-    <!-- Menu -->
+    <!-- Menú -->
     <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Open menu">
       <mat-icon>menu</mat-icon>
     </button>
 
     <mat-menu #menu="matMenu">
       <ng-container *ngIf="isLoggedIn; else guest">
-        <button mat-menu-item routerLink="/messages">
+
+        <!-- ✅ Calendar: usar (click) + matMenuClose. Recarga si ya estás en /calendar -->
+        <button mat-menu-item (click)="openCalendar()" matMenuClose>
+          <mat-icon>calendar_month</mat-icon><span>Calendar</span>
+        </button>
+
+        <button mat-menu-item routerLink="/messages" matMenuClose>
           <mat-icon>mail</mat-icon><span>Inbox</span>
         </button>
-        <button mat-menu-item routerLink="/my-properties"><mat-icon>home_work</mat-icon><span>My properties</span></button>
-        <button mat-menu-item routerLink="/properties"><mat-icon>search</mat-icon><span>Explore stays</span></button>
-        <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>My profile</span></button>
+
+        <button mat-menu-item routerLink="/my-properties" matMenuClose>
+          <mat-icon>home_work</mat-icon><span>My properties</span>
+        </button>
+
+        <button mat-menu-item routerLink="/properties" matMenuClose>
+          <mat-icon>search</mat-icon><span>Explore stays</span>
+        </button>
+
+        <button mat-menu-item routerLink="/profile" matMenuClose>
+          <mat-icon>person</mat-icon><span>My profile</span>
+        </button>
+
         <mat-divider></mat-divider>
-        <button mat-menu-item (click)="logout()"><mat-icon>logout</mat-icon><span>Logout</span></button>
+
+        <button mat-menu-item (click)="logout()" matMenuClose>
+          <mat-icon>logout</mat-icon><span>Logout</span>
+        </button>
       </ng-container>
+
       <ng-template #guest>
-        <button mat-menu-item routerLink="/login"><mat-icon>login</mat-icon><span>Login</span></button>
-        <button mat-menu-item routerLink="/register"><mat-icon>person_add</mat-icon><span>Register</span></button>
+        <button mat-menu-item routerLink="/login" matMenuClose>
+          <mat-icon>login</mat-icon><span>Login</span>
+        </button>
+        <button mat-menu-item routerLink="/register" matMenuClose>
+          <mat-icon>person_add</mat-icon><span>Register</span>
+        </button>
         <mat-divider></mat-divider>
-        <button mat-menu-item (click)="goCreate()"><mat-icon>add_home</mat-icon><span>List your property</span></button>
+        <button mat-menu-item (click)="goCreate()" matMenuClose>
+          <mat-icon>add_home</mat-icon><span>List your property</span>
+        </button>
       </ng-template>
     </mat-menu>
   </div>

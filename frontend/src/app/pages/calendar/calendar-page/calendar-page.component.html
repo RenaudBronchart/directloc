@@ -1,0 +1,93 @@
+<section class="cal-wrap">
+  <mat-card class="toolbar">
+    <div class="tabs">
+      <button mat-stroked-button [color]="tab==='host' ? 'primary' : undefined" (click)="changeTab('host')">
+        <mat-icon>home</mat-icon> Host
+      </button>
+      <button mat-stroked-button [color]="tab==='guest' ? 'primary' : undefined" (click)="changeTab('guest')">
+        <mat-icon>person</mat-icon> Guest
+      </button>
+    </div>
+
+    <div class="range">
+      <button mat-icon-button (click)="rangePrev()" aria-label="Previous range"><mat-icon>chevron_left</mat-icon></button>
+
+      <mat-form-field appearance="outline">
+        <mat-label>From</mat-label>
+        <input matInput [matDatepicker]="dp1" [formControl]="form.controls.from">
+        <mat-datepicker #dp1></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>To</mat-label>
+        <input matInput [matDatepicker]="dp2" [formControl]="form.controls.to">
+        <mat-datepicker #dp2></mat-datepicker>
+      </mat-form-field>
+
+      <button mat-icon-button (click)="rangeNext()" aria-label="Next range"><mat-icon>chevron_right</mat-icon></button>
+
+      <span class="spacer"></span>
+
+      <button *ngIf="tab==='host'" mat-flat-button color="primary" (click)="newBlock()">
+        <mat-icon>event_busy</mat-icon> New block
+      </button>
+    </div>
+  </mat-card>
+
+  <mat-card class="list" [attr.aria-busy]="loading">
+    <ng-container *ngIf="!loading; else loadingTpl">
+
+      <div *ngIf="!events.length" class="empty">
+        <mat-icon>event</mat-icon>
+        <div>No events in this range.</div>
+      </div>
+
+      <div class="group" *ngFor="let g of groupedByProperty">
+        <div class="g-head">
+          <div class="g-title">
+            <a [routerLink]="['/properties', g.propertyId]">{{ g.propertyTitle }}</a>
+          </div>
+          <button *ngIf="tab==='host'" mat-stroked-button (click)="newBlock(g.propertyId)">
+            <mat-icon>add</mat-icon> Block here
+          </button>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <mat-list>
+          <mat-list-item *ngFor="let ev of g.items">
+            <mat-icon matListItemIcon>
+              {{ ev.isBooking ? 'event_available' : 'event_busy' }}
+            </mat-icon>
+
+            <div matListItemTitle>
+              {{ ev.title }}
+              <span *ngIf="ev.status" class="status">• {{ ev.status }}</span>
+            </div>
+            <div matListItemLine class="dates">
+              {{ ev.start | date:'MMM d, y' }} – {{ ev.end | date:'MMM d, y' }}
+            </div>
+
+            <div class="row-actions" matListItemMeta>
+              <a *ngIf="ev.isBooking && ev.bookingId != null"
+                 mat-stroked-button
+                 [routerLink]="['/bookings', ev.bookingId]">
+                Details
+              </a>
+              <button *ngIf="ev.isBlock && ev.blockId != null"
+                      mat-icon-button color="warn"
+                      (click)="deleteBlock(ev)"
+                      aria-label="Delete block">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </mat-list-item>
+        </mat-list>
+      </div>
+    </ng-container>
+  </mat-card>
+
+  <ng-template #loadingTpl>
+    <div class="loading"><span class="spinner"></span> Loading…</div>
+  </ng-template>
+</section>
