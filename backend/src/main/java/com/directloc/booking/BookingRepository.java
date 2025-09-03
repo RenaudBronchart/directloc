@@ -91,4 +91,17 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAcceptedOverlapping(@Param("propertyId") UUID propertyId,
                                           @Param("from") LocalDate from,
                                           @Param("to") LocalDate to);
+
+
+    List<Booking> findByGuestEmailAndCheckOutAfterAndCheckInBeforeOrderByCheckInAsc(
+            String guestEmail, LocalDate from, LocalDate to);
+
+    List<Booking> findByProperty_OwnerEmailAndCheckOutAfterAndCheckInBeforeOrderByCheckInAsc(
+            String ownerEmail, LocalDate from, LocalDate to);
+
+    List<Booking> findByProperty_IdAndCheckOutAfterAndCheckInBeforeOrderByCheckInAsc(
+            UUID propertyId, LocalDate from, LocalDate to);
+
 }
+
+

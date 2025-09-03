@@ -1,7 +1,7 @@
-<section class="featured">
+<section class="featured" [attr.aria-busy]="loading">
   <div class="header container">
     <h3>{{ title }}</h3>
-    <a class="link" routerLink="/properties">View all</a>
+    <a *ngIf="showLink" class="link" [routerLink]="linkTo">View all</a>
   </div>
 
   <div class="loading" *ngIf="loading">
@@ -9,8 +9,9 @@
   </div>
 
   <ng-container *ngIf="!loading">
-    <div class="grid" *ngIf="items.length; else empty">
+    <div class="grid" role="list" *ngIf="items.length; else empty">
       <app-property-card
+        role="listitem"
         *ngFor="let p of items; trackBy: trackById"
         [data]="p"
         [dense]="true"
@@ -19,7 +20,7 @@
     </div>
 
     <ng-template #empty>
-      <div class="empty">No listings yet.</div>
+      <div class="empty">{{ emptyText }}</div>
     </ng-template>
   </ng-container>
 </section>

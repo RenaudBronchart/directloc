@@ -7,7 +7,7 @@
     </div>
   </section>
 
-  <!-- ===== Sidebar (desktop) / Sheet (mobile) ===== -->
+  <!-- Sidebar (sticky on desktop / sheet on mobile) -->
   <div class="sidebar-backdrop" *ngIf="sidebarOpen" (click)="toggleFilters()"></div>
 
   <aside class="sidebar" [class.open]="sidebarOpen">
@@ -27,12 +27,17 @@
         </button>
       </div>
 
+      <!-- Filters -->
       <form [formGroup]="form" class="filters">
+
+        <!-- Destination -->
         <mat-form-field appearance="outline" class="full">
           <mat-label>Destination</mat-label>
-          <input matInput placeholder="City, region…" formControlName="q" />
+          <input matInput placeholder="City, region..." formControlName="q" />
         </mat-form-field>
 
+        <!-- Guests -->
+        <div class="grp">Guests</div>
         <div class="row-3">
           <mat-form-field appearance="outline">
             <mat-label>Adults</mat-label>
@@ -48,19 +53,112 @@
           </mat-form-field>
         </div>
 
+        <!-- Price -->
+        <div class="grp">Price</div>
         <div class="row-2">
           <mat-form-field appearance="outline">
             <mat-label>Min price (€)</mat-label>
-            <input matInput type="number" formControlName="minPrice" />
+            <input matInput type="number" min="0" formControlName="minPrice" />
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Max price (€)</mat-label>
-            <input matInput type="number" formControlName="maxPrice" />
+            <input matInput type="number" min="0" formControlName="maxPrice" />
           </mat-form-field>
         </div>
 
-        <mat-checkbox formControlName="pool">Pool</mat-checkbox>
-        <mat-checkbox formControlName="wifi">Wi-Fi</mat-checkbox>
+        <!-- Space & stay -->
+        <div class="grp">Space & stay</div>
+        <div class="row-3">
+          <mat-form-field appearance="outline">
+            <mat-label>Bedrooms (min)</mat-label>
+            <input matInput type="number" min="0" formControlName="bedroomsMin" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Bathrooms (min)</mat-label>
+            <input matInput type="number" min="0" formControlName="bathroomsMin" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Beds (min)</mat-label>
+            <input matInput type="number" min="0" formControlName="bedsMin" />
+          </mat-form-field>
+        </div>
+
+        <div class="row-2">
+          <mat-form-field appearance="outline">
+            <mat-label>Guests (min)</mat-label>
+            <input matInput type="number" min="0" formControlName="maxGuestsMin" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Area (m² min)</mat-label>
+            <input matInput type="number" min="0" formControlName="areaM2Min" />
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Min nights</mat-label>
+          <input matInput type="number" min="0" formControlName="minNightsMin" />
+        </mat-form-field>
+
+        <!-- Distances -->
+        <div class="grp">Distances</div>
+        <div class="row-2">
+          <mat-form-field appearance="outline">
+            <mat-label>≤ Center (km)</mat-label>
+            <input matInput type="number" min="0" formControlName="maxDistCenterKm" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>≤ Beach (km)</mat-label>
+            <input matInput type="number" min="0" formControlName="maxDistBeachKm" />
+          </mat-form-field>
+        </div>
+
+        <!-- Connectivity -->
+        <div class="grp">Connectivity</div>
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Wi-Fi (min Mbps)</mat-label>
+          <input matInput type="number" min="0" formControlName="wifiMin" />
+        </mat-form-field>
+
+        <!-- Type -->
+        <div class="grp">Type</div>
+        <div class="row-2">
+          <mat-form-field appearance="outline">
+            <mat-label>Property type</mat-label>
+            <mat-select formControlName="propertyType">
+              <mat-option [value]="null">Any</mat-option>
+              <mat-option *ngFor="let t of propertyTypes" [value]="t">{{ t }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>View type</mat-label>
+            <mat-select formControlName="viewType">
+              <mat-option [value]="null">Any</mat-option>
+              <mat-option *ngFor="let v of viewTypes" [value]="v">{{ v }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Amenities -->
+        <div class="grp">Amenities</div>
+        <div class="row-2">
+          <div class="checks">
+            <mat-checkbox formControlName="pool">Pool</mat-checkbox>
+            <mat-checkbox formControlName="parking">Parking</mat-checkbox>
+            <mat-checkbox formControlName="petFriendly">Pet friendly</mat-checkbox>
+            <mat-checkbox formControlName="smokingAllowed">Smoking allowed</mat-checkbox>
+            <mat-checkbox formControlName="garden">Garden</mat-checkbox>
+            <mat-checkbox formControlName="terrace">Terrace</mat-checkbox>
+          </div>
+          <div class="checks">
+            <mat-checkbox formControlName="balcony">Balcony</mat-checkbox>
+            <mat-checkbox formControlName="hotTub">Hot tub</mat-checkbox>
+            <mat-checkbox formControlName="airConditioning">A/C</mat-checkbox>
+            <mat-checkbox formControlName="heating">Heating</mat-checkbox>
+            <mat-checkbox formControlName="accessible">Accessible</mat-checkbox>
+            <mat-checkbox formControlName="workspace">Workspace</mat-checkbox>
+          </div>
+        </div>
 
         <div class="sheet-actions" hideOnDesktop>
           <button mat-stroked-button color="primary" class="apply" (click)="toggleFilters()" type="button">
@@ -72,7 +170,7 @@
     </div>
   </aside>
 
-  <!-- ===== Results ===== -->
+  <!-- Results -->
   <main class="results">
     <div class="results-header card">
       <div class="summary">{{ summaryText }}</div>

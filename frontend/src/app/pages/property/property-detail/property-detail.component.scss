@@ -68,6 +68,26 @@ $detail-width: 960px;
   }
 }
 
+/* ===================== ACTIVE SEARCH CHIPS ===================== */
+.active-search {
+  max-width: $detail-width;
+  margin: .6rem auto 0.8rem;
+  display: flex; align-items: center; gap: .75rem; justify-content: space-between;
+
+  .chips {
+    display: flex; flex-wrap: wrap; gap: .5rem;
+  }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .28rem .6rem; border-radius: 9999px;
+    background: #f3f4f6; color: #111827; border: 1px solid rgba(0,0,0,.08);
+    font-size: .85rem; font-weight: 600;
+  }
+
+  .edit-link { text-decoration: none; font-weight: 700; }
+}
+
 /* ===================== BODY ===================== */
 .detail-body {
   padding: 1rem 0 2rem;
@@ -144,7 +164,7 @@ $detail-width: 960px;
         box-shadow: inset 0 1px 0 rgba(0,0,0,.02);
       }
 
-      /* Colores del calendario (aplicados por dateClass) */
+      /* Calendar day colors (applied via dateClass) */
       .date-past .mat-calendar-body-cell-content {
         background: #eee;
         color: #777;
@@ -178,7 +198,6 @@ $detail-width: 960px;
         font-feature-settings: "tnum" 1;
       }
 
-      /* helpers */
       .inline-error {
         background: #fff7e6;
         color: #9a6700;
@@ -218,7 +237,7 @@ $detail-width: 960px;
   .card-skel { height: 160px; background: #f3f4f6; border-radius: $radius-lg; }
 }
 
-/* visually hidden (para inputs del datepicker) */
+/* Visually hidden range inputs (keep a11y & form binding intact) */
 .sr-only {
   position: absolute !important;
   width: 1px !important;
@@ -230,6 +249,35 @@ $detail-width: 960px;
   white-space: nowrap !important;
   border: 0 !important;
 }
+
+/* ---- At a glance ---- */
+.meta-grid{
+  list-style:none; padding:0; margin:.25rem 0 0;
+  display:grid; gap:10px;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  @media (max-width:640px){ grid-template-columns:1fr; }
+}
+.meta{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border:1px solid #e5e7eb;
+  border-radius:12px; background:#fff;
+}
+.meta-ic{ color: var(--primary); }
+.kv .k{ font-weight:700; }
+.kv .v{ color:#374151; }
+
+/* ---- Amenities ---- */
+.amenities-grid{
+  display:flex; flex-wrap:wrap; gap:8px; margin-top:.25rem;
+}
+.pill{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 10px; border-radius:9999px;
+  border:1px solid #e5e7eb; background:#fff;
+  font-weight:600; color:#111827;
+}
+.pill mat-icon{ font-size:18px; height:18px; width:18px; }
+
 
 /* shimmer */
 .shimmer {

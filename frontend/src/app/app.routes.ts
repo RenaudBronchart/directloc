@@ -143,6 +143,14 @@ export const routes: Routes = [
             .then(m => m.OnboardingComponent),
         data: { title: 'onboarding' }
       },
+      {
+        path: 'calendar',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./pages/calendar/calendar-page/calendar-page.component')
+            .then(m => m.CalendarPageComponent),
+        data: { title: 'calendar' }
+      },
 
 
 

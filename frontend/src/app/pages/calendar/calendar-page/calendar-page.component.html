@@ -1,0 +1,78 @@
+<section class="cal-wrap">
+  <!-- Toolbar -->
+  <mat-card class="toolbar">
+    <div class="tabs">
+      <button *ngIf="canHost"
+              mat-stroked-button
+              [color]="tab==='host' ? 'primary' : undefined"
+              (click)="changeTab('host')">
+        <mat-icon>home</mat-icon> Host
+      </button>
+
+      <button mat-stroked-button
+              [color]="tab==='guest' ? 'primary' : undefined"
+              (click)="changeTab('guest')">
+        <mat-icon>person</mat-icon> Guest
+      </button>
+    </div>
+  </mat-card>
+
+  <!-- Grid: calendario + sidebar (tarjeta partida) -->
+  <div class="cal-grid" [attr.aria-busy]="loading">
+    <!-- Columna izquierda: calendario mensual -->
+    <mat-card class="month">
+      <app-calendar-month
+        [events]="events"
+        [prices]="{}"
+        (monthChange)="onMonthChange($event)">
+      </app-calendar-month>
+
+      <!-- overlay de carga sin desmontar el calendario -->
+      <div class="busy" *ngIf="loading">
+        <span class="spinner"></span> Loading…
+      </div>
+    </mat-card>
+
+    <!-- Columna derecha: próximas reservas (solo Guest) -->
+    <aside class="side" *ngIf="tab==='guest'">
+      <mat-card class="side-card">
+        <div class="side-header">
+          <h3>Upcoming</h3>
+        </div>
+
+        <ng-container *ngIf="upcomingBookings.length; else emptyUpcoming">
+          <div class="up-item"
+               *ngFor="let ev of upcomingBookings"
+               [ngClass]="statusClass(ev.status)">
+            <div class="up-head">
+              <a class="up-title" [routerLink]="['/properties', ev.propertyId]">{{ ev.propertyTitle }}</a>
+              <span class="badge" [ngClass]="statusClass(ev.status)">{{ statusLabel(ev.status) }}</span>
+            </div>
+
+            <div class="up-meta">
+              <mat-icon>event</mat-icon>
+              <span>{{ ev.start | date:'MMM d, y' }} – {{ ev.end | date:'MMM d, y' }}</span>
+              <span class="dot">•</span>
+              <span>{{ nights(ev) }} nights</span>
+            </div>
+
+            <div class="up-actions">
+              <a *ngIf="ev.isBooking && ev.bookingId != null"
+                 mat-stroked-button
+                 [routerLink]="['/bookings', ev.bookingId]">
+                Details
+              </a>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #emptyUpcoming>
+          <div class="empty">
+            <mat-icon>event</mat-icon>
+            <div>No upcoming bookings.</div>
+          </div>
+        </ng-template>
+      </mat-card>
+    </aside>
+  </div>
+</section>

@@ -96,6 +96,8 @@ public class Booking {
     @LastModifiedDate
     private Instant updatedAt;
 
+
+
     // If you ever need JPA-level defaulting (e.g., status=REQUESTED), you can add:
     // @PrePersist
     // void prePersist() {

@@ -1,0 +1,45 @@
+<!-- src/app/pages/calendar/block-dialog/block-dialog.component.html -->
+<h2 mat-dialog-title>New block</h2>
+
+<div mat-dialog-content *ngIf="!loading; else loadingTpl">
+  <form [formGroup]="form" class="form">
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Property</mat-label>
+      <mat-select formControlName="propertyId" required>
+        <mat-option *ngFor="let p of myProps" [value]="p.id">
+          {{ p.title }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="row-2">
+      <mat-form-field appearance="outline">
+        <mat-label>Start</mat-label>
+        <input matInput [matDatepicker]="dp1" formControlName="start">
+        <mat-datepicker #dp1></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>End</mat-label>
+        <input matInput [matDatepicker]="dp2" formControlName="end">
+        <mat-datepicker #dp2></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Reason (optional)</mat-label>
+      <input matInput formControlName="reason" maxlength="120">
+    </mat-form-field>
+  </form>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="loading">Loading…</div>
+</ng-template>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button color="primary" (click)="save()" [disabled]="saving || form.invalid">
+    {{ saving ? 'Saving…' : 'Create block' }}
+  </button>
+</div>

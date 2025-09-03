@@ -3,7 +3,7 @@
 
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common'; // NgIf + AsyncPipe
+import { CommonModule } from '@angular/common';
 
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule }    from '@angular/material/icon';
@@ -11,6 +11,8 @@ import { MatMenuModule }    from '@angular/material/menu';
 import { MatButtonModule }  from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatBadgeModule }   from '@angular/material/badge';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 import { distinctUntilChanged } from 'rxjs/operators';
 import { timer, switchMap, catchError, of, shareReplay } from 'rxjs';
 
@@ -23,7 +25,8 @@ import { MessagingService } from '../../services/messaging.service';
   imports: [
     CommonModule,
     RouterLink,
-    MatToolbarModule, MatIconModule, MatMenuModule, MatButtonModule, MatDividerModule, MatBadgeModule
+    MatToolbarModule, MatIconModule, MatMenuModule, MatButtonModule,
+    MatDividerModule, MatBadgeModule, MatTooltipModule
   ],
   templateUrl: './top-nav.component.html',
   styleUrls: ['./top-nav.component.scss']
@@ -31,19 +34,17 @@ import { MessagingService } from '../../services/messaging.service';
 export class TopNavComponent {
   private auth = inject(AuthService);
   private messaging = inject(MessagingService);
-  private router = inject(Router);
+  readonly router = inject(Router);
 
-  // Simple auth getter (reads token state from your AuthService)
   get isLoggedIn(): boolean { return this.auth.isAuthenticated(); }
 
-  // Poll unread count every 15s (and at init). Returns 0 when logged out or on error.
+  // Unread cada 15s
   unread$ = timer(0, 15000).pipe(
     switchMap(() => this.isLoggedIn ? this.messaging.unreadCount() : of(0)),
     catchError(() => of(0)),
     distinctUntilChanged(),
     shareReplay({ bufferSize: 1, refCount: true })
   );
-
 
   logout() {
     this.auth.logout();
@@ -64,6 +65,17 @@ export class TopNavComponent {
       this.router.navigate([target]);
     } else {
       this.router.navigate(['/login'], { queryParams: { redirect: target } });
+    }
+  }
+
+  /** Navega al calendario; si ya estás ahí, fuerza recarga del componente. */
+  openCalendar() {
+    if (this.router.url.startsWith('/calendar')) {
+      // Forzar recarga del mismo path (sin ensuciar el history)
+      this.router.navigateByUrl('/', { skipLocationChange: true })
+        .then(() => this.router.navigate(['/calendar']));
+    } else {
+      this.router.navigate(['/calendar']);
     }
   }
 }

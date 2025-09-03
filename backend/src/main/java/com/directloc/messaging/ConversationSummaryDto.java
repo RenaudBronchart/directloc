@@ -13,6 +13,14 @@ public record ConversationSummaryDto(
         Instant lastMessageAt,
         long unreadCount,
         ConversationStatus status,
-        boolean hasBooking,           // NEW
-        String propertyCoverUrl
+        boolean hasBooking,
+        String propertyCoverUrl,
+
+        // nuevo bloque (opcional)
+        Long bookingId,
+        java.time.LocalDate checkIn,
+        java.time.LocalDate checkOut,
+        String bookingStatus,       // o enum
+        java.math.BigDecimal totalPrice,
+        String currency
 ) {}

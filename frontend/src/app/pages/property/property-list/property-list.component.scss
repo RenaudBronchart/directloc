@@ -20,14 +20,7 @@
 
   .search-row{
     grid-column: 1 / -1;
-    position: static;
-    top: auto;
-    z-index: auto;
-    padding: 0;
     margin: 4px 0 16px;
-    background: transparent;
-    backdrop-filter: none;
-    box-shadow: none;
   }
   .search-shell{ max-width: 980px; margin: 0 auto; }
 
@@ -63,9 +56,16 @@
     }
 
     .filters{
+      .grp{
+        margin: 10px 2px 6px;
+        font-weight: 800;
+        font-size: .9rem;
+        color: #111827;
+      }
       .full{ width:100%; }
       .row-3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
-      .row-2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
+      .row-2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+      .checks{ display:grid; gap:6px; }
       mat-checkbox{ display:block; margin-top:4px; }
     }
   }

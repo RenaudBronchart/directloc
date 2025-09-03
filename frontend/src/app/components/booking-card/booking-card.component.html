@@ -1,10 +1,22 @@
-<div class="bk-card" [class.clickable]="clickable" (click)="openCard()">
-  <img class="thumb" [src]="data.propertyCoverUrl || 'assets/placeholder.webp'" alt="" />
+<div
+  class="bk-card"
+  [class.clickable]="clickable"
+  (click)="openCard()"
+  [attr.role]="clickable ? 'button' : null"
+  [attr.tabindex]="clickable ? '0' : null"
+  (keydown)="onKeydown($event)"
+  aria-label="Open booking details"
+>
+  <img
+    class="thumb"
+    [src]="data.propertyCoverUrl || 'assets/placeholder.webp'"
+    [alt]="data.propertyTitle || 'Property cover'"
+  />
 
   <div class="info">
     <div class="title">{{ data.propertyTitle }}</div>
 
-    <div class="meta">
+    <div class="meta" *ngIf="data.propertyLocation">
       <mat-icon>place</mat-icon>
       <span>{{ data.propertyLocation }}</span>
     </div>
@@ -12,25 +24,28 @@
     <div class="dates">
       <mat-icon>event</mat-icon>
       <span>
-        {{ data.checkIn | date:'yyyy-MM-dd' }} →
-        {{ data.checkOut | date:'yyyy-MM-dd' }}
+        <!-- already yyyy-MM-dd, don't re-parse with DatePipe -->
+        {{ data.checkIn }} → {{ data.checkOut }}
       </span>
     </div>
 
-    <div class="guests">
+    <div class="guests" *ngIf="hasGuests">
       <mat-icon>group</mat-icon>
-      <span>{{ data.adults }} adults · {{ data.children }} children · {{ data.rooms }} rooms</span>
+      <span>
+        <ng-container *ngIf="data.adults != null">{{ data.adults }} adult{{ data.adults === 1 ? '' : 's' }}</ng-container>
+        <ng-container *ngIf="data.children != null"> · {{ data.children }} child{{ data.children === 1 ? '' : 'ren' }}</ng-container>
+        <ng-container *ngIf="data.rooms != null"> · {{ data.rooms }} room{{ data.rooms === 1 ? '' : 's' }}</ng-container>
+      </span>
     </div>
 
-    <!-- use your chip -->
     <div class="status">
       <span class="status-chip" [ngClass]="statusClass">
-        {{ statusLabel[data.status] }}
+        {{ statusLabel[data.status] || data.status }}
       </span>
     </div>
   </div>
 
-  <div class="price">
-    {{ totalNum | currency:'EUR':'symbol':'1.0-0' }}
+  <div class="price" *ngIf="totalNum != null">
+    {{ totalNum | currency:(data.currency || 'EUR'):'symbol':'1.0-0' }}
   </div>
 </div>

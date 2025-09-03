@@ -1,0 +1,13 @@
+.content { min-width: 420px; }
+.form { display: grid; gap: 12px; }
+.full { width: 100%; }
+.row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.loading { padding: 12px; text-align: center; }
+@media (max-width: 520px) {
+  .content { min-width: 0; }
+  .row-2 { grid-template-columns: 1fr; }
+}

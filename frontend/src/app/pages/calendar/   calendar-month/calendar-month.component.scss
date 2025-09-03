@@ -1,0 +1,17 @@
+:host { display: block; }
+
+.fc .fc-daygrid-event {
+  background: #f4c7d9;
+  border: 0;
+  border-radius: 8px;
+  padding: 2px 6px;
+  font-size: .8rem;
+  font-weight: 600;
+}
+.fc .fc-daygrid-day-number { font-weight: 600; }
+
+.price {
+  font-size: .75rem;
+  opacity: .7;
+  margin-top: 2px;
+}

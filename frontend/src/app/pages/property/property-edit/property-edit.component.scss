@@ -16,9 +16,9 @@ h2 {
   background: #fff;
   border-radius: $radius-lg;
   box-shadow: $shadow-sm;
-  padding: 1rem;         /* = ton ancien padding */
-  margin-top: 1rem;      /* = ton ancien margin */
+  padding: 1rem;         /* keep your original spacing */
+  margin-top: 1rem;
 }
 
-/* au cas où le form n’a pas ses styles */
+/* in case the inner form has no width set */
 .form-card mat-form-field { width: 100%; }

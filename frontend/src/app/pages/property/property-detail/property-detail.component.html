@@ -9,7 +9,9 @@
     <div class="overlay"></div>
 
     <div class="container hero-content">
-      <a class="back" routerLink="/properties">
+      <a class="back"
+         [routerLink]="['/properties']"
+         [queryParams]="currentSearchParams">
         <mat-icon>arrow_back</mat-icon>
         Back to results
       </a>
@@ -27,7 +29,6 @@
         <span *ngIf="p.maxGuests"><mat-icon>group</mat-icon> Up to {{ p.maxGuests }}</span>
       </div>
 
-      <!-- Solo utilidades aquí; el chat lo ponemos en la tarjeta de booking -->
       <div class="hero-actions">
         <button mat-stroked-button><mat-icon>ios_share</mat-icon> Share</button>
         <button mat-stroked-button><mat-icon>favorite_border</mat-icon> Save</button>
@@ -35,11 +36,40 @@
     </div>
   </section>
 
+  <!-- ACTIVE SEARCH SUMMARY -->
+  <div class="container active-search" *ngIf="hasAnyFilter">
+    <div class="chips">
+      <span class="chip" *ngIf="currentSearchParams.q">“{{ currentSearchParams.q }}”</span>
+      <span class="chip" *ngIf="currentSearchParams.region">{{ currentSearchParams.region }}</span>
+      <span class="chip" *ngIf="currentSearchParams.checkIn && currentSearchParams.checkOut">
+        {{ currentSearchParams.checkIn }} – {{ currentSearchParams.checkOut }}
+      </span>
+      <span class="chip" *ngIf="(currentSearchParams.adults ?? 0) + (currentSearchParams.children ?? 0) > 0">
+        {{ (currentSearchParams.adults ?? 0) + (currentSearchParams.children ?? 0) }} guests
+      </span>
+      <span class="chip" *ngIf="currentSearchParams.rooms">
+        {{ currentSearchParams.rooms }} rooms
+      </span>
+      <span class="chip" *ngIf="currentSearchParams.minPrice || currentSearchParams.maxPrice">
+        €{{ currentSearchParams.minPrice ?? '0' }}–€{{ currentSearchParams.maxPrice ?? '∞' }}
+      </span>
+      <span class="chip" *ngIf="currentSearchParams.bedroomsMin">{{ currentSearchParams.bedroomsMin }}+ bd</span>
+      <span class="chip" *ngIf="currentSearchParams.bathroomsMin">{{ currentSearchParams.bathroomsMin }}+ ba</span>
+    </div>
+
+    <a class="edit-link"
+       [routerLink]="['/properties']"
+       [queryParams]="currentSearchParams">
+      Edit search
+    </a>
+  </div>
+
   <!-- BODY -->
   <section class="container detail-body">
     <div class="grid">
       <!-- Left -->
       <div class="col main">
+        <!-- About -->
         <mat-card class="panel">
           <mat-card-content>
             <h2>About this place</h2>
@@ -58,10 +88,37 @@
           </mat-card-content>
         </mat-card>
 
+        <!-- At a glance -->
         <mat-card class="panel">
           <mat-card-content>
-            <h3>Amenities (soon)</h3>
-            <p>Coming soon: full list of amenities and house rules.</p>
+            <h3>At a glance</h3>
+
+            <ul class="meta-grid">
+              <li class="meta" *ngFor="let m of metaItems; trackBy: trackMeta">
+                <mat-icon class="meta-ic">{{ m.icon }}</mat-icon>
+                <div class="kv">
+                  <div class="k">{{ m.label }}</div>
+                  <div class="v">{{ m.value }}</div>
+                </div>
+              </li>
+            </ul>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Amenities -->
+        <mat-card class="panel">
+          <mat-card-content>
+            <h3>Amenities</h3>
+
+            <div *ngIf="amenityItems.length; else noAmenities" class="amenities-grid">
+              <span class="pill" *ngFor="let a of amenityItems; trackBy: trackAmenity">
+                <mat-icon>{{ a.icon }}</mat-icon> {{ a.label }}
+              </span>
+            </div>
+
+            <ng-template #noAmenities>
+              <p class="muted">Coming soon: full list of amenities and house rules.</p>
+            </ng-template>
           </mat-card-content>
         </mat-card>
       </div>
@@ -85,7 +142,6 @@
             </div>
 
             <form [formGroup]="form" (ngSubmit)="requestToBook()">
-              <!-- Inputs reales del range (ocultos) -->
               <mat-date-range-input
                 [rangePicker]="rangePicker"
                 class="sr-only"
@@ -94,10 +150,8 @@
                 <input matEndDate   formControlName="checkOut" (dateChange)="onDateChanged()" />
               </mat-date-range-input>
 
-              <!-- Picker con las clases por día -->
               <mat-date-range-picker #rangePicker [dateClass]="dateClass"></mat-date-range-picker>
 
-              <!-- Botón que abre el picker -->
               <button
                 type="button"
                 mat-stroked-button
@@ -109,7 +163,6 @@
                 <span>{{ datesLabel }}</span>
               </button>
 
-              <!-- Counters -->
               <div class="counters">
                 <div class="qty-row">
                   <div class="lbl">Adults</div>
@@ -163,15 +216,9 @@
                 </div>
               </div>
 
-              <!-- Hints -->
-              <div class="form-hint" *ngIf="p.maxGuests">
-                Max {{ p.maxGuests }} guests.
-              </div>
-              <div class="form-hint" *ngIf="nights < 2">
-                Minimum stay is 2 nights.
-              </div>
+              <div class="form-hint" *ngIf="p.maxGuests">Max {{ p.maxGuests }} guests.</div>
+              <div class="form-hint" *ngIf="nights < 2">Minimum stay is 2 nights.</div>
 
-              <!-- Error inline -->
               <div class="inline-error" *ngIf="errorText" aria-live="polite">{{ errorText }}</div>
 
               <button
@@ -183,7 +230,6 @@
                 {{ submitting ? 'Booking...' : 'Request to book' }}
               </button>
 
-              <!-- Botón de chat visible siempre -->
               <div class="secondary-actions">
                 <button mat-stroked-button class="wide" type="button"
                         (click)="openChat()" [disabled]="!property || submitting">

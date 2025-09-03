@@ -1,55 +1,90 @@
 package com.directloc.property;
 
+import com.directloc.property.PropertyType;
+import com.directloc.property.ViewType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-// If you ever need explicit date formatting, you can add @JsonFormat on fields.
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalTime;
 import java.util.UUID;
 
 /**
  * API DTO returned to clients for a Property.
- *
- * Notes:
- * - We keep types aligned with the JPA entity so the mapping is trivial.
- * - @JsonInclude NON_NULL keeps the payload clean by omitting null fields.
- * - Instant is serialized as ISO-8601 by Spring Boot (jackson-datatype-jsr310).
- * - If you ever need to guarantee non-scientific BigDecimal, prefer global
- *   Jackson config or a custom serializer rather than per-field hacks.
+ * Keep fields nullable so older clients don't break when new fields appear.
  */
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL) // optional: omit nulls from JSON
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PropertyResponse {
 
-    /** Stable public identifier (UUID). */
+    /* ---------- Identity ---------- */
     private UUID id;
 
-    /** Human-readable title (<= 255 chars). */
+    /* ---------- Basic info ---------- */
     private String title;
-
-    /** Long description (<= 2000 chars). */
     private String description;
 
-    /** City/area/country or free-form location string. */
+    /** Region label/slug and city (kept separate for filters). */
+    private String region;
+    private String city;
+
+    /** Display-friendly location (defaults to "city · region"). */
     private String location;
 
-    /** Nightly price (2 decimals). */
+    /* ---------- Pricing ---------- */
     private BigDecimal pricePerNight;
+    private String currency;           // e.g. "EUR"
 
-    /** Absolute URL to cover image. Auto-filled in entity if blank. */
+    /* ---------- Media ---------- */
     private String coverUrl;
 
-    /** Optional attributes; may be null if not provided. */
+    /* ---------- Capacity / size ---------- */
+    private Integer maxGuests;
     private Integer bedrooms;
     private Integer bathrooms;
-    private Integer maxGuests;
+    private Integer beds;
+    private Integer areaM2;
 
-    /** Audit timestamps (ISO-8601). */
+    /* ---------- Types ---------- */
+    private PropertyType propertyType; // APARTMENT/HOUSE/...
+    private ViewType viewType;         // SEA/MOUNTAIN/...
+
+    /* ---------- Amenities / rules ---------- */
+    private Boolean parking;
+    private Boolean workspace;
+    private Boolean pool;
+    private Boolean terrace;
+
+    private Boolean petFriendly;
+    private Boolean airConditioning;
+    private Boolean hotTub;
+    private Boolean balcony;
+
+    private Boolean smokingAllowed;
+    private Boolean heating;
+    private Boolean garden;
+    private Boolean accessible;
+
+    private Integer wifiMbps;
+    private Integer minNights;
+
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime checkInFrom;
+
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime checkOutUntil;
+
+    /* ---------- Distances ---------- */
+    private BigDecimal distanceToBeachKm;
+    private BigDecimal distanceToCenterKm;
+
+    /* ---------- Audit ---------- */
     private Instant createdAt;
     private Instant updatedAt;
 
-    /** Owner’s email (PII). Expose only if product requires it. */
+    /* ---------- Owner (expose carefully) ---------- */
     private String ownerEmail;
 }

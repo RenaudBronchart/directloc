@@ -3,7 +3,9 @@
 .topbar {
   background: #fff;
   border-bottom: 1px solid #e5e7eb;
-  position: sticky; top: 0; z-index: 1000;
+  position: sticky;
+  top: 0;
+  z-index: 4000;
 }
 .topbar .bar { display: flex; align-items: center; gap: 12px; min-height: 64px; }
 .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit; font-weight: 700; font-size: 1.1rem; }

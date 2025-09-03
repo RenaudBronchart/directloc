@@ -39,39 +39,45 @@ public class SecurityConfig {
                         // Preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Public auth endpoints
+                        // ---- Auth endpoints (públicos) ----
                         .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/test").permitAll()
-
-                        // Authenticated: /api/auth/me must require a valid JWT
+                        // Debe requerir JWT
                         .requestMatchers("/api/auth/me").authenticated()
 
-                        // Users
+                        // ---- Users ----
                         .requestMatchers("/api/users/**").authenticated()
 
-                        // Properties
+                        // ---- Properties ----
                         .requestMatchers(HttpMethod.GET, "/api/properties/my").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/properties/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/properties").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/properties/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/properties/**").authenticated()
 
-                        // Bookings
+                        // ---- Calendar ----
+                        // Público: usado por la ficha para pintar días ocupados
+                        .requestMatchers(HttpMethod.GET, "/api/calendar/property/**").permitAll()
+                        // Privado: vistas de calendario de huésped y anfitrión
+                        .requestMatchers(HttpMethod.GET, "/api/calendar/guest").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/calendar/host").authenticated()
+
+                        // ---- Bookings ----
                         .requestMatchers(HttpMethod.GET,   "/api/bookings/**").authenticated()
                         .requestMatchers(HttpMethod.POST,  "/api/bookings/**").authenticated()
                         .requestMatchers(HttpMethod.PATCH, "/api/bookings/**").authenticated()
 
-                        // Profile
+                        // ---- Profile ----
                         .requestMatchers(HttpMethod.GET, "/api/profile").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/profile").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/profile/avatar").authenticated()
-                        // Messaging
+
+                        // ---- Messaging ----
                         .requestMatchers("/api/messages/**").authenticated()
-                        //// Static uploaded files (public read)
+
+                        // ---- Static uploads (público GET) ----
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
 
-
-
-                        // Default
+                        // Default: requiere auth
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -82,6 +88,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+        // Ajusta orígenes a los que realmente usas
         config.setAllowedOrigins(List.of(
                 "http://localhost:4200",
                 "https://ton-frontend.com"
@@ -89,6 +96,8 @@ public class SecurityConfig {
         config.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
+        // Si necesitas exponer cabeceras personalizadas:
+        // config.setExposedHeaders(List.of("Location"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -96,5 +105,9 @@ public class SecurityConfig {
     }
 
     @Bean public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
-    @Bean public AuthenticationManager authenticationManager(AuthenticationConfiguration c) throws Exception { return c.getAuthenticationManager(); }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration c) throws Exception {
+        return c.getAuthenticationManager();
+    }
 }

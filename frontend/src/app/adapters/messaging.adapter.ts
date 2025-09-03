@@ -4,6 +4,9 @@ import { ConversationSummaryDto, MessageDto } from '../dto/messaging.dto';
 const toDate = (iso: string | null | undefined): Date | null =>
   iso ? new Date(iso) : null;
 
+const toNumberOrNull = (v: unknown): number | null =>
+  v == null ? null : Number(v);
+
 export const messagingAdapter = {
   toConversationItem(dto: ConversationSummaryDto): ConversationListItem {
     return {
@@ -17,6 +20,17 @@ export const messagingAdapter = {
       status: dto.status,
       hasBooking: !!dto.hasBooking,
       propertyCoverUrl: dto.propertyCoverUrl ?? null,
+
+      // ⬇️ nuevos campos ya servidos por el backend
+      bookingId: dto.bookingId ?? null,
+      checkIn: dto.checkIn ?? null,
+      checkOut: dto.checkOut ?? null,
+      bookingStatus: dto.bookingStatus ?? null,
+      totalPrice: toNumberOrNull(dto.totalPrice),
+      currency: dto.currency ?? null,
+
+
+      pinned: false,
     };
   },
 
