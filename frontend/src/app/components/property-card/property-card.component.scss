@@ -62,10 +62,20 @@
   .actions {
     padding: .5rem .9rem .9rem;
     display: flex; align-items: center; justify-content: space-between;
+    gap: .5rem;
 
+    .price { flex: 1 1 auto; }
     .price .amount { font-weight: 800; }
     .price .per { color: #6b7280; margin-left: .15rem; }
+
     button { text-transform: none; border-radius: $radius-md; }
+
+    /* grupo de botones cuando ownerMode = true */
+    .owner-actions {
+      display: inline-flex;
+      gap: .5rem;
+      flex-shrink: 0;
+    }
   }
 }
 

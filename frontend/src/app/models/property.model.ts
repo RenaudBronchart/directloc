@@ -6,7 +6,7 @@ export interface PropertyModel {
   description?: string;
   location: string;
 
-  // NEW meta
+  // Meta
   city?: string | null;
   region?: string | null;
   currency: string;           // e.g. "EUR"

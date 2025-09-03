@@ -17,16 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Application service for Properties.
- *
- * Responsibilities:
- *  - Create/update/delete properties owned by the authenticated user.
- *  - Public search with pagination (legacy GET and new criteria-based endpoints).
- *  - “My properties” for the current owner.
- *
- * NOTE: Repository must extend JpaSpecificationExecutor<Property> for the criteria search.
- */
 @Service
 @RequiredArgsConstructor
 public class PropertyService {
@@ -36,29 +26,39 @@ public class PropertyService {
 
     /* ------------ Utilities ------------ */
 
-    /** Trim a string or return null if empty/blank (keeps DB clean). */
+    /** Trim o null si queda vacío (mantiene la BD limpia). */
     private String trimOrNull(String s) {
         if (s == null) return null;
         String t = s.trim();
         return t.isEmpty() ? null : t;
     }
 
-    /** Build criteria from the legacy GET search params. */
+    /** Parsers seguros para enums: devuelven null si la cadena es inválida. */
+    private PropertyType parseType(String s) {
+        if (s == null || s.isBlank()) return null;
+        try { return PropertyType.valueOf(s.trim().toUpperCase()); }
+        catch (IllegalArgumentException ex) { return null; }
+    }
+    private ViewType parseView(String s) {
+        if (s == null || s.isBlank()) return null;
+        try { return ViewType.valueOf(s.trim().toUpperCase()); }
+        catch (IllegalArgumentException ex) { return null; }
+    }
+
+    /** Para la búsqueda legacy (GET). */
     private PropertySearchCriteria fromLegacyParams(String q, Integer adults, Integer children, Integer rooms) {
         PropertySearchCriteria c = new PropertySearchCriteria();
         c.setQ(q);
 
-        // guestsMin = (adults + children) if provided (> 0)
         int a = adults != null ? adults : 0;
         int k = children != null ? children : 0;
         int total = a + k;
         if (total > 0) c.setGuestsMin(total);
 
-        // rooms kept for future mapping if needed (controller now maps it)
         return c;
     }
 
-    /** Allow sort override via criteria.sortBy when Pageable is unsorted or you want to force it. */
+    /** Permite override de ordenación vía criteria.sortBy. */
     private Pageable applySortOverride(PropertySearchCriteria c, Pageable pageable) {
         if (c == null || c.getSortBy() == null) return pageable;
 
@@ -82,17 +82,49 @@ public class PropertyService {
         User owner = userService.getCurrentUser();
 
         Property p = Property.builder()
+                // --- básicos ---
                 .title(req.getTitle().trim())
                 .description(req.getDescription().trim())
-                .location(req.getLocation().trim())
+                .region(trimOrNull(req.getRegion()))
+                .city(trimOrNull(req.getCity()))
+                .location(trimOrNull(req.getLocation()))  // si queda vacío, la entidad lo derivará
                 .pricePerNight(req.getPricePerNight())
+                .currency(trimOrNull(req.getCurrency()))
+                // --- capacidades / superficie ---
+                .maxGuests(req.getMaxGuests())
                 .bedrooms(req.getBedrooms())
                 .bathrooms(req.getBathrooms())
-                .maxGuests(req.getMaxGuests())
+                .beds(req.getBeds())
+                .areaM2(req.getAreaM2())
+                // --- tipos ---
+                .propertyType(parseType(req.getPropertyType()))
+                .viewType(parseView(req.getViewType()))
+                // --- amenities / reglas ---
+                .parking(req.getParking())
+                .workspace(req.getWorkspace())
+                .pool(req.getPool())
+                .terrace(req.getTerrace())
+                .petFriendly(req.getPetFriendly())
+                .airConditioning(req.getAirConditioning())
+                .hotTub(req.getHotTub())
+                .balcony(req.getBalcony())
+                .smokingAllowed(req.getSmokingAllowed())
+                .heating(req.getHeating())
+                .garden(req.getGarden())
+                .accessible(req.getAccessible())
+                // --- cuantificables ---
+                .wifiMbps(req.getWifiMbps())
+                .minNights(req.getMinNights())
+                .checkInFrom(req.getCheckInFrom())
+                .checkOutUntil(req.getCheckOutUntil())
+                .distanceToBeachKm(req.getDistanceToBeachKm())
+                .distanceToCenterKm(req.getDistanceToCenterKm())
+                // --- media / ownership ---
                 .coverUrl(trimOrNull(req.getCoverUrl()))
                 .owner(owner)
                 .build();
 
+        // La entidad tiene @PrePersist/@PreUpdate para currency/location/cover por defecto.
         return PropertyMapper.toDto(repo.save(p));
     }
 
@@ -106,13 +138,49 @@ public class PropertyService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Forbidden");
         }
 
+        // --- básicos ---
         p.setTitle(req.getTitle().trim());
         p.setDescription(req.getDescription().trim());
-        p.setLocation(req.getLocation().trim());
+        p.setRegion(trimOrNull(req.getRegion()));
+        p.setCity(trimOrNull(req.getCity()));
+        p.setLocation(trimOrNull(req.getLocation())); // si queda vacío, se derivará en @PreUpdate
         p.setPricePerNight(req.getPricePerNight());
+        p.setCurrency(trimOrNull(req.getCurrency()));
+
+        // --- capacidades / superficie ---
+        p.setMaxGuests(req.getMaxGuests());
         p.setBedrooms(req.getBedrooms());
         p.setBathrooms(req.getBathrooms());
-        p.setMaxGuests(req.getMaxGuests());
+        p.setBeds(req.getBeds());
+        p.setAreaM2(req.getAreaM2());
+
+        // --- tipos ---
+        p.setPropertyType(parseType(req.getPropertyType()));
+        p.setViewType(parseView(req.getViewType()));
+
+        // --- amenities / reglas ---
+        p.setParking(req.getParking());
+        p.setWorkspace(req.getWorkspace());
+        p.setPool(req.getPool());
+        p.setTerrace(req.getTerrace());
+        p.setPetFriendly(req.getPetFriendly());
+        p.setAirConditioning(req.getAirConditioning());
+        p.setHotTub(req.getHotTub());
+        p.setBalcony(req.getBalcony());
+        p.setSmokingAllowed(req.getSmokingAllowed());
+        p.setHeating(req.getHeating());
+        p.setGarden(req.getGarden());
+        p.setAccessible(req.getAccessible());
+
+        // --- cuantificables ---
+        p.setWifiMbps(req.getWifiMbps());
+        p.setMinNights(req.getMinNights());
+        p.setCheckInFrom(req.getCheckInFrom());
+        p.setCheckOutUntil(req.getCheckOutUntil());
+        p.setDistanceToBeachKm(req.getDistanceToBeachKm());
+        p.setDistanceToCenterKm(req.getDistanceToCenterKm());
+
+        // --- media ---
         p.setCoverUrl(trimOrNull(req.getCoverUrl()));
 
         return PropertyMapper.toDto(repo.save(p));

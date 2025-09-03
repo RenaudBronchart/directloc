@@ -11,7 +11,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-
+import { PropertyType, ViewType } from '../../../dto/property.dto';
 import { PropertyRequestDto } from '../../../dto/property.dto';
 import { PropertyService } from '../../../services/property.service';
 
@@ -57,37 +57,31 @@ export class PropertyFormComponent implements OnInit, OnChanges {
   cityOptions: string[] = [];
   unknownCity: string | null = null;
 
-  // Catálogos
-  propertyTypes = ['Apartment', 'House', 'Villa', 'Studio', 'Cottage', 'Gîte'];
-  amenitiesCatalog = [
-    'Wi-Fi', 'Washer', 'Dryer', 'Dishwasher', 'EV charger',
-    'BBQ', 'Fireplace', 'TV', 'Coffee machine', 'Hair dryer', 'Iron'
-  ];
-  views = ['Sea', 'Lake', 'River', 'Mountain', 'Forest', 'City', 'Garden'];
+  // Catálogos (valores EXACTOS del backend)
+  propertyTypes = ['APARTMENT','HOUSE','VILLA','CHALET','CABIN','STUDIO','LOFT','FARMHOUSE','COTTAGE','OTHER'];
+  views = ['SEA','MOUNTAIN','GARDEN','CITY','RIVER','LAKE','FOREST','NONE'];
 
   form = this.fb.group({
     title:        ['', [Validators.required, Validators.minLength(3)]],
     description:  ['', [Validators.required, Validators.minLength(10)]],
 
     regionKey:    ['' , [Validators.required]],
-    location:     ['', [Validators.required, Validators.minLength(2)]], // city
+    location:     ['', [Validators.required, Validators.minLength(2)]], // City
 
     pricePerNight:[null as number | null, [Validators.required, Validators.min(0)]],
     maxGuests:    [null as number | null, [Validators.min(1)]],
     bedrooms:     [null as number | null, [Validators.min(0)]],
     bathrooms:    [null as number | null, [Validators.min(0)]],
 
-    propertyType: [null as string | null],
+    propertyType: [null as string | null], // ENUM (UPPERCASE)
     beds:         [null as number | null, [Validators.min(0)]],
     areaSqm:      [null as number | null, [Validators.min(0)]],
 
-    amenities:    [[] as string[]],
-
     // toggles / reglas
     parking:             [false],
-    petsAllowed:         [false],
+    petFriendly:         [false], // nombre correcto del back
     smokingAllowed:      [false],
-    dedicatedWorkspace:  [false],
+    dedicatedWorkspace:  [false], // lo mapeamos a workspace
     airConditioning:     [false],
     heating:             [false],
     pool:                [false],
@@ -99,12 +93,12 @@ export class PropertyFormComponent implements OnInit, OnChanges {
 
     // cuantificables
     wifiMbps:     [null as number | null, [Validators.min(0)]],
-    minNights:    [null as number | null, [Validators.min(1)]],
+    minNights:    [null as number | null, [Validators.min(0)]], // el back permite 0
     checkInFrom:  [null as string | null],   // "HH:mm"
     checkOutUntil:[null as string | null],   // "HH:mm"
     beachKm:      [null as number | null, [Validators.min(0)]],
     centerKm:     [null as number | null, [Validators.min(0)]],
-    view:         [null as string | null],
+    view:         [null as string | null],   // lo convertimos a viewType
 
     coverUrl:     ['']
   });
@@ -147,7 +141,7 @@ export class PropertyFormComponent implements OnInit, OnChanges {
     if (changes['initialData'] && this.initialData) {
       this.form.patchValue(this.initialData as any);
 
-      const initialCity = (this.initialData.location || '').trim();
+      const initialCity = (this.initialData.city || this.initialData.location || '').trim();
       const r = this.regionOfCity(initialCity);
       const regionKey = r?.key ?? this.defaultRegionKey;
 
@@ -171,51 +165,56 @@ export class PropertyFormComponent implements OnInit, OnChanges {
 
     const v = this.form.value;
 
-    // Payload base (lo que ya persistes en el backend)
+    // Region y city para el backend
+    const reg = this.regions.find(r => r.key === v.regionKey);
+    const regionLabel = reg ? `${reg.name} · ${reg.country}` : '';
+    const city = (v.location ?? '').trim();
+
+    // Puedes omitir location y el back la deriva; si quieres mandarla:
+    const locationDisplay = city && reg ? `${city} · ${reg.name} · ${reg.country}` : city || regionLabel || '';
+
     const payload: PropertyRequestDto = {
       title: (v.title ?? '').trim(),
       description: (v.description ?? '').trim(),
-      location: (v.location ?? '').trim(),
+
+      region: regionLabel,
+      city,
+      location: locationDisplay || null,
+
       pricePerNight: Number(v.pricePerNight),
       currency: (environment as any).defaultCurrency ?? 'EUR',
+
       bedrooms: v.bedrooms ?? null,
       bathrooms: v.bathrooms ?? null,
       maxGuests: v.maxGuests ?? null,
+      beds: v.beds ?? null,
+      areaM2: v.areaSqm ?? null,
+
+      propertyType: v.propertyType ? (String(v.propertyType).toUpperCase() as PropertyType) : null,
+      viewType:     v.view ? (String(v.view).toUpperCase() as ViewType) : null,
+
+      parking: !!v.parking,
+      petFriendly: !!v.petFriendly,
+      smokingAllowed: !!v.smokingAllowed,
+      workspace: !!v.dedicatedWorkspace,
+      airConditioning: !!v.airConditioning,
+      heating: !!v.heating,
+      pool: !!v.pool,
+      hotTub: !!v.hotTub,
+      garden: !!v.garden,
+      terrace: !!v.terrace,
+      balcony: !!v.balcony,
+      accessible: !!v.accessible,
+
+      wifiMbps: v.wifiMbps ?? null,
+      minNights: v.minNights ?? null,
+      checkInFrom: v.checkInFrom || null,
+      checkOutUntil: v.checkOutUntil || null,
+      distanceToBeachKm: v.beachKm ?? null,
+      distanceToCenterKm: v.centerKm ?? null,
+
       coverUrl: v.coverUrl?.trim() || null
     };
-
-    // Campos nuevos → los añado solo si tienen valor (opcional).
-    // Si luego los quieres persistir, añade estas propiedades al DTO del backend.
-    const maybe: Record<string, unknown> = {
-      propertyType: v.propertyType || undefined,
-      beds: v.beds ?? undefined,
-      areaSqm: v.areaSqm ?? undefined,
-      amenities: (v.amenities && v.amenities.length) ? v.amenities : undefined,
-      parking: v.parking ? true : undefined,
-      petsAllowed: v.petsAllowed ? true : undefined,
-      smokingAllowed: v.smokingAllowed ? true : undefined,
-      dedicatedWorkspace: v.dedicatedWorkspace ? true : undefined,
-      airConditioning: v.airConditioning ? true : undefined,
-      heating: v.heating ? true : undefined,
-      pool: v.pool ? true : undefined,
-      hotTub: v.hotTub ? true : undefined,
-      garden: v.garden ? true : undefined,
-      terrace: v.terrace ? true : undefined,
-      balcony: v.balcony ? true : undefined,
-      accessible: v.accessible ? true : undefined,
-      wifiMbps: v.wifiMbps ?? undefined,
-      minNights: v.minNights ?? undefined,
-      checkInFrom: v.checkInFrom || undefined,
-      checkOutUntil: v.checkOutUntil || undefined,
-      beachKm: v.beachKm ?? undefined,
-      centerKm: v.centerKm ?? undefined,
-      view: v.view || undefined
-    };
-
-    // Mezclo solo los definidos
-    Object.entries(maybe).forEach(([k, val]) => {
-      if (val !== undefined && val !== null) (payload as any)[k] = val;
-    });
 
     const req$ = this.id
       ? this.api.updateProperty(this.id, payload)
@@ -228,7 +227,8 @@ export class PropertyFormComponent implements OnInit, OnChanges {
           this.snack.open(this.id ? 'Property updated' : 'Property created', 'Close', { duration: 2500 });
           this.router.navigate(['/my-properties']);
         },
-        error: () => {
+        error: (err) => {
+          console.error('Create/Update failed', err);
           this.snack.open('Operation failed. Please try again.', 'Close', { duration: 3500 });
         }
       });

@@ -35,7 +35,13 @@ export class PropertyCardComponent {
   @Input() data!: PropertyCardData;
   @Input() loading = false;
   @Input() dense = false;
+
+  /** 🔸 Nuevo: modo propietario para mostrar Edit/Delete dentro de la card */
+  @Input() ownerMode = false;
+
   @Output() open = new EventEmitter<string>();
+  @Output() edit = new EventEmitter<string>();
+  @Output() remove = new EventEmitter<string>();
 
   @HostBinding('class.dense') get isDense() { return this.dense; }
 

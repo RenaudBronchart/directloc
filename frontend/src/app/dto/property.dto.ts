@@ -1,25 +1,26 @@
 /**
- * Keep this 1:1 with the backend PropertyResponse.
- * String unions here should match your Java enums.
+ * Enums alineados con el backend.
  */
 export type PropertyType =
   | 'APARTMENT'
   | 'HOUSE'
   | 'VILLA'
-  | 'COTTAGE'
-  | 'B&B'
   | 'CHALET'
-  | 'TOWNHOUSE'
+  | 'CABIN'
   | 'STUDIO'
+  | 'LOFT'
+  | 'FARMHOUSE'
+  | 'COTTAGE'
   | 'OTHER';
 
 export type ViewType =
   | 'SEA'
   | 'MOUNTAIN'
-  | 'CITY'
   | 'GARDEN'
+  | 'CITY'
   | 'RIVER'
-  | 'COURTYARD'
+  | 'LAKE'
+  | 'FOREST'
   | 'NONE';
 
 export interface PropertyResponseDto {
@@ -28,13 +29,13 @@ export interface PropertyResponseDto {
   description: string;
   location: string;
 
-  // NEW meta
+  // Meta
   city?: string | null;
   region?: string | null;
   currency: string;           // e.g. "EUR"
 
   // Pricing
-  pricePerNight: number;      // BigDecimal serialized as number
+  pricePerNight: number;
 
   // Basics
   coverUrl?: string | null;
@@ -79,20 +80,23 @@ export interface PropertyResponseDto {
 }
 
 /**
- * Payload for create/update (PropertyRequest).
- * Required vs optional mirrors backend validation.
+ * Payload para create/update (PropertyRequest en el back).
+ * `region` y `city` son REQUIRED en el backend.
+ * `location` es opcional (el back la deriva si no viene).
+ * `currency` es opcional (el back también defaulta a EUR).
  */
 export interface PropertyRequestDto {
   title: string;
   description: string;
-  location: string;
 
-  // NEW: currency required by backend; service will auto-fill default if missing
-  currency: string;
+  region: string;
+  city: string;
+  location?: string | null;
 
   pricePerNight: number;
+  currency?: string | null;
 
-  // Basics (optional)
+  // Basics (opcionales)
   bedrooms?: number | null;
   bathrooms?: number | null;
   maxGuests?: number | null;
@@ -100,10 +104,6 @@ export interface PropertyRequestDto {
   areaM2?: number | null;
   minNights?: number | null;
   coverUrl?: string | null;
-
-  // Meta (optional)
-  city?: string | null;
-  region?: string | null;
 
   // Check-in/out windows (HH:mm)
   checkInFrom?: string | null;

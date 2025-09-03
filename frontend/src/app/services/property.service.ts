@@ -12,7 +12,7 @@ import { environment } from '../../environments/environment';
 function toYMD(d?: Date | string | null): string | undefined {
   if (!d) return undefined;
   if (typeof d === 'string') return d;
-  const y = d.getFullYear(), m = `${d.getMonth()+1}`.padStart(2,'0'), day = `${d.getDate()}`.padStart(2,'0');
+  const y = d.getFullYear(), m = `${d.getMonth() + 1}`.padStart(2, '0'), day = `${d.getDate()}`.padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
 
@@ -21,35 +21,68 @@ type SortBy = 'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC' | 'GUESTS_DESC';
 @Injectable({ providedIn: 'root' })
 export class PropertyService {
   private readonly API_BASE = ((environment as any).apiBase || 'http://localhost:8080') as string;
-  private readonly API = `${this.API_BASE.replace(/\/$/,'')}/api/properties`;
+  private readonly API = `${this.API_BASE.replace(/\/$/, '')}/api/properties`;
 
   constructor(private http: HttpClient) {}
 
   /**
-   * Paged listing with the full filter set supported by backend.
-   * Only sends defined params.
+   * Paged listing (GET /api/properties).
+   * Acepta TODOS los filtros del componente, pero solo envía al backend los soportados hoy:
+   *  - q, region
+   *  - adults, children, rooms (el back ya fusiona rooms→bedroomsMin y adults+children→guestsMin)
+   *  - minPrice, maxPrice, bedroomsMin, bathroomsMin
+   *  - guestsMin (mapeado desde maxGuestsMin)
+   *  - checkIn, checkOut
+   *  - pool, parking, petsAllowed (desde petFriendly)
+   *  - wifiMin
+   *  - sortBy, page, size
+   *
+   * El resto se ignoran silenciosamente (forward-compatible).
    */
   getAll(params?: {
-    q?: string; city?: string; region?: string;
+    // básicos / texto / región
+    q?: string; region?: string; city?: string;
+
+    // ocupación + rooms
     adults?: number; children?: number; rooms?: number;
+
+    // precio y numéricos
     minPrice?: number; maxPrice?: number;
-
     bedroomsMin?: number; bathroomsMin?: number; bedsMin?: number;
-    maxGuestsMin?: number; areaM2Min?: number; minNightsMin?: number;
+    maxGuestsMin?: number;              // (UI) → guestsMin (BE)
+    areaM2Min?: number;                 // ignorado por BE hoy
+    minNightsMin?: number;              // ignorado por BE hoy
 
-    maxDistCenterKm?: number; maxDistBeachKm?: number;
+    // distancias
+    maxDistCenterKm?: number;           // ignorado por BE hoy
+    maxDistBeachKm?: number;            // ignorado por BE hoy
 
+    // conectividad
     wifiMin?: number;
 
+    // tipos (hoy no usados por el BE en GET)
     propertyType?: string;  // enum name
     viewType?: string;      // enum name
 
-    pool?: boolean; parking?: boolean; petFriendly?: boolean; smokingAllowed?: boolean;
-    garden?: boolean; terrace?: boolean; balcony?: boolean; hotTub?: boolean;
-    airConditioning?: boolean; heating?: boolean; accessible?: boolean; workspace?: boolean;
+    // amenities (BE GET soporta solo pool/parking/petsAllowed)
+    pool?: boolean;
+    parking?: boolean;
+    petFriendly?: boolean;  // UI → petsAllowed (BE)
+    smokingAllowed?: boolean;
+    garden?: boolean;
+    terrace?: boolean;
+    balcony?: boolean;
+    hotTub?: boolean;
+    airConditioning?: boolean;
+    heating?: boolean;
+    accessible?: boolean;
+    workspace?: boolean;
 
-    checkIn?: Date | string; checkOut?: Date | string;
+    // fechas
+    checkIn?: Date | string;
+    checkOut?: Date | string;
 
+    // orden/paginación
     sortBy?: SortBy;
     page?: number; size?: number;
   }): Observable<PageModel<PropertyModel>> {
@@ -61,48 +94,46 @@ export class PropertyService {
     if (params) {
       const p = params;
 
-      // basics
-      set('q', p.q); set('city', p.city); set('region', p.region);
+      // básicos
+      set('q', p.q);
+      set('region', p.region);
+      // (city no lo usa el back en GET; no lo enviamos)
+
+      // ocupación
       if (p.adults   != null) set('adults', p.adults);
       if (p.children != null) set('children', p.children);
-      if (p.rooms    != null) set('rooms', p.rooms);
+      if (p.rooms    != null) set('rooms', p.rooms); // el back ya lo convierte a bedroomsMin si aplica
 
-      if (p.minPrice != null) set('minPrice', p.minPrice);
-      if (p.maxPrice != null) set('maxPrice', p.maxPrice);
+      // precio y numéricos soportados
+      if (p.minPrice     != null) set('minPrice',     p.minPrice);
+      if (p.maxPrice     != null) set('maxPrice',     p.maxPrice);
+      if (p.bedroomsMin  != null) set('bedroomsMin',  p.bedroomsMin);
+      if (p.bathroomsMin != null) set('bathroomsMin', p.bathroomsMin);
 
-      if (p.bedroomsMin   != null) set('bedroomsMin',   p.bedroomsMin);
-      if (p.bathroomsMin  != null) set('bathroomsMin',  p.bathroomsMin);
-      if (p.bedsMin       != null) set('bedsMin',       p.bedsMin);
-      if (p.maxGuestsMin  != null) set('maxGuestsMin',  p.maxGuestsMin);
-      if (p.areaM2Min     != null) set('areaM2Min',     p.areaM2Min);
-      if (p.minNightsMin  != null) set('minNightsMin',  p.minNightsMin);
+      // guestsMin (si UI pasa maxGuestsMin lo mapeamos)
+      if (p.maxGuestsMin != null) set('guestsMin', p.maxGuestsMin);
 
-      if (p.maxDistCenterKm != null) set('maxDistCenterKm', p.maxDistCenterKm);
-      if (p.maxDistBeachKm  != null) set('maxDistBeachKm',  p.maxDistBeachKm);
-
-      if (p.wifiMin != null) set('wifiMin', p.wifiMin);
-
-      set('propertyType', p.propertyType || null);
-      set('viewType', p.viewType || null);
-
-      // amenities
-      ([
-        'pool','parking','petFriendly','smokingAllowed','garden','terrace','balcony',
-        'hotTub','airConditioning','heating','accessible','workspace'
-      ] as const).forEach(k => {
-        const val = (p as any)[k];
-        if (val !== undefined && val !== null) set(k, val);
-      });
-
-      // dates
+      // fechas
       const ci = toYMD(p.checkIn), co = toYMD(p.checkOut);
       if (ci) set('checkIn', ci);
       if (co) set('checkOut', co);
 
-      // paging/sort
-      if (p.sortBy)   set('sortBy', p.sortBy);
-      if (p.page != null) set('page', p.page);
-      if (p.size != null) set('size', p.size);
+      // amenities soportados en GET hoy
+      if (p.pool        != null) set('pool',        p.pool);
+      if (p.parking     != null) set('parking',     p.parking);
+      if (p.petFriendly != null) set('petsAllowed', p.petFriendly); // rename UI→BE
+
+      // conectividad
+      if (p.wifiMin     != null) set('wifiMin', p.wifiMin);
+
+      // sort & paging
+      if (p.sortBy != null) set('sortBy', p.sortBy);
+      if (p.page   != null) set('page',   p.page);
+      if (p.size   != null) set('size',   p.size);
+
+      // NOTA: los demás filtros (bedsMin, areaM2Min, minNightsMin, distancias, propertyType, viewType,
+      // smokingAllowed, garden, terrace, balcony, hotTub, airConditioning, heating, accessible, workspace)
+      // hoy no están soportados por el back en GET; por eso no se envían.
     }
 
     return this.http
@@ -120,17 +151,17 @@ export class PropertyService {
     return this.http.get<PropertyResponseDto[]>(`${this.API}/my`).pipe(map(list => list.map(toProperty)));
   }
 
-  /** Create / Update left as you had them… */
+  /** Create / Update */
   createProperty(data: PropertyRequestDto): Observable<PropertyModel> {
-    const currency = (data?.currency || (environment as any).defaultCurrency || 'EUR') as string;
-    const payload: PropertyRequestDto = toPropertyRequestDto({ ...data, currency });
+    const payload: PropertyRequestDto = toPropertyRequestDto({ ...data });
     return this.http.post<PropertyResponseDto>(this.API, payload).pipe(map(toProperty));
   }
+
   updateProperty(id: string, data: PropertyRequestDto): Observable<PropertyModel> {
-    const currency = (data?.currency || (environment as any).defaultCurrency || 'EUR') as string;
-    const payload: PropertyRequestDto = toPropertyRequestDto({ ...data, currency });
+    const payload: PropertyRequestDto = toPropertyRequestDto({ ...data });
     return this.http.put<PropertyResponseDto>(`${this.API}/${id}`, payload).pipe(map(toProperty));
   }
+
   deleteProperty(id: string): Observable<void> {
     return this.http.delete<void>(`${this.API}/${id}`);
   }

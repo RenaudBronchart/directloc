@@ -59,7 +59,7 @@
     <mat-form-field appearance="outline">
       <mat-label>Property type</mat-label>
       <mat-select formControlName="propertyType">
-        <mat-option *ngFor="let t of propertyTypes" [value]="t">{{ t }}</mat-option>
+        <mat-option *ngFor="let t of propertyTypes" [value]="t">{{ t | titlecase }}</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -73,20 +73,10 @@
       <input matInput type="number" formControlName="areaSqm" min="0" />
     </mat-form-field>
 
-    <!-- Amenities (multi) -->
-    <mat-form-field appearance="outline" class="full">
-      <mat-label>Amenities</mat-label>
-      <mat-select formControlName="amenities" multiple>
-        <mat-option *ngFor="let a of amenitiesCatalog" [value]="a">
-          {{ a }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-
     <!-- Reglas -->
     <div class="toggles full">
       <mat-slide-toggle formControlName="parking">Parking</mat-slide-toggle>
-      <mat-slide-toggle formControlName="petsAllowed">Pet friendly</mat-slide-toggle>
+      <mat-slide-toggle formControlName="petFriendly">Pet friendly</mat-slide-toggle>
       <mat-slide-toggle formControlName="smokingAllowed">Smoking allowed</mat-slide-toggle>
       <mat-slide-toggle formControlName="dedicatedWorkspace">Dedicated workspace</mat-slide-toggle>
       <mat-slide-toggle formControlName="airConditioning">Air conditioning</mat-slide-toggle>
@@ -107,7 +97,7 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Min nights</mat-label>
-      <input matInput type="number" formControlName="minNights" min="1" />
+      <input matInput type="number" formControlName="minNights" min="0" />
     </mat-form-field>
 
     <mat-form-field appearance="outline">
@@ -133,7 +123,7 @@
     <mat-form-field appearance="outline">
       <mat-label>View</mat-label>
       <mat-select formControlName="view">
-        <mat-option *ngFor="let v of views" [value]="v">{{ v }}</mat-option>
+        <mat-option *ngFor="let v of views" [value]="v">{{ v | titlecase }}</mat-option>
       </mat-select>
     </mat-form-field>
 

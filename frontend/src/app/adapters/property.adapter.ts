@@ -1,6 +1,5 @@
 import { PropertyModel, PropertyDetail } from '../models/property.model';
-import { PropertyRequestDto, PropertyResponseDto } from '../dto/property.dto';
-
+import { PropertyRequestDto, PropertyResponseDto,PropertyType, ViewType  } from '../dto/property.dto';
 /** Map backend DTO → UI model */
 export function toProperty(dto: PropertyResponseDto): PropertyModel {
   return {
@@ -9,7 +8,7 @@ export function toProperty(dto: PropertyResponseDto): PropertyModel {
     description: dto.description,
     location: dto.location,
 
-    // NEW meta
+    // Meta
     city: dto.city ?? null,
     region: dto.region ?? null,
     currency: dto.currency ?? 'EUR',
@@ -65,29 +64,61 @@ export function toPropertyDetail(dto: PropertyResponseDto): PropertyDetail {
   return toProperty(dto);
 }
 
-/** UI → backend request (pass-through but ensures defined optional fields) */
+/** UI → backend request (normalize & ensure correct names) */
 export function toPropertyRequestDto(input: PropertyRequestDto): PropertyRequestDto {
-  // In case the form doesn’t provide some optional fields, normalize here
-  return {
-    ...input,
-    coverUrl: input.coverUrl ?? null,
-    city: input.city ?? null,
-    region: input.region ?? null,
-    beds: input.beds ?? null,
-    areaM2: input.areaM2 ?? null,
-    minNights: input.minNights ?? null,
-    checkInFrom: input.checkInFrom ?? null,
-    checkOutUntil: input.checkOutUntil ?? null,
-    distanceToCenterKm: input.distanceToCenterKm ?? null,
-    distanceToBeachKm: input.distanceToBeachKm ?? null,
-    propertyType: input.propertyType ?? null,
-    viewType: input.viewType ?? null,
-    wifiMbps: input.wifiMbps ?? null,
+  // Acepta sinónimos por seguridad
+  const anyIn = input as any;
 
-    // booleans default false if omitted
+  // Normaliza enums a MAYÚSCULAS si vienen en minúsculas/título
+  const normEnum = (s?: string | null) =>
+    s ? String(s).trim().toUpperCase() : null;
+
+  // Soporta areaSqm → areaM2
+  const areaM2 = input.areaM2 ?? anyIn.areaSqm ?? null;
+
+  // Soporta beachKm/centerKm → distanceToBeachKm/distanceToCenterKm
+  const distanceToBeachKm = input.distanceToBeachKm ?? anyIn.beachKm ?? null;
+  const distanceToCenterKm = input.distanceToCenterKm ?? anyIn.centerKm ?? null;
+
+  // dedicatedWorkspace → workspace
+  const workspace = input.workspace ?? !!anyIn.dedicatedWorkspace;
+
+  // petsAllowed → petFriendly (nombre correcto del backend)
+  const petFriendly = input.petFriendly ?? !!anyIn.petsAllowed;
+
+  // view → viewType
+  const viewType = normEnum(input.viewType ?? anyIn.view);
+
+  const payload: PropertyRequestDto = {
+    // obligatorios en back
+    title: (input.title ?? '').trim(),
+    description: (input.description ?? '').trim(),
+    region: (input.region ?? '').trim(),
+    city: (input.city ?? '').trim(),
+
+    // opcional (el back la deriva si no se manda)
+    location: (input.location ?? null) ? (input.location as string).trim() : null,
+
+    pricePerNight: input.pricePerNight,
+    currency: input.currency ?? null,
+
+    // basics
+    bedrooms: input.bedrooms ?? null,
+    bathrooms: input.bathrooms ?? null,
+    maxGuests: input.maxGuests ?? null,
+    beds: input.beds ?? null,
+    areaM2,
+    minNights: input.minNights ?? null,
+    coverUrl: input.coverUrl ?? null,
+
+    // types
+    propertyType: (normEnum(input.propertyType) as PropertyType | null),
+    viewType: (viewType as ViewType | null),
+
+    // amenities/rules
     pool: !!input.pool,
     parking: !!input.parking,
-    petFriendly: !!input.petFriendly,
+    petFriendly,
     smokingAllowed: !!input.smokingAllowed,
     garden: !!input.garden,
     terrace: !!input.terrace,
@@ -96,6 +127,15 @@ export function toPropertyRequestDto(input: PropertyRequestDto): PropertyRequest
     airConditioning: !!input.airConditioning,
     heating: !!input.heating,
     accessible: !!input.accessible,
-    workspace: !!input.workspace,
+    workspace,
+
+    // otros cuantificables
+    wifiMbps: input.wifiMbps ?? null,
+    checkInFrom: input.checkInFrom ?? null,
+    checkOutUntil: input.checkOutUntil ?? null,
+    distanceToBeachKm,
+    distanceToCenterKm,
   };
+
+  return payload;
 }
