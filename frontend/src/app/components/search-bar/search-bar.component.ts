@@ -6,15 +6,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatDatepickerModule, MatDateRangePicker } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { environment } from '../../../environments/environment';
 
 export interface SearchParams {
   q?: string;
-  region?: string | null;  // NUEVO (opcional)
-  city?: string | null;    // NUEVO (opcional)
+  region?: string | null;
+  city?: string | null;
   checkIn?: Date | null;
   checkOut?: Date | null;
   adults: number;
@@ -22,7 +20,6 @@ export interface SearchParams {
   rooms: number;
 }
 
-/** Strongly typed FormGroup para evitar avisos en template */
 type SearchForm = {
   q: FormControl<string>;
   region: FormControl<string | null>;
@@ -34,38 +31,22 @@ type SearchForm = {
   rooms: FormControl<number>;
 };
 
-// Opciones internas del autocomplete
-type CityOpt = { type: 'city'; city: string; regionKey: string; regionName: string };
-type RegionOpt = { type: 'region'; regionKey: string; regionName: string };
-type AnyOpt = CityOpt | RegionOpt;
-
 @Component({
   selector: 'app-search-bar',
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule,
     MatIconModule, MatButtonModule, MatMenuModule,
-    MatFormFieldModule, MatInputModule, MatAutocompleteModule,
+    MatFormFieldModule, MatInputModule,
     MatDatepickerModule, MatNativeDateModule
   ],
   templateUrl: './search-bar.component.html',
   styleUrls: ['./search-bar.component.scss']
 })
 export class SearchBarComponent {
-  /** Estado inicial (opcional) */
   @Input() initial?: Partial<SearchParams & { checkIn?: string; checkOut?: string }> | null = null;
-
   @Output() search = new EventEmitter<SearchParams>();
   @ViewChild('rangePicker') rangePicker!: MatDateRangePicker<Date>;
-
-  private markets = environment.markets;
-  // Flatten rápido para búsquedas
-  private citiesAll: CityOpt[] = this.markets.flatMap(m =>
-    m.cities.map<CityOpt>(c => ({ type: 'city', city: c, regionKey: m.key, regionName: m.name }))
-  );
-  private regionsAll: RegionOpt[] = this.markets.map<RegionOpt>(m => ({
-    type: 'region', regionKey: m.key, regionName: m.name
-  }));
 
   readonly today = this.startOfDay(new Date());
   readonly tomorrow = this.addDays(this.today, 1);
@@ -96,18 +77,12 @@ export class SearchBarComponent {
         rooms: this.initial.rooms ?? this.form.controls.rooms.value
       });
     }
-
-    // Si el usuario escribe a mano, anulamos selección previa de región/ciudad
-    this.form.controls.q.valueChanges.subscribe(() => {
-      this.form.patchValue({ region: null, city: null }, { emitEvent: false });
-    });
   }
 
   // ===== Helpers fecha =====
   private startOfDay(d: Date){ const x = new Date(d); x.setHours(0,0,0,0); return x; }
   private addDays(d: Date, days: number){ const x = new Date(d); x.setDate(x.getDate() + days); return x; }
 
-  /** Normaliza Date | string | null | undefined → Date | null */
   private asDate(v: Date | string | null | undefined): Date | null {
     if (!v) return null;
     return v instanceof Date ? this.startOfDay(v) : this.startOfDay(new Date(v));
@@ -157,73 +132,10 @@ export class SearchBarComponent {
     this.form.patchValue({ q: '', region: null, city: null });
   }
 
-  // ===== Autocomplete =====
-
-  /** Devuelve grupos filtrados: [{ regionKey, regionName, cities: CityOpt[] }] */
-  get groups(){
-    const q = (this.form.controls.q.value || '').trim().toLowerCase();
-
-    // Si está vacío, mostramos todos los grupos con sus ciudades tal cual
-    if (!q) {
-      return this.markets.map(m => ({
-        regionKey: m.key,
-        regionName: m.name,
-        cities: m.cities.map<CityOpt>(c => ({ type: 'city', city: c, regionKey: m.key, regionName: m.name }))
-      }));
-    }
-
-    // Filtro por región o ciudad que contenga el término
-    const regionHit = (name: string) => name.toLowerCase().includes(q);
-    const cityHit   = (name: string) => name.toLowerCase().includes(q);
-
-    return this.markets
-      .map(m => {
-        const cities = m.cities
-          .filter(c => cityHit(c))
-          .map<CityOpt>(c => ({ type: 'city', city: c, regionKey: m.key, regionName: m.name }));
-        const regionMatches = regionHit(m.name);
-        return (regionMatches || cities.length) ? { regionKey: m.key, regionName: m.name, cities } : null;
-      })
-      .filter((g): g is NonNullable<typeof g> => !!g);
-  }
-
-  /** Manejamos la selección codificada en el valor */
-  onSelect(value: string){
-    // Formato esperado:
-    //   "region:<regionKey>"
-    //   "city:<cityName>|<regionKey>"
-    if (value.startsWith('region:')) {
-      const regionKey = value.slice('region:'.length);
-      const reg = this.markets.find(m => m.key === regionKey);
-      if (reg) {
-        this.form.patchValue({
-          q: reg.name,
-          region: reg.name,
-          city: null
-        }, { emitEvent: false });
-      }
-      return;
-    }
-
-    if (value.startsWith('city:')) {
-      const rest = value.slice('city:'.length);
-      const [city, regionKey] = rest.split('|');
-      const reg = this.markets.find(m => m.key === regionKey);
-      this.form.patchValue({
-        q: city,
-        region: reg?.name ?? null,
-        city: city
-      }, { emitEvent: false });
-    }
-  }
-
   // ===== Submit =====
   submit(){
     if (this.form.invalid) return;
     const v = this.form.getRawValue();
-
-    // Si el usuario ha escrito a mano y no ha elegido nada del autocomplete,
-    // dejamos region/city en null y sólo usamos q
     this.search.emit({
       q: v.q.trim() || undefined,
       region: v.region,

@@ -387,6 +387,13 @@ export class PropertyListComponent implements OnInit, OnDestroy {
       queryParamsHandling: 'merge'
     });
   }
+  private numOrU(v: any): number | undefined {
+    const n = v === '' || v == null ? NaN : Number(v);
+    return Number.isFinite(n) ? n : undefined;
+  }
+  private boolTrue(v: any): true | undefined {
+    return v === true ? true : undefined;
+  }
 
   private load() {
     this.loading = true;
@@ -395,36 +402,46 @@ export class PropertyListComponent implements OnInit, OnDestroy {
     this.api.getAll({
       q: (v.q || '').trim() || undefined,
 
-      adults: v.adults ?? undefined,
-      children: v.children ?? undefined,
-      rooms: v.rooms ?? undefined,
+      adults: this.numOrU(v.adults),
+      children: this.numOrU(v.children),
+      rooms: this.numOrU(v.rooms),
 
-      minPrice: v.minPrice ?? undefined,
-      maxPrice: v.maxPrice ?? undefined,
+      minPrice: this.numOrU(v.minPrice),
+      maxPrice: this.numOrU(v.maxPrice),
 
-      areaM2Min: v.areaM2Min ?? undefined,
-      minNightsMin: v.minNightsMin ?? undefined,
+      // 🔧 Space & stay: estos faltaban
+      bedroomsMin: this.numOrU(v.bedroomsMin),
+      bathroomsMin: this.numOrU(v.bathroomsMin),
+      bedsMin: this.numOrU(v.bedsMin),
 
-      maxDistCenterKm: v.maxDistCenterKm ?? undefined,
-      maxDistBeachKm: v.maxDistBeachKm ?? undefined,
+      // ⚠️ Decide y unifica: ¿"maxGuestsMin" o "guestsMin"?
+      // Mantengo "maxGuestsMin" porque es el del formulario:
+      maxGuestsMin: this.numOrU(v.maxGuestsMin),
 
-      wifiMin: v.wifiMin ?? undefined,
+      areaM2Min: this.numOrU(v.areaM2Min),
+      minNightsMin: this.numOrU(v.minNightsMin),
 
-      propertyType: v.propertyType ?? undefined,
-      viewType: v.viewType ?? undefined,
+      maxDistCenterKm: this.numOrU(v.maxDistCenterKm),
+      maxDistBeachKm: this.numOrU(v.maxDistBeachKm),
 
-      pool: v.pool ?? undefined,
-      parking: v.parking ?? undefined,
-      petFriendly: v.petFriendly ?? undefined,
-      smokingAllowed: v.smokingAllowed ?? undefined,
-      garden: v.garden ?? undefined,
-      terrace: v.terrace ?? undefined,
-      balcony: v.balcony ?? undefined,
-      hotTub: v.hotTub ?? undefined,
-      airConditioning: v.airConditioning ?? undefined,
-      heating: v.heating ?? undefined,
-      accessible: v.accessible ?? undefined,
-      workspace: v.workspace ?? undefined,
+      wifiMin: this.numOrU(v.wifiMin),
+
+      propertyType: v.propertyType || undefined,
+      viewType: v.viewType || undefined,
+
+      // Amenities: solo si están marcados
+      pool: this.boolTrue(v.pool),
+      parking: this.boolTrue(v.parking),
+      petFriendly: this.boolTrue(v.petFriendly),
+      smokingAllowed: this.boolTrue(v.smokingAllowed),
+      garden: this.boolTrue(v.garden),
+      terrace: this.boolTrue(v.terrace),
+      balcony: this.boolTrue(v.balcony),
+      hotTub: this.boolTrue(v.hotTub),
+      airConditioning: this.boolTrue(v.airConditioning),
+      heating: this.boolTrue(v.heating),
+      accessible: this.boolTrue(v.accessible),
+      workspace: this.boolTrue(v.workspace),
 
       checkIn: v.checkIn ?? undefined,
       checkOut: v.checkOut ?? undefined,
@@ -433,8 +450,8 @@ export class PropertyListComponent implements OnInit, OnDestroy {
       page: this.pageIndex,
       size: this.pageSize
     }).subscribe({
-      next: (page: PageModel<PropertyModel>) => {
-        this.items = page.content;       // keep server order
+      next: (page) => {
+        this.items = page.content;
         this.total = page.totalElements;
         this.buildChips();
         this.loading = false;

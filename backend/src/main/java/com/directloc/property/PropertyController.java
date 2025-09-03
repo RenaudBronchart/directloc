@@ -17,16 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.UUID;
 
-/**
- * Property REST controller.
- *
- * Exposes:
- * - CRUD for properties
- * - GET /api/properties with rich filters (mapped to PropertySearchCriteria)
- * - POST /api/properties/search to accept a JSON body with PropertySearchCriteria
- * - GET /api/properties/{id}/booked-days for unavailable dates
- */
 @RestController
 @RequestMapping("/api/properties")
 @RequiredArgsConstructor
@@ -82,17 +74,39 @@ public class PropertyController {
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) Integer bedroomsMin,
             @RequestParam(required = false) Integer bathroomsMin,
+            @RequestParam(required = false) Integer bedsMin,
             @RequestParam(required = false) Integer guestsMin,
+            @RequestParam(required = false) Integer areaM2Min,
+            @RequestParam(required = false) Integer minNightsMin,
+
+            // distances
+            @RequestParam(required = false) Double maxDistCenterKm,
+            @RequestParam(required = false) Double maxDistBeachKm,
+
+            // connectivity
+            @RequestParam(required = false) Integer wifiMin,
+
+            // types (enums de tu paquete com.directloc.property)
+            @RequestParam(required = false) PropertyType propertyType,
+            @RequestParam(required = false) ViewType viewType,
+
+            // amenities (booleans: si true → filtra; si null/false → no aplica filtro)
+            @RequestParam(required = false) Boolean pool,
+            @RequestParam(required = false) Boolean parking,
+            @RequestParam(required = false, name = "petFriendly") Boolean petFriendly,
+            @RequestParam(required = false) Boolean smokingAllowed,
+            @RequestParam(required = false) Boolean garden,
+            @RequestParam(required = false) Boolean terrace,
+            @RequestParam(required = false) Boolean balcony,
+            @RequestParam(required = false) Boolean hotTub,
+            @RequestParam(required = false) Boolean airConditioning,
+            @RequestParam(required = false) Boolean heating,
+            @RequestParam(required = false) Boolean accessible,
+            @RequestParam(required = false) Boolean workspace,
 
             // dates
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut,
-
-            // amenities (placeholders until persisted)
-            @RequestParam(required = false) Boolean pool,
-            @RequestParam(required = false) Boolean parking,
-            @RequestParam(required = false) Boolean petsAllowed,
-            @RequestParam(required = false) Integer wifiMin,
 
             // optional sort selector (otherwise use Pageable sort)
             @RequestParam(required = false) PropertySearchCriteria.SortBy sortBy,
@@ -123,8 +137,9 @@ public class PropertyController {
         }
         c.setBedroomsMin(bedroomsMin);
         c.setBathroomsMin(bathroomsMin);
+        c.setBedsMin(bedsMin);
 
-        // Merge legacy adults/children into guestsMin if not provided
+        // guestsMin: si no viene, calcula adults+children
         if (guestsMin == null) {
             int total = (adults != null ? adults : 0) + (children != null ? children : 0);
             if (total > 0) c.setGuestsMin(total);
@@ -132,14 +147,38 @@ public class PropertyController {
             c.setGuestsMin(guestsMin);
         }
 
-        c.setCheckIn(checkIn);
-        c.setCheckOut(checkOut);
+        // surface & stay
+        c.setAreaM2Min(areaM2Min);
+        c.setMinNightsMin(minNightsMin);
 
-        // Amenities (no-op until persisted)
+        // distances
+        c.setMaxDistCenterKm(maxDistCenterKm);
+        c.setMaxDistBeachKm(maxDistBeachKm);
+
+        // connectivity
+        c.setWifiMin(wifiMin);
+
+        // types
+        c.setPropertyType(propertyType);
+        c.setViewType(viewType);
+
+        // amenities (usar lo recibido, nada de hardcodear true)
         c.setPool(pool);
         c.setParking(parking);
-        c.setPetsAllowed(petsAllowed);
-        c.setWifiMin(wifiMin);
+        c.setPetFriendly(petFriendly);
+        c.setSmokingAllowed(smokingAllowed);
+        c.setGarden(garden);
+        c.setTerrace(terrace);
+        c.setBalcony(balcony);
+        c.setHotTub(hotTub);
+        c.setAirConditioning(airConditioning);
+        c.setHeating(heating);
+        c.setAccessible(accessible);
+        c.setWorkspace(workspace);
+
+        // dates
+        c.setCheckIn(checkIn);
+        c.setCheckOut(checkOut);
 
         c.setSortBy(sortBy);
 

@@ -38,9 +38,7 @@
       <span class="per">/ night</span>
     </div>
 
-    <!-- View (modo público) -->
     <button
-      *ngIf="!ownerMode"
       type="button"
       mat-stroked-button
       color="primary"
@@ -48,30 +46,6 @@
     >
       View
     </button>
-
-    <!-- Acciones del propietario dentro de la card -->
-    <div *ngIf="ownerMode" class="owner-actions">
-      <button
-        type="button"
-        mat-stroked-button
-        color="primary"
-        (click)="edit.emit(data.id); $event.stopPropagation()"
-        aria-label="Edit property"
-      >
-        <mat-icon>edit</mat-icon>
-        Edit
-      </button>
-      <button
-        type="button"
-        mat-stroked-button
-        color="warn"
-        (click)="remove.emit(data.id); $event.stopPropagation()"
-        aria-label="Delete property"
-      >
-        <mat-icon>delete</mat-icon>
-        Delete
-      </button>
-    </div>
   </mat-card-actions>
 </mat-card>
 

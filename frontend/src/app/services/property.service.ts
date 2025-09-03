@@ -1,3 +1,4 @@
+// src/app/services/property.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
@@ -27,47 +28,37 @@ export class PropertyService {
 
   /**
    * Paged listing (GET /api/properties).
-   * Acepta TODOS los filtros del componente, pero solo envía al backend los soportados hoy:
-   *  - q, region
-   *  - adults, children, rooms (el back ya fusiona rooms→bedroomsMin y adults+children→guestsMin)
-   *  - minPrice, maxPrice, bedroomsMin, bathroomsMin
-   *  - guestsMin (mapeado desde maxGuestsMin)
-   *  - checkIn, checkOut
-   *  - pool, parking, petsAllowed (desde petFriendly)
-   *  - wifiMin
-   *  - sortBy, page, size
-   *
-   * El resto se ignoran silenciosamente (forward-compatible).
+   * Ahora enviamos TODOS los filtros soportados por el backend.
    */
   getAll(params?: {
     // básicos / texto / región
     q?: string; region?: string; city?: string;
 
-    // ocupación + rooms
+    // ocupación + rooms (el back calcula guestsMin si le pasas adults+children)
     adults?: number; children?: number; rooms?: number;
 
     // precio y numéricos
     minPrice?: number; maxPrice?: number;
     bedroomsMin?: number; bathroomsMin?: number; bedsMin?: number;
-    maxGuestsMin?: number;              // (UI) → guestsMin (BE)
-    areaM2Min?: number;                 // ignorado por BE hoy
-    minNightsMin?: number;              // ignorado por BE hoy
+    maxGuestsMin?: number;              // UI → guestsMin (BE)
+    areaM2Min?: number;
+    minNightsMin?: number;
 
     // distancias
-    maxDistCenterKm?: number;           // ignorado por BE hoy
-    maxDistBeachKm?: number;            // ignorado por BE hoy
+    maxDistCenterKm?: number;
+    maxDistBeachKm?: number;
 
     // conectividad
     wifiMin?: number;
 
-    // tipos (hoy no usados por el BE en GET)
+    // tipos
     propertyType?: string;  // enum name
     viewType?: string;      // enum name
 
-    // amenities (BE GET soporta solo pool/parking/petsAllowed)
+    // amenities
     pool?: boolean;
     parking?: boolean;
-    petFriendly?: boolean;  // UI → petsAllowed (BE)
+    petFriendly?: boolean;
     smokingAllowed?: boolean;
     garden?: boolean;
     terrace?: boolean;
@@ -90,6 +81,7 @@ export class PropertyService {
     const set = (k: string, v: any) => {
       if (v !== null && v !== undefined && v !== '') httpParams = httpParams.set(k, String(v));
     };
+    const setTrue = (k: string, v?: boolean) => { if (v === true) set(k, true); };
 
     if (params) {
       const p = params;
@@ -97,43 +89,61 @@ export class PropertyService {
       // básicos
       set('q', p.q);
       set('region', p.region);
-      // (city no lo usa el back en GET; no lo enviamos)
+      // city: lo ignoramos en GET, pero puedes enviarlo si el BE lo usa
 
       // ocupación
       if (p.adults   != null) set('adults', p.adults);
       if (p.children != null) set('children', p.children);
-      if (p.rooms    != null) set('rooms', p.rooms); // el back ya lo convierte a bedroomsMin si aplica
+      if (p.rooms    != null) set('rooms', p.rooms);
 
-      // precio y numéricos soportados
+      // precio y numéricos
       if (p.minPrice     != null) set('minPrice',     p.minPrice);
       if (p.maxPrice     != null) set('maxPrice',     p.maxPrice);
       if (p.bedroomsMin  != null) set('bedroomsMin',  p.bedroomsMin);
       if (p.bathroomsMin != null) set('bathroomsMin', p.bathroomsMin);
+      if (p.bedsMin      != null) set('bedsMin',      p.bedsMin);
 
-      // guestsMin (si UI pasa maxGuestsMin lo mapeamos)
+      // guestsMin (desde UI maxGuestsMin)
       if (p.maxGuestsMin != null) set('guestsMin', p.maxGuestsMin);
+
+      // surface & nights
+      if (p.areaM2Min    != null) set('areaM2Min',    p.areaM2Min);
+      if (p.minNightsMin != null) set('minNightsMin', p.minNightsMin);
+
+      // distancias
+      if (p.maxDistCenterKm != null) set('maxDistCenterKm', p.maxDistCenterKm);
+      if (p.maxDistBeachKm  != null) set('maxDistBeachKm',  p.maxDistBeachKm);
+
+      // conectividad
+      if (p.wifiMin != null) set('wifiMin', p.wifiMin);
+
+      // tipos
+      if (p.propertyType) set('propertyType', p.propertyType);
+      if (p.viewType)     set('viewType',     p.viewType);
+
+      // amenities: solo cuando true
+      setTrue('pool',            p.pool);
+      setTrue('parking',         p.parking);
+      setTrue('petFriendly',     p.petFriendly);
+      setTrue('smokingAllowed',  p.smokingAllowed);
+      setTrue('garden',          p.garden);
+      setTrue('terrace',         p.terrace);
+      setTrue('balcony',         p.balcony);
+      setTrue('hotTub',          p.hotTub);
+      setTrue('airConditioning', p.airConditioning);
+      setTrue('heating',         p.heating);
+      setTrue('accessible',      p.accessible);
+      setTrue('workspace',       p.workspace);
 
       // fechas
       const ci = toYMD(p.checkIn), co = toYMD(p.checkOut);
-      if (ci) set('checkIn', ci);
+      if (ci) set('checkIn',  ci);
       if (co) set('checkOut', co);
-
-      // amenities soportados en GET hoy
-      if (p.pool        != null) set('pool',        p.pool);
-      if (p.parking     != null) set('parking',     p.parking);
-      if (p.petFriendly != null) set('petsAllowed', p.petFriendly); // rename UI→BE
-
-      // conectividad
-      if (p.wifiMin     != null) set('wifiMin', p.wifiMin);
 
       // sort & paging
       if (p.sortBy != null) set('sortBy', p.sortBy);
       if (p.page   != null) set('page',   p.page);
       if (p.size   != null) set('size',   p.size);
-
-      // NOTA: los demás filtros (bedsMin, areaM2Min, minNightsMin, distancias, propertyType, viewType,
-      // smokingAllowed, garden, terrace, balcony, hotTub, airConditioning, heating, accessible, workspace)
-      // hoy no están soportados por el back en GET; por eso no se envían.
     }
 
     return this.http

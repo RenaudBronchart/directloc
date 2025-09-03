@@ -1,5 +1,5 @@
 <form [formGroup]="form" (ngSubmit)="submit()" class="pro-search">
-  <!-- Destination -->
+  <!-- Destination (solo texto, sin autocomplete) -->
   <div class="seg dest">
     <mat-icon class="prefix">travel_explore</mat-icon>
 
@@ -8,7 +8,6 @@
       type="text"
       placeholder="Destination (region or city)"
       formControlName="q"
-      [matAutocomplete]="auto"
       aria-label="Destination"
       (keyup.enter)="submit()"
     />
@@ -20,27 +19,8 @@
       (click)="clearDestination()"
       aria-label="Clear destination"
     >
-      <mat-icon>search</mat-icon>
+      <mat-icon>close</mat-icon>
     </button>
-
-    <!-- Autocomplete agrupado por región -->
-    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onSelect($event.option.value)">
-      <ng-container *ngFor="let g of groups">
-        <mat-optgroup [label]="g.regionName">
-          <!-- Seleccionar la región completa -->
-          <mat-option [value]="'region:' + g.regionKey">
-            Entire {{ g.regionName }}
-          </mat-option>
-
-          <!-- Ciudades de la región (filtradas) -->
-          <mat-option *ngFor="let c of g.cities" [value]="'city:' + c.city + '|' + g.regionKey">
-            {{ c.city }}
-          </mat-option>
-        </mat-optgroup>
-      </ng-container>
-
-      <mat-option *ngIf="!groups.length" disabled>No matches</mat-option>
-    </mat-autocomplete>
   </div>
 
   <!-- Dates -->
